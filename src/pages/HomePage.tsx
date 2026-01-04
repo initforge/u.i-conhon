@@ -465,7 +465,6 @@ const HomePage: React.FC = () => {
                   return orders.includes(animal.order);
                 })
                 .map((animal) => {
-                  const _animalImage = mockAnimals.find(a => a.order === animal.order);
                   return (
                     <div key={animal.order} className="bg-white border-2 border-tet-red-800 p-2 md:p-4 text-center relative rounded-lg shadow-md">
                       <div className="absolute top-1 left-1 md:top-2 md:left-2">
