@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { mockAnimals } from '../mock-data/mockData';
 import { GAME_CONFIG } from '../constants/gameConfig';
 
 const HomePage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedGroup, setSelectedGroup] = useState('tất-cả');
 
@@ -467,7 +465,7 @@ const HomePage: React.FC = () => {
                   return orders.includes(animal.order);
                 })
                 .map((animal) => {
-                  const animalImage = mockAnimals.find(a => a.order === animal.order);
+                  const _animalImage = mockAnimals.find(a => a.order === animal.order);
                   return (
                     <div key={animal.order} className="bg-white border-2 border-tet-red-800 p-2 md:p-4 text-center relative rounded-lg shadow-md">
                       <div className="absolute top-1 left-1 md:top-2 md:left-2">

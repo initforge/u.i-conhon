@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { mockAnimals } from '../../mock-data/mockData';
-import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
+import AdminPageWrapper, { AdminButton } from '../../components/AdminPageWrapper';
 
 const AdminAnimals: React.FC = () => {
   const [animals, setAnimals] = useState(mockAnimals);

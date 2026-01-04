@@ -51,8 +51,8 @@ const ThongTinCaNhanPage: React.FC = () => {
                             <span className="font-medium">{user?.phone || 'Chưa cập nhật'}</span>
                         </div>
                         <div className="flex justify-between py-3">
-                            <span className="text-gray-600">Email:</span>
-                            <span className="font-medium">{user?.email || 'Chưa cập nhật'}</span>
+                            <span className="text-gray-600">Zalo:</span>
+                            <span className="font-medium">{user?.zaloName || 'Chưa cập nhật'}</span>
                         </div>
                     </div>
                 </div>

@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 const AdminCMS: React.FC = () => {
     const [bannerUrl, setBannerUrl] = useState('https://example.com/banner.jpg');
     const [pinnedPost, setPinnedPost] = useState('Chào mừng Tết Ất Tỵ 2025! Chương trình khuyến mãi đặc biệt...');
-    const [videos, setVideos] = useState([
+    const videos = [
         { id: '1', title: 'Hướng dẫn chơi Cổ Nhơn', url: 'https://youtube.com/watch?v=abc123' },
         { id: '2', title: 'Kết quả ngày 03/01', url: 'https://youtube.com/watch?v=def456' },
-    ]);
+    ];
 
     return (
         <div>

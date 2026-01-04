@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginForm: React.FC = () => {
@@ -8,8 +8,6 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState('');
   const { login, loginAsDemo } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const selectedThai = searchParams.get('thai') || 'an-nhon';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -67,7 +67,7 @@ const CongDongPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'video' | 'binh-luan'>('video');
     const [newComment, setNewComment] = useState('');
 
-    const handleAddComment = (postId: string) => {
+    const handleAddComment = (_postId: string) => {
         if (!newComment.trim()) return;
         // Mock add comment
         alert(`Bình luận: "${newComment}" (Mock)`);
@@ -92,8 +92,8 @@ const CongDongPage: React.FC = () => {
                         <button
                             onClick={() => setActiveTab('video')}
                             className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'video'
-                                    ? 'text-red-600 border-b-2 border-red-600'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'text-red-600 border-b-2 border-red-600'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             📺 Video
@@ -101,8 +101,8 @@ const CongDongPage: React.FC = () => {
                         <button
                             onClick={() => setActiveTab('binh-luan')}
                             className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'binh-luan'
-                                    ? 'text-red-600 border-b-2 border-red-600'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'text-red-600 border-b-2 border-red-600'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             💬 Bình luận

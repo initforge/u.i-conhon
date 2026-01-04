@@ -15,11 +15,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = (phone: string, password: string): boolean => {
+  const login = (phone: string, _password: string): boolean => {
     // Mock login - in Phase 2 this will call API
     // For now, just check if phone matches demo users
     if (phone === '0901234567' || phone === '0332697909') {
-      const mockUser = phone === '0332697909' 
+      const mockUser = phone === '0332697909'
         ? { id: 'admin-1', phone: '0332697909', name: 'Admin', zaloName: 'Cổ Nhơn An Nhơn', role: 'admin' as const }
         : { id: 'user-1', phone: '0901234567', name: 'Nguyễn Văn A', zaloName: 'Anh Văn', role: 'user' as const };
       setUser(mockUser);

@@ -17,30 +17,30 @@ const BottomNavBar: React.FC = () => {
   };
 
   const navItems = [
-    { 
+    {
       icon: '/assets/decorations/ket-qua.png',
       label: 'KẾT QUẢ XỔ',
       sectionId: 'ket-qua',
       link: '/ket-qua'
     },
-    { 
+    {
       icon: '/assets/decorations/cau-thai.png',
       label: 'CẦU THAI MỚI',
       sectionId: 'cau-thai',
       link: '/cau-thai'
     },
-    { 
+    {
       icon: '/assets/logo-co-nhon.svg',
       label: 'CHƠI NGAY',
       link: '/',
       isLogo: true
     },
-    { 
+    {
       icon: '/assets/decorations/huong-dan-icon.png',
       label: 'HƯỚNG DẪN',
       link: '/huong-dan'
     },
-    { 
+    {
       icon: '/assets/decorations/ho-tro.png',
       label: 'HỖ TRỢ ZALO',
       link: '/lien-he'
@@ -60,16 +60,15 @@ const BottomNavBar: React.FC = () => {
         </div>
       );
     }
-    
+
     return (
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-1 ${
-        isActive ? 'bg-red-600' : 'bg-gray-700'
-      }`}>
-        <img 
-          src={item.icon} 
+      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-1 ${isActive ? 'bg-red-600' : 'bg-gray-700'
+        }`}>
+        <img
+          src={item.icon}
           alt={item.label}
           className="w-7 h-7 object-contain"
-          style={{ 
+          style={{
             // Không dùng filter để giữ màu gốc của icon
             objectFit: 'contain'
           }}
@@ -87,18 +86,18 @@ const BottomNavBar: React.FC = () => {
     <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-50 md:hidden shadow-lg">
       <div className="flex justify-around items-center h-20 px-1">
         {navItems.map((item, index) => {
-          const isActive = location.pathname === item.link || 
-            (item.sectionId && location.pathname === '/' && document.getElementById(item.sectionId));
-          
+          const isActive = location.pathname === item.link ||
+            Boolean(item.sectionId && location.pathname === '/' && document.getElementById(item.sectionId));
+
           const content = (
             <>
-              {renderIcon(item, isActive || false)}
+              {renderIcon(item, isActive)}
               <span className="text-xs font-bold text-center leading-tight text-white" style={{ fontSize: '0.7rem', lineHeight: '1.1' }}>
                 {item.label}
               </span>
             </>
           );
-          
+
           if (item.sectionId) {
             return (
               <button
@@ -110,7 +109,7 @@ const BottomNavBar: React.FC = () => {
               </button>
             );
           }
-          
+
           return (
             <Link
               key={index}

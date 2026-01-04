@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import CartDrawer from '../components/CartDrawer';
 
 // Mock data for 40 animals
