@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mockAnimals } from '../mock-data/mockData';
 import { GAME_CONFIG } from '../constants/gameConfig';
 
 const HomePage: React.FC = () => {
