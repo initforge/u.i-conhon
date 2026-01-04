@@ -1,0 +1,82 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const HoTroPage: React.FC = () => {
+    const supportInfo = [
+        { icon: '📞', label: 'Hotline', value: '0901 234 567', action: 'tel:0901234567' },
+        { icon: '💬', label: 'Zalo', value: '0901 234 567', action: 'https://zalo.me/0901234567' },
+        { icon: '📧', label: 'Email', value: 'support@conhon.vn', action: 'mailto:support@conhon.vn' },
+        { icon: '🌐', label: 'Facebook', value: 'fb.com/conhonannhon', action: 'https://facebook.com/conhonannhon' },
+    ];
+
+    const faqs = [
+        { q: 'Làm sao để chơi Cổ Nhơn?', a: 'Chọn Thai → Đăng ký → Like/Share bài viết → Chọn con vật → Thanh toán → Chờ kết quả' },
+        { q: 'Khi nào công bố kết quả?', a: 'Kết quả được công bố vào lúc 18h30 và 21h00 hàng ngày trong dịp Tết.' },
+        { q: 'Tiền thưởng được chuyển khi nào?', a: 'Tiền thưởng sẽ được chuyển vào tài khoản ngân hàng của bạn trong vòng 24h sau khi xổ.' },
+        { q: 'Tỉ lệ thưởng là bao nhiêu?', a: 'Tỉ lệ thưởng 1 chung 30. Ví dụ: Mua 30.000đ trúng 900.000đ.' },
+    ];
+
+    return (
+        <div className="min-h-screen bg-gray-100 py-8 px-4">
+            <div className="max-w-2xl mx-auto">
+                {/* Header */}
+                <div className="mb-8">
+                    <Link to="/mua-con-vat" className="text-gray-500 hover:text-red-600 mb-4 inline-block">
+                        ← Quay lại
+                    </Link>
+                    <h1 className="text-3xl font-bold text-gray-800">Hỗ trợ</h1>
+                    <p className="text-gray-600">Liên hệ chúng tôi nếu bạn cần giúp đỡ</p>
+                </div>
+
+                {/* Contact Info */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h2 className="font-bold text-gray-800 text-lg mb-4">📞 Liên hệ</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        {supportInfo.map((info) => (
+                            <a
+                                key={info.label}
+                                href={info.action}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors"
+                            >
+                                <span className="text-2xl">{info.icon}</span>
+                                <div>
+                                    <p className="text-sm text-gray-500">{info.label}</p>
+                                    <p className="font-semibold text-gray-800">{info.value}</p>
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+
+                {/* FAQs */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h2 className="font-bold text-gray-800 text-lg mb-4">❓ Câu hỏi thường gặp</h2>
+                    <div className="space-y-4">
+                        {faqs.map((faq, index) => (
+                            <div key={index} className="border-b border-gray-100 pb-4 last:border-0">
+                                <h3 className="font-semibold text-gray-800 mb-2">{faq.q}</h3>
+                                <p className="text-gray-600 text-sm">{faq.a}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-6 text-white">
+                    <h2 className="font-bold text-lg mb-4">🚀 Bắt đầu chơi ngay</h2>
+                    <p className="mb-4 opacity-90">Tham gia Cổ Nhơn và rinh lộc Tết về nhà!</p>
+                    <Link
+                        to="/chon-thai"
+                        className="inline-block px-6 py-3 bg-white text-red-600 rounded-lg font-bold hover:bg-gray-100"
+                    >
+                        Chơi ngay →
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default HoTroPage;
