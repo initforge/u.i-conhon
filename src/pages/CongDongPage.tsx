@@ -67,6 +67,7 @@ const CongDongPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'video' | 'binh-luan'>('video');
     const [newComment, setNewComment] = useState('');
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleAddComment = (_postId: string) => {
         if (!newComment.trim()) return;
         // Mock add comment

@@ -4,9 +4,16 @@ import AdminPageWrapper, { AdminButton } from '../../components/AdminPageWrapper
 
 const AdminAnimals: React.FC = () => {
   const [animals, setAnimals] = useState(mockAnimals);
+  const [selectedThai, setSelectedThai] = useState('an-nhon');
   const [bannedCount, setBannedCount] = useState(
     animals.filter((a) => a.isBanned).length
   );
+
+  const thaiOptions = [
+    { id: 'an-nhon', name: 'Thai An Nhơn', color: 'green' },
+    { id: 'nhon-phong', name: 'Thai Nhơn Phong', color: 'yellow' },
+    { id: 'hoai-nhon', name: 'Thai Hoài Nhơn', color: 'blue' },
+  ];
 
   const updateAnimal = (id: string, updates: Partial<typeof animals[0]>) => {
     setAnimals((prev) =>
@@ -22,10 +29,6 @@ const AdminAnimals: React.FC = () => {
       updateAnimal(id, { isBanned: false, banReason: undefined });
       setBannedCount((prev) => prev - 1);
     } else {
-      if (bannedCount >= 2) {
-        alert('Chỉ được cấm tối đa 2 con vật');
-        return;
-      }
       updateAnimal(id, { isBanned: true, banReason: reason || 'Không có lý do' });
       setBannedCount((prev) => prev + 1);
     }
@@ -34,7 +37,7 @@ const AdminAnimals: React.FC = () => {
   return (
     <AdminPageWrapper
       title="Quản lý con vật"
-      subtitle="Cấu hình giá, hạn mức và trạng thái 36 con"
+      subtitle="Cấu hình giá, hạn mức và trạng thái 40 con"
       icon="🐾"
       actions={
         <AdminButton variant="primary">
@@ -42,6 +45,29 @@ const AdminAnimals: React.FC = () => {
         </AdminButton>
       }
     >
+      {/* Thai Tabs */}
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-2 p-1 bg-gray-100 rounded-xl">
+          {thaiOptions.map((thai) => (
+            <button
+              key={thai.id}
+              onClick={() => setSelectedThai(thai.id)}
+              className={`flex-1 min-w-[120px] px-4 py-3 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
+                ? 'bg-white shadow-md text-amber-700'
+                : 'text-gray-600 hover:bg-gray-200'
+                }`}
+            >
+              <span className={`w-2 h-2 rounded-full inline-block mr-2 ${thai.color === 'green' ? 'bg-green-500' :
+                thai.color === 'yellow' ? 'bg-yellow-500' : 'bg-blue-500'
+                }`}></span>
+              {thai.name}
+            </button>
+          ))}
+        </div>
+        <p className="text-sm text-gray-500 mt-2 text-center">
+          Đang quản lý: <strong>{thaiOptions.find(t => t.id === selectedThai)?.name}</strong>
+        </p>
+      </div>
       {/* Stats */}
       <div
         className="flex items-center justify-between p-4 rounded-xl"

@@ -15,6 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const login = (phone: string, _password: string): boolean => {
     // Mock login - in Phase 2 this will call API
     // For now, just check if phone matches demo users

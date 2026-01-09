@@ -5,6 +5,7 @@ import { GAME_CONFIG } from '../constants/gameConfig';
 const HomePage: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedGroup, setSelectedGroup] = useState('tất-cả');
+  const [selectedThai, setSelectedThai] = useState('an-nhon');
 
   // Animal groups from HTML
   const animalGroups = [
@@ -18,11 +19,12 @@ const HomePage: React.FC = () => {
     { id: 'tứ-hòa-thượng', name: 'Tứ hòa thượng' },
     { id: 'ngũ-khất-thực', name: 'Ngũ khất thực' },
     { id: 'nhất-ni-cô', name: 'Nhất ni cô' },
+    { id: 'tứ-thần-linh', name: 'Tứ thần linh' },
   ];
 
   // Mapping groups to animal orders based on images
   const groupToAnimalOrders: { [key: string]: number[] } = {
-    'tất-cả': Array.from({ length: 36 }, (_, i) => i + 1), // All 36 animals
+    'tất-cả': Array.from({ length: 40 }, (_, i) => i + 1), // All 40 animals
     'tứ-trạng-nguyên': [1, 2, 3, 4], // Cá Trắng, Ốc, Ngỗng, Công
     'ngũ-hổ-tướng': [5, 6, 7, 8, 9], // Trùn, Cọp, Heo, Thỏ, Trâu
     'thất-sinh-lý': [10, 11, 12, 13, 14, 15, 16], // Rồng Bay, Chó, Ngựa, Voi, Mèo, Chuột, Ong
@@ -32,6 +34,7 @@ const HomePage: React.FC = () => {
     'tứ-hòa-thượng': [27, 28, 29, 30], // Rùa, Gà, Lươn, Cá Đỏ
     'ngũ-khất-thực': [31, 32, 33, 34, 35], // Tôm, Rắn, Nhện, Nai, Dê
     'nhất-ni-cô': [36], // Yêu
+    'tứ-thần-linh': [37, 38, 39, 40], // Ông Trời, Ông Địa, Thần Tài, Ông Táo
   };
 
   // Results data by year
@@ -123,11 +126,11 @@ const HomePage: React.FC = () => {
     { order: 34, name: 'Nai', alias: 'Nguyên Kiết', theThan: '36' },
     { order: 35, name: 'Dê', alias: 'Nhứt Phẩm', theThan: '25' },
     { order: 36, name: 'Yêu', alias: 'An Sỹ', theThan: '34' },
-    // Thêm 4 con vật để đủ 40
-    { order: 37, name: 'Con Vật 37', alias: 'Alias 37', theThan: '37' },
-    { order: 38, name: 'Con Vật 38', alias: 'Alias 38', theThan: '38' },
-    { order: 39, name: 'Con Vật 39', alias: 'Alias 39', theThan: '39' },
-    { order: 40, name: 'Con Vật 40', alias: 'Alias 40', theThan: '40' },
+    // Tứ Thần Linh (37-40)
+    { order: 37, name: 'Ông Trời', alias: 'Thiên Quân', theThan: '37' },
+    { order: 38, name: 'Ông Địa', alias: 'Địa Chủ', theThan: '38' },
+    { order: 39, name: 'Thần Tài', alias: 'Tài Thần', theThan: '39' },
+    { order: 40, name: 'Ông Táo', alias: 'Táo Quân', theThan: '40' },
   ];
 
   return (
@@ -139,10 +142,10 @@ const HomePage: React.FC = () => {
             {/* Logo and Title */}
             <div className="text-center mb-8 md:mb-12">
               <img
-                src="/assets/logo-co-nhon.svg"
+                src="/assets/logo-moi.jpg"
                 alt="Cổ Nhơn"
-                className="mx-auto mb-4 md:mb-6"
-                style={{ width: '15%', minWidth: '60px', maxWidth: '120px' }}
+                className="mx-auto mb-4 md:mb-6 rounded-lg"
+                style={{ width: '15%', minWidth: '60px', maxWidth: '150px' }}
               />
               <h1 className="section-title mb-4 text-xl md:text-2xl" style={{ fontWeight: 400, color: '#B20801' }}>
                 CỔ NHƠN ONLINE
@@ -157,13 +160,13 @@ const HomePage: React.FC = () => {
                   {GAME_CONFIG.GAME_TITLE}
                 </h2>
                 <p className="text-lg font-normal mb-4" style={{ color: 'rgb(35, 35, 35)' }}>
-                  <strong>Từ <span style={{ color: '#b2012f' }}>Mùng 1 tết</span> đến hết ngày <span style={{ color: '#b2012f' }}>Mùng 9 tháng Giêng năm Ất Tỵ</span></strong>
+                  <strong>Từ <span style={{ color: '#b2012f' }}>{GAME_CONFIG.GAME_START}</span> đến <span style={{ color: '#b2012f' }}>{GAME_CONFIG.GAME_END}</span></strong>
                 </p>
                 <p className="text-justify mb-4" style={{ color: 'rgb(35, 35, 35)' }}>
                   Cổ Nhơn là trò chơi dân gian độc đáo của Hoài Nhơn, thường được tổ chức vào ngày Tết. Người chơi dựa vào câu thai để suy luận và dự đoán đáp án là 1 trong số 36 con vật. Với yếu tố giải trí, thử thách trí tuệ và cơ hội nhận thưởng hấp dẫn, Cổ Nhơn mang đậm giá trị văn hóa truyền thống, nay được tái hiện trực tuyến tiện lợi, phù hợp cho mọi lứa tuổi.
                 </p>
                 <p className="font-normal mb-4" style={{ fontSize: '1.1rem', color: '#b2012f' }}>
-                  Vui xuân cùng Cổ Nhơn – Suy luận hay, rinh lộc ngay!
+                  Vui Xuân Cổ Nhơn - Nhận Lộc ngày tết!
                 </p>
                 <div className="mb-6">
                   <p className="font-bold mb-2" style={{ fontSize: '1.5rem', lineHeight: '0.75', color: '#b2012f' }}>
@@ -201,6 +204,126 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
+      {/* Section Giới Thiệu */}
+      <section id="gioi-thieu" className="section gioi-thieu-detail relative" style={{ backgroundColor: '#fff', paddingTop: '40px', paddingBottom: '40px' }}>
+        <div className="section-content relative">
+          <div className="container mx-auto px-4">
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h2 className="section-title text-3xl md:text-4xl mb-4" style={{ fontWeight: 600, color: '#B20801' }}>
+                GIỚI THIỆU
+              </h2>
+              <div className="w-24 h-1 bg-tet-red-600 mx-auto rounded"></div>
+            </div>
+
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Left: Main Content */}
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 md:p-8 border border-red-100 shadow-lg">
+                <h3 className="text-2xl font-bold text-tet-red-700 mb-4">
+                  Cổ Nhơn - Trò chơi dân gian độc đáo ở Bình Định
+                </h3>
+
+                <div className="space-y-4 text-gray-700 leading-relaxed">
+                  <p>
+                    Cổ Nhơn là một trò chơi trong dịp tết âm lịch của người dân H.Hoài Nhơn và Thị Xã An Nhơn (Bình Định),
+                    bắt đầu vào khoảng 25 tháng chạp âm lịch kéo dài đến khoảng chiều mùng 9 tết.
+                  </p>
+
+                  <p>
+                    Đến nay chưa có một tài liệu chính thống nào nói rõ nguồn gốc xuất xứ của Cổ Nhơn, chỉ biết nó đã có từ rất lâu đời,
+                    được nhiều thế hệ truyền nhau. Giờ đây, Cổ Nhơn gần như đã trở thành một "món ăn" ngày tết cổ truyền đặc sắc,
+                    hấp dẫn, khó có thể thiếu của người dân ở mảnh đất Hoài Nhơn và An Nhơn. 😊
+                  </p>
+
+                  <div className="bg-white rounded-lg p-4 border-l-4 border-tet-red-500">
+                    <h4 className="font-bold text-tet-red-700 mb-2">🎊 Háo hức chờ... Cổ Nhơn</h4>
+                    <p className="text-sm">
+                      Về Hoài Nhơn và An Nhơn chừng 25 tết trở đi, mọi người không chỉ bắt đầu tất bật dọn dẹp, trang hoàng nhà cửa
+                      mà còn nôn nao một tâm trạng khác. Ai cũng háo hức chờ đợi Cổ Nhơn như chờ đợi hội làng dịp tết.
+                    </p>
+                  </div>
+
+                  <p>
+                    Người chơi Cổ Nhơn không phân biệt tầng lớp, tuổi tác, trình độ học vấn... Hình ảnh một cậu bé hăng say lý giải
+                    suy đoán của mình và một cụ ông đeo kính ngồi chiêm nghiệm, cân nhắc lựa chọn ấy đã trở nên rất quen thuộc ở nơi đây.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: More Content */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                  <h4 className="text-xl font-bold text-tet-red-700 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">📜</span> Đi tìm gốc tích Cổ Nhơn
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    Theo nhà nghiên cứu Đặng Quý Địch, trò chơi Cổ Nhơn đã xuất hiện khoảng thời nhà Nguyễn do du nhập từ bên ngoài.
+                    Khi về Việt Nam, cụ thể là ở Hoài Nhơn và An Nhơn Bình Định, Cổ Nhơn đã phát triển, biến hóa thành một trò chơi
+                    tao nhã trong dịp tết cho mọi tầng lớp người dân.
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-tet-red-700 to-tet-red-800 rounded-2xl p-6 text-white shadow-lg">
+                  <h4 className="text-xl font-bold mb-4 flex items-center">
+                    <span className="text-2xl mr-2">🎯</span> Cách chơi
+                  </h4>
+                  <ul className="space-y-2 text-red-100">
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Mỗi đề là 4 câu thơ lục bát (câu thai)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Người chơi suy luận để đoán 1 trong 40 con vật</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Tỷ lệ thưởng hấp dẫn: 1 chung 30</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Kết quả công bố minh bạch tại cây nêu</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Newspaper Links - Admin managed */}
+                <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
+                  <h4 className="text-lg font-bold text-yellow-800 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">📰</span> Bài báo tham khảo
+                  </h4>
+                  <div className="space-y-3">
+                    <a href="#" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
+                          <span>📄</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors">Cổ Nhơn - Nét đẹp văn hóa Tết</p>
+                          <p className="text-xs text-gray-500">Báo Bình Định</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a href="#" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
+                          <span>📄</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors">Trò chơi dân gian Hoài Nhơn</p>
+                          <p className="text-xs text-gray-500">Thanh Niên Online</p>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Section 2: Kết quả */}
       <section id="ket-qua" className="section ket-qua relative" style={{ backgroundColor: 'rgb(243, 239, 236)', paddingTop: '0px', paddingBottom: '0px' }}>
         <div className="section-content relative">
@@ -208,7 +331,7 @@ const HomePage: React.FC = () => {
             {/* Title */}
             <div className="text-center mb-8">
               <h2 className="section-title mb-2 text-4xl md:text-6xl" style={{ fontWeight: 400, color: '#B20801' }}>
-                KẾT QUẢ
+                CÂU THAI VÀ KẾT QUẢ XỔ
               </h2>
             </div>
 
@@ -228,6 +351,29 @@ const HomePage: React.FC = () => {
               <div>
                 <div className="tabbed-content sec-list-tich">
                   <h4 className="section-title text-center mb-4" style={{ fontSize: '1.5rem', fontWeight: 400, color: '#B20801' }}>Kết quả đã xổ</h4>
+
+                  {/* Thai Tabs */}
+                  <div className="flex justify-center mb-4">
+                    <div className="inline-flex bg-gray-100 rounded-lg p-1">
+                      {[
+                        { id: 'an-nhon', name: 'Thai An Nhơn' },
+                        { id: 'nhon-phong', name: 'Thai Nhơn Phong' },
+                        { id: 'hoai-nhon', name: 'Thai Hoài Nhơn' },
+                      ].map((thai) => (
+                        <button
+                          key={thai.id}
+                          onClick={() => setSelectedThai(thai.id)}
+                          className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
+                            ? 'bg-tet-red-700 text-white shadow-md'
+                            : 'text-gray-600 hover:bg-gray-200'
+                            }`}
+                        >
+                          {thai.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Year Tabs - Bọc khung đỏ với pattern - Màu giống button MUA 1 TRÚNG 30 */}
                   <div className="rounded-lg p-4 mb-6 relative overflow-hidden border-3" style={{
                     backgroundColor: '#991b1b', // Màu đỏ giống btn-primary (tet-red-800)
@@ -359,14 +505,17 @@ const HomePage: React.FC = () => {
               {/* Right: Countdown and Info */}
               <div className="text-center">
                 <p className="mb-2" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}><strong>Đóng tịch lúc</strong></p>
-                <p className="text-font mb-4 text-4xl md:text-6xl" style={{ fontWeight: 500, color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>21:00</p>
+                <p className="text-font mb-4 text-4xl md:text-6xl" style={{ fontWeight: 500, color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>16h30</p>
                 <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>Còn lại: <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>0 giờ 0 phút 0 giây</span></p>
                 <div className="mb-4">
                   <p className="font-bold mb-2" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
                     <strong>Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}</strong>
                   </p>
-                  <p className="font-bold" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
+                  <p className="font-bold mb-2" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
                     <strong>{GAME_CONFIG.SPECIAL_PRIZE_RATIO_TEXT}</strong>
+                  </p>
+                  <p className="font-bold" style={{ fontSize: '1rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
+                    <strong>{GAME_CONFIG.HOAI_NHON_SPECIAL_TEXT}</strong>
                   </p>
                 </div>
                 <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>
@@ -485,6 +634,81 @@ const HomePage: React.FC = () => {
           {/* Cloud decoration */}
           <div className="absolute bottom-0 right-0 opacity-60 pointer-events-none" style={{ width: '265px', height: '454px', zIndex: 10 }}>
             <img src="/assets/decorations/cloud-4.png" alt="" className="w-full h-full object-contain" />
+          </div>
+        </div>
+      </section>
+
+      {/* Section 5: Ý nghĩa các danh vật */}
+      <section id="y-nghia" className="section y-nghia-sec relative" style={{ backgroundColor: '#fff', paddingTop: '40px', paddingBottom: '40px' }}>
+        <div className="section-content relative">
+          <div className="container mx-auto px-4">
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h2 className="section-title text-3xl md:text-4xl mb-4" style={{ fontWeight: 600, color: '#B20801' }}>
+                Ý NGHĨA CÁC DANH VẬT
+              </h2>
+              <div className="w-24 h-1 bg-tet-red-600 mx-auto rounded"></div>
+              <p className="mt-4 text-gray-600">40 con vật trong bảng Cổ Nhơn với ý nghĩa và biểu tượng đặc trưng</p>
+            </div>
+
+            {/* Animal Meanings Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { name: 'Cá Trắng', alias: 'Chiếm Khôi', meaning: 'Tượng trưng cho sự trong sáng, thuần khiết và may mắn' },
+                { name: 'Ốc', alias: 'Bản Quế', meaning: 'Biểu tượng của sự kiên nhẫn và bền bỉ' },
+                { name: 'Ngỗng', alias: 'Vinh Sanh', meaning: 'Đại diện cho sự thủy chung và tình yêu đôi lứa' },
+                { name: 'Công', alias: 'Phùng Xuân', meaning: 'Biểu tượng của vẻ đẹp, sự sang trọng và quyền quý' },
+                { name: 'Trùn', alias: 'Chí Cao', meaning: 'Tượng trưng cho sự khiêm nhường nhưng có giá trị lớn' },
+                { name: 'Cọp', alias: 'Khôn Sơn', meaning: 'Đại diện cho sức mạnh, quyền lực và sự dũng mãnh' },
+                { name: 'Heo', alias: 'Chánh Thuận', meaning: 'Biểu tượng của sự sung túc và no đủ' },
+                { name: 'Thỏ', alias: 'Nguyệt Bửu', meaning: 'Tượng trưng cho sự nhanh nhẹn và tinh thông' },
+                { name: 'Trâu', alias: 'Hớn Vân', meaning: 'Đại diện cho sự cần cù, chăm chỉ và bền bỉ' },
+                { name: 'Rồng Bay', alias: 'Giang Từ', meaning: 'Biểu tượng của sự thăng tiến và quyền uy' },
+                { name: 'Chó', alias: 'Phước Tôn', meaning: 'Tượng trưng cho lòng trung thành và tình bạn' },
+                { name: 'Ngựa', alias: 'Quang Minh', meaning: 'Đại diện cho sự thành công và tiến về phía trước' },
+                { name: 'Voi', alias: 'Hữu Tài', meaning: 'Biểu tượng của sức mạnh, trí tuệ và may mắn' },
+                { name: 'Mèo', alias: 'Chỉ Đắc', meaning: 'Tượng trưng cho sự tinh tế và khéo léo' },
+                { name: 'Chuột', alias: 'Tất Khắc', meaning: 'Đại diện cho sự nhanh nhẹn và tiết kiệm' },
+                { name: 'Ong', alias: 'Mậu Lâm', meaning: 'Biểu tượng của sự chăm chỉ và đoàn kết' },
+                { name: 'Hạc', alias: 'Trọng Tiên', meaning: 'Tượng trưng cho sự trường thọ và thanh cao' },
+                { name: 'Kỳ Lân', alias: 'Thiên Thân', meaning: 'Đại diện cho điềm lành và sự may mắn lớn' },
+                { name: 'Bướm', alias: 'Cấn Ngọc', meaning: 'Biểu tượng của sự biến đổi và vẻ đẹp' },
+                { name: 'Hòn Đá', alias: 'Trân Châu', meaning: 'Tượng trưng cho sự vững chắc và kiên định' },
+                { name: 'Én', alias: 'Thượng Chiêu', meaning: 'Đại diện cho mùa xuân và tin vui' },
+                { name: 'Cu', alias: 'Song Đồng', meaning: 'Biểu tượng của sự hòa bình và yên ấm' },
+                { name: 'Khỉ', alias: 'Tam Hòe', meaning: 'Tượng trưng cho sự thông minh và nhanh nhẹn' },
+                { name: 'Ếch', alias: 'Hiệp Hải', meaning: 'Đại diện cho sự phồn thịnh và sung túc' },
+                { name: 'Quạ', alias: 'Cửu Quan', meaning: 'Biểu tượng của trí tuệ và sự tiên tri' },
+                { name: 'Rồng Nằm', alias: 'Thái Bình', meaning: 'Tượng trưng cho sự an bình và thịnh vương' },
+                { name: 'Rùa', alias: 'Hỏa Diệm', meaning: 'Đại diện cho sự trường thọ và kiên nhẫn' },
+                { name: 'Gà', alias: 'Nhựt Thăng', meaning: 'Biểu tượng của bình minh và sự thức tỉnh' },
+                { name: 'Lươn', alias: 'Địa Lương', meaning: 'Tượng trưng cho sự linh hoạt và khéo léo' },
+                { name: 'Cá Đỏ', alias: 'Tỉnh Lợi', meaning: 'Đại diện cho sự thịnh vượng và may mắn' },
+                { name: 'Tôm', alias: 'Trường Thọ', meaning: 'Biểu tượng của sự sống động và phát triển' },
+                { name: 'Rắn', alias: 'Vạn Kim', meaning: 'Tượng trưng cho sự tái sinh và trí tuệ' },
+                { name: 'Nhện', alias: 'Thanh Tiền', meaning: 'Đại diện cho sự kiên nhẫn và sáng tạo' },
+                { name: 'Nai', alias: 'Nguyên Kiết', meaning: 'Biểu tượng của sự nhẹ nhàng và thanh tao' },
+                { name: 'Dê', alias: 'Nhứt Phẩm', meaning: 'Tượng trưng cho sự hiền lành và tốt bụng' },
+                { name: 'Yêu', alias: 'An Sỹ', meaning: 'Đại diện cho sự bí ẩn và huyền diệu' },
+                { name: 'Ông Trời', alias: 'Thiên Quân', meaning: 'Tượng trưng cho quyền năng tối cao và sự che chở' },
+                { name: 'Ông Địa', alias: 'Địa Chủ', meaning: 'Biểu tượng của sự phì nhiêu và thịnh vượng' },
+                { name: 'Thần Tài', alias: 'Tài Thần', meaning: 'Đại diện cho tài lộc và sự giàu có' },
+                { name: 'Ông Táo', alias: 'Táo Quân', meaning: 'Biểu tượng của gia đình và sự bảo hộ' },
+              ].map((animal, index) => (
+                <div key={index} className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 border border-red-100 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center mb-2">
+                    <span className="w-8 h-8 bg-tet-red-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-tet-red-800">{animal.name}</h4>
+                      <p className="text-xs text-gray-500">{animal.alias}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{animal.meaning}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

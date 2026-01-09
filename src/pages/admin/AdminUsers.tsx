@@ -5,13 +5,35 @@ import AdminPageWrapper, { AdminCard, StatusBadge, StatCard, AdminButton } from 
 const AdminUsers: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
+    const [selectedThai, setSelectedThai] = useState('all');
+
+    const thaiOptions = [
+        { id: 'all', name: 'Tất cả', color: 'gray' },
+        { id: 'thai-an-nhon', name: 'Thai An Nhơn', color: 'green' },
+        { id: 'thai-nhon-phong', name: 'Thai Nhơn Phong', color: 'yellow' },
+        { id: 'thai-hoai-nhon', name: 'Thai Hoài Nhơn', color: 'blue' },
+    ];
 
     const users = mockUsers.filter((u) => u.role === 'user');
+
+    // Filter users by Thai based on their orders
+    const getUserThai = (userId: string) => {
+        const userOrders = mockOrders.filter((o) => o.userId === userId);
+        if (userOrders.length === 0) return null;
+        return userOrders[0].thaiId;
+    };
+
     const filteredUsers = users.filter((user) => {
         const search = searchTerm.toLowerCase();
-        return user.name.toLowerCase().includes(search) ||
+        const matchesSearch = user.name.toLowerCase().includes(search) ||
             user.zaloName.toLowerCase().includes(search) ||
             user.phone.includes(search);
+
+        if (!matchesSearch) return false;
+        if (selectedThai === 'all') return true;
+
+        const userThai = getUserThai(user.id);
+        return userThai === selectedThai;
     });
 
     const getUserStats = (userId: string) => {
@@ -32,9 +54,31 @@ const AdminUsers: React.FC = () => {
             icon="👥"
             actions={<AdminButton variant="secondary">📥 Xuất dữ liệu</AdminButton>}
         >
+            {/* Thai Tabs */}
+            <div className="mb-6">
+                <div className="flex flex-wrap gap-2 p-1 bg-gray-100 rounded-xl">
+                    {thaiOptions.map((thai) => (
+                        <button
+                            key={thai.id}
+                            onClick={() => setSelectedThai(thai.id)}
+                            className={`flex-1 min-w-[100px] px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
+                                    ? 'bg-white shadow-md text-amber-700'
+                                    : 'text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            <span className={`w-2 h-2 rounded-full inline-block mr-2 ${thai.color === 'green' ? 'bg-green-500' :
+                                    thai.color === 'yellow' ? 'bg-yellow-500' :
+                                        thai.color === 'blue' ? 'bg-blue-500' : 'bg-gray-400'
+                                }`}></span>
+                            {thai.name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
-                <StatCard label="Tổng người dùng" value={users.length} icon="👤" />
+                <StatCard label="Tổng người dùng" value={filteredUsers.length} icon="👤" />
                 <StatCard label="Đã đặt tịch" value={usersWithOrders} icon="🛒" />
                 <StatCard label="Tổng doanh thu" value={`${(totalRevenue / 1000000).toFixed(1)}M`} icon="💰" />
             </div>

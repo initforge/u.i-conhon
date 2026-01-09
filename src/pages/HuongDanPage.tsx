@@ -35,21 +35,19 @@ const HuongDanPage: React.FC = () => {
             <div className="flex justify-center space-x-4 border-b-2 border-tet-red-200">
               <button
                 onClick={() => setActiveTab('intro')}
-                className={`px-6 py-3 font-bold text-lg transition-all ${
-                  activeTab === 'intro'
+                className={`px-6 py-3 font-bold text-lg transition-all ${activeTab === 'intro'
                     ? 'text-tet-red-700 border-b-4 border-tet-red-700 -mb-0.5'
                     : 'text-gray-500 hover:text-tet-red-600'
-                }`}
+                  }`}
               >
                 Giới thiệu & Hướng dẫn
               </button>
               <button
                 onClick={() => setActiveTab('rules')}
-                className={`px-6 py-3 font-bold text-lg transition-all ${
-                  activeTab === 'rules'
+                className={`px-6 py-3 font-bold text-lg transition-all ${activeTab === 'rules'
                     ? 'text-tet-red-700 border-b-4 border-tet-red-700 -mb-0.5'
                     : 'text-gray-500 hover:text-tet-red-600'
-                }`}
+                  }`}
               >
                 Luật chơi
               </button>
@@ -65,12 +63,12 @@ const HuongDanPage: React.FC = () => {
                   </h2>
                   <div className="space-y-4 text-gray-700 leading-relaxed">
                     <p>
-                      <strong>Cổ Nhơn</strong> là trò chơi dân gian độc đáo của thị xã Hoài Nhơn, thường tổ chức vào dịp Tết Nguyên đán. 
-                      Người chơi suy luận từ bốn câu thơ lục bát (câu thai) để đoán đáp án là một trong 36 con vật trong bảng Cổ Nhơn. 
+                      <strong>Cổ Nhơn</strong> là trò chơi dân gian độc đáo của thị xã Hoài Nhơn, thường tổ chức vào dịp Tết Nguyên đán.
+                      Người chơi suy luận từ bốn câu thơ lục bát (câu thai) để đoán đáp án là một trong 36 con vật trong bảng Cổ Nhơn.
                       Hộp gỗ chứa đáp án được treo trên cây nêu cao hơn 5m, tạo không khí hồi hộp và thú vị.
                     </p>
                     <p>
-                      Trò chơi kết hợp trí tuệ và giải trí, với phần thưởng hấp dẫn tỷ lệ 1 đổi 30, mang lại niềm vui và ý nghĩa trong những ngày đầu xuân, 
+                      Trò chơi kết hợp trí tuệ và giải trí, với phần thưởng hấp dẫn tỷ lệ 1 đổi 30, mang lại niềm vui và ý nghĩa trong những ngày đầu xuân,
                       đồng thời giữ gìn bản sắc văn hóa truyền thống.
                     </p>
                   </div>
@@ -81,7 +79,7 @@ const HuongDanPage: React.FC = () => {
                   <h2 className="section-title text-tet-red-800 mb-6 text-3xl">
                     Hướng dẫn tham gia online
                   </h2>
-                  
+
                   <div className="space-y-6">
                     {/* Step 1 */}
                     <div className="flex items-start space-x-4">
@@ -133,9 +131,9 @@ const HuongDanPage: React.FC = () => {
                           Chọn một trong 3 Thai để tham gia:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li><strong>Thai An Nhơn:</strong> Khung giờ 10:30, 16:30 (Tết có thêm 20:30)</li>
-                          <li><strong>Thai Nhơn Phong:</strong> Khung giờ 10:30, 16:30 (Tết có thêm 20:30)</li>
-                          <li><strong>Thai Hoài Nhơn:</strong> Khung giờ 12:30, 18:30</li>
+                          <li><strong>Thai An Nhơn:</strong> Khung giờ 11h, 17h (Tết có thêm 21h)</li>
+                          <li><strong>Thai Nhơn Phong:</strong> Khung giờ 11h, 17h (Tết có thêm 20:30)</li>
+                          <li><strong>Thai Hoài Nhơn:</strong> Khung giờ 13h, 19h</li>
                         </ul>
                       </div>
                     </div>
@@ -186,7 +184,7 @@ const HuongDanPage: React.FC = () => {
                 <div className="relative p-8">
                   {/* Outer golden border */}
                   <div className="absolute inset-0 border-2 border-yellow-500 rounded-lg"></div>
-                  
+
                   {/* Corner decorations */}
                   <div className="absolute top-0 left-0 w-24 h-24" style={{
                     backgroundImage: 'url(/assets/decorations/factory_bg_1.png)',
@@ -221,25 +219,15 @@ const HuongDanPage: React.FC = () => {
                     <h2 className="section-title text-tet-red-800 mb-8 text-3xl text-center">
                       Luật chơi và cách tham gia
                     </h2>
-                    
-                    <div className="space-y-6 text-gray-800">
-                      {/* Bảng Cổ Nhơn */}
-                      <div>
-                        <h3 className="text-xl font-bold text-tet-red-700 mb-3">
-                          Bảng Cổ Nhơn:
-                        </h3>
-                        <p className="leading-relaxed">
-                          Bảng Cổ Nhơn gồm 36 con vật, chia thành 9 nhóm, mỗi nhóm có 4 con. Mỗi con vật mang hai tên gọi: một tên phổ biến và một tên ẩn ý.
-                        </p>
-                      </div>
 
+                    <div className="space-y-6 text-gray-800">
                       {/* Câu thai */}
                       <div>
                         <h3 className="text-xl font-bold text-tet-red-700 mb-3">
                           Câu thai (đề đố):
                         </h3>
                         <p className="leading-relaxed">
-                          Câu thai gồm bốn câu thơ lục bát, được sáng tác dựa trên các chủ đề như lịch sử, văn hóa, danh lam thắng cảnh, con người, hoặc thiên nhiên. 
+                          Câu thai gồm bốn câu thơ lục bát, được sáng tác dựa trên các chủ đề như lịch sử, văn hóa, danh lam thắng cảnh, con người, hoặc thiên nhiên.
                           Nội dung câu thơ chứa các manh mối để người chơi suy luận và tìm ra con vật chính xác.
                         </p>
                       </div>
@@ -257,7 +245,7 @@ const HuongDanPage: React.FC = () => {
                             <div>
                               <p className="font-semibold mb-1">Ra đề:</p>
                               <p>
-                                Ban tổ chức công bố câu thai và treo hộp gỗ chứa đáp án lên cây nêu tại quảng trường trung tâm thị xã. 
+                                Ban tổ chức công bố câu thai và treo hộp gỗ chứa đáp án lên cây nêu tại quảng trường trung tâm thị xã.
                                 Ban tổ chức đã công bố bộ đề 40 câu thai Cổ Nhơn xuân Ất Tỵ 2025
                               </p>
                             </div>
@@ -291,7 +279,7 @@ const HuongDanPage: React.FC = () => {
                             <div>
                               <p className="font-semibold mb-1">Công bố kết quả:</p>
                               <p>
-                                Cuối mỗi lượt chơi (vào buổi sáng và buổi chiều), Ban tổ chức mở hộp gỗ, công bố đáp án. 
+                                Cuối mỗi lượt chơi (vào buổi sáng và buổi chiều), Ban tổ chức mở hộp gỗ, công bố đáp án.
                                 Người chơi trả lời đúng sẽ nhận được phần thưởng theo tỷ lệ 1 đồng đổi 30 đồng.
                               </p>
                             </div>

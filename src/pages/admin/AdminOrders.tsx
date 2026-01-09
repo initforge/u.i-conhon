@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { mockOrders, mockUsers, mockThais, mockAnimals } from '../../mock-data/mockData';
-import AdminPageWrapper, { AdminCard, AdminTabBar, StatusBadge } from '../../components/AdminPageWrapper';
+import AdminPageWrapper, { AdminCard, StatusBadge } from '../../components/AdminPageWrapper';
 
 const AdminOrders: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedThai, setSelectedThai] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
 
-  const filteredOrders = mockOrders.filter((order) => {
-    if (activeTab !== 'all' && order.status !== activeTab) return false;
+  // Only show paid and completed orders
+  const paidOrders = mockOrders.filter((order) =>
+    order.status === 'paid' || order.status === 'completed'
+  );
+
+  const filteredOrders = paidOrders.filter((order) => {
     if (selectedThai !== 'all' && order.thaiId !== selectedThai) return false;
     if (selectedDate) {
       const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
@@ -17,22 +20,15 @@ const AdminOrders: React.FC = () => {
     return true;
   });
 
-  const tabs = [
-    { id: 'all', label: 'Tất cả', count: mockOrders.length },
-    { id: 'pending', label: 'Chờ thanh toán', count: mockOrders.filter(o => o.status === 'pending').length },
-    { id: 'paid', label: 'Đã thanh toán', count: mockOrders.filter(o => o.status === 'paid').length },
-    { id: 'completed', label: 'Hoàn tất', count: mockOrders.filter(o => o.status === 'completed').length },
-  ];
-
   return (
     <AdminPageWrapper
       title="Quản lý đơn hàng"
-      subtitle="Theo dõi và quản lý tất cả tịch của người chơi"
+      subtitle="Đơn hàng đã thanh toán"
       icon="📦"
     >
       {/* Filters */}
       <AdminCard>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-medium mb-2" style={{ color: '#9a8c7a' }}>
               Lọc theo ngày
@@ -61,7 +57,7 @@ const AdminOrders: React.FC = () => {
               ))}
             </select>
           </div>
-          <div className="md:col-span-2 flex items-end">
+          <div className="flex items-end">
             <div
               className="w-full px-4 py-3 rounded-lg flex items-center justify-between"
               style={{ backgroundColor: '#faf8f5' }}
@@ -74,9 +70,6 @@ const AdminOrders: React.FC = () => {
           </div>
         </div>
       </AdminCard>
-
-      {/* Tabs */}
-      <AdminTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Orders Table */}
       <AdminCard noPadding>

@@ -24,6 +24,7 @@ const AdminLayout: React.FC = () => {
         { path: '/admin/con-vat', icon: '🐾', label: 'Con vật' },
         { path: '/admin/nguoi-choi', icon: '👥', label: 'Người chơi' },
         { path: '/admin/bao-cao', icon: '📈', label: 'Báo cáo' },
+        { path: '/admin/ket-qua', icon: '🎯', label: 'Kết quả xổ' },
         { path: '/admin/cms', icon: '📄', label: 'CMS' },
         { path: '/admin/nhiem-vu-mxh', icon: '🔗', label: 'Nhiệm vụ MXH' },
         { path: '/admin/cai-dat', icon: '⚙️', label: 'Cài đặt' },

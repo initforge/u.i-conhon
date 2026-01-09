@@ -8,7 +8,7 @@ const ChonThaiPage: React.FC = () => {
         {
             id: 'an-nhon',
             name: 'Thai An Nhơn',
-            description: 'Khu vực truyền thống với nhiều người chơi',
+            description: 'Vùng đất nổi tiếng của những cao nhân',
             color: 'from-green-500 to-green-700',
             icon: '🟢',
             bgColor: 'bg-green-50',
@@ -17,7 +17,7 @@ const ChonThaiPage: React.FC = () => {
         {
             id: 'nhon-phong',
             name: 'Thai Nhơn Phong',
-            description: 'Tỉ lệ thưởng hấp dẫn cho người mới',
+            description: 'Nơi hội tụ của những bậc tiền bố',
             color: 'from-yellow-500 to-yellow-700',
             icon: '🟡',
             bgColor: 'bg-yellow-50',
@@ -26,7 +26,7 @@ const ChonThaiPage: React.FC = () => {
         {
             id: 'hoai-nhon',
             name: 'Thai Hoài Nhơn',
-            description: 'Điểm đến của những cao thủ',
+            description: 'Địa danh truyền thống với nhiều người chơi',
             color: 'from-blue-500 to-blue-700',
             icon: '🔵',
             bgColor: 'bg-blue-50',

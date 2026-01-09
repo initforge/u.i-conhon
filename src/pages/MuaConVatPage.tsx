@@ -41,16 +41,10 @@ interface CartItem extends Animal {
 }
 
 const MuaConVatPage: React.FC = () => {
-    const [animals, setAnimals] = useState<Animal[]>(generateAnimals());
+    const [animals] = useState<Animal[]>(generateAnimals());
     const [cart, setCart] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [hasLikedShared, setHasLikedShared] = useState(false);
-
-    const handleLikeAnimal = (animalId: string) => {
-        setAnimals(animals.map(a =>
-            a.id === animalId ? { ...a, liked: !a.liked } : a
-        ));
-    };
 
     const handleAddToCart = (animal: Animal) => {
         if (!hasLikedShared) return;
@@ -149,16 +143,6 @@ const MuaConVatPage: React.FC = () => {
                                 <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
                                     {animal.number}
                                 </div>
-
-                                {/* Like Button */}
-                                <button
-                                    onClick={() => handleLikeAnimal(animal.id)}
-                                    className="absolute top-2 right-2 z-20"
-                                >
-                                    <span className={animal.liked ? 'text-red-500' : 'text-gray-300'}>
-                                        {animal.liked ? '❤️' : '🤍'}
-                                    </span>
-                                </button>
 
                                 {/* Emoji */}
                                 <div className="text-4xl text-center mb-2 mt-4">

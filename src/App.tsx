@@ -23,13 +23,14 @@ import HoTroPage from './pages/HoTroPage'
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
-import AdminDonHang from './pages/admin/AdminDonHang'
-import AdminConVat from './pages/admin/AdminConVat'
-import AdminNguoiChoi from './pages/admin/AdminNguoiChoi'
+import AdminOrders from './pages/admin/AdminOrders'
+import AdminAnimals from './pages/admin/AdminAnimals'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminKetQua from './pages/admin/AdminKetQua'
 import AdminBaoCao from './pages/admin/AdminBaoCao'
 import AdminCMS from './pages/admin/AdminCMS'
 import AdminNhiemVuMXH from './pages/admin/AdminNhiemVuMXH'
-import AdminCaiDat from './pages/admin/AdminCaiDat'
+import AdminTime from './pages/admin/AdminTime'
 
 function App() {
   return (
@@ -63,13 +64,14 @@ function App() {
               {/* Admin routes with AdminLayout */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
-                <Route path="don-hang" element={<AdminDonHang />} />
-                <Route path="con-vat" element={<AdminConVat />} />
-                <Route path="nguoi-choi" element={<AdminNguoiChoi />} />
+                <Route path="don-hang" element={<AdminOrders />} />
+                <Route path="con-vat" element={<AdminAnimals />} />
+                <Route path="nguoi-choi" element={<AdminUsers />} />
                 <Route path="bao-cao" element={<AdminBaoCao />} />
+                <Route path="ket-qua" element={<AdminKetQua />} />
                 <Route path="cms" element={<AdminCMS />} />
                 <Route path="nhiem-vu-mxh" element={<AdminNhiemVuMXH />} />
-                <Route path="cai-dat" element={<AdminCaiDat />} />
+                <Route path="cai-dat" element={<AdminTime />} />
               </Route>
 
               {/* Catch all */}
