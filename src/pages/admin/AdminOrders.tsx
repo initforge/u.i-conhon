@@ -1,10 +1,141 @@
 import React, { useState } from 'react';
 import { mockOrders, mockUsers, mockThais, mockAnimals } from '../../mock-data/mockData';
-import AdminPageWrapper, { AdminCard, StatusBadge } from '../../components/AdminPageWrapper';
+import AdminPageWrapper, { AdminCard, StatusBadge, AdminButton } from '../../components/AdminPageWrapper';
+
+interface OrderDetailModalProps {
+  order: typeof mockOrders[0];
+  onClose: () => void;
+}
+
+const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) => {
+  const user = mockUsers.find((u) => u.id === order.userId);
+  const thai = mockThais.find((t) => t.id === order.thaiId);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200" style={{ backgroundColor: '#faf8f5' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🛒</span>
+            <div>
+              <h3 className="font-bold" style={{ color: '#3d3428' }}>Chi tiết đơn hàng</h3>
+              <p className="text-xs" style={{ color: '#9a8c7a' }}>#{order.id}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Order Info */}
+        <div className="p-4 border-b border-gray-100" style={{ backgroundColor: '#fefcf9' }}>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="text-gray-500">Khách hàng:</span>
+              <div className="font-medium" style={{ color: '#3d3428' }}>{user?.zaloName || 'N/A'}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Thai:</span>
+              <div className="font-medium" style={{ color: '#3d3428' }}>{thai?.name || 'N/A'}</div>
+            </div>
+            <div>
+              <span className="text-gray-500">Ngày đặt:</span>
+              <div className="font-medium" style={{ color: '#3d3428' }}>
+                {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+              </div>
+            </div>
+            <div>
+              <span className="text-gray-500">Trạng thái:</span>
+              <div className="mt-0.5">
+                <StatusBadge
+                  status={
+                    order.status === 'completed' ? 'success'
+                      : order.status === 'paid' ? 'info'
+                        : 'warning'
+                  }
+                >
+                  {order.status === 'completed' ? 'Hoàn tất'
+                    : order.status === 'paid' ? 'Đã thanh toán'
+                      : 'Chờ thanh toán'}
+                </StatusBadge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Items List - Cart Style */}
+        <div className="p-4 max-h-[300px] overflow-y-auto">
+          <h4 className="text-sm font-medium mb-3" style={{ color: '#6b5c4c' }}>
+            Danh sách con vật ({order.items.length} con)
+          </h4>
+          <div className="space-y-3">
+            {order.items.map((item) => {
+              const animal = mockAnimals.find((a) => a.id === item.animalId);
+              return (
+                <div
+                  key={item.animalId}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-100"
+                  style={{ backgroundColor: '#faf8f5' }}
+                >
+                  {/* Animal Image/Icon */}
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center text-xl"
+                    style={{ backgroundColor: '#fee2e2' }}
+                  >
+                    🐾
+                  </div>
+
+                  {/* Animal Info */}
+                  <div className="flex-1">
+                    <div className="font-bold text-sm" style={{ color: '#991b1b' }}>
+                      {animal?.name || 'N/A'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {item.price.toLocaleString('vi-VN')}đ x {item.quantity}
+                    </div>
+                  </div>
+
+                  {/* Subtotal */}
+                  <div className="text-right">
+                    <div className="font-bold" style={{ color: '#991b1b' }}>
+                      {(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Total */}
+        <div className="p-4 border-t border-gray-200" style={{ backgroundColor: '#faf8f5' }}>
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-medium" style={{ color: '#6b5c4c' }}>Tổng cộng:</span>
+            <span className="text-2xl font-bold" style={{ color: '#991b1b' }}>
+              {order.total.toLocaleString('vi-VN')}đ
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="p-4 border-t border-gray-100 flex gap-2">
+          <AdminButton variant="secondary" onClick={onClose} className="flex-1">
+            Đóng
+          </AdminButton>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AdminOrders: React.FC = () => {
   const [selectedThai, setSelectedThai] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedOrder, setSelectedOrder] = useState<typeof mockOrders[0] | null>(null);
 
   // Only show paid and completed orders
   const paidOrders = mockOrders.filter((order) =>
@@ -83,6 +214,7 @@ const AdminOrders: React.FC = () => {
                 <th className="text-left p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Sản phẩm</th>
                 <th className="text-right p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Tổng tiền</th>
                 <th className="text-center p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Trạng thái</th>
+                <th className="text-center p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -120,7 +252,7 @@ const AdminOrders: React.FC = () => {
                               className="px-2 py-0.5 rounded text-xs"
                               style={{ backgroundColor: '#f5f2ed', color: '#6b5c4c' }}
                             >
-                              {animal?.name}
+                              {animal?.name} x{item.quantity}
                             </span>
                           );
                         })}
@@ -147,6 +279,15 @@ const AdminOrders: React.FC = () => {
                             : 'Chờ TT'}
                       </StatusBadge>
                     </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+                        style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}
+                      >
+                        👁️ Chi tiết
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -161,6 +302,14 @@ const AdminOrders: React.FC = () => {
           </div>
         )}
       </AdminCard>
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
+      )}
     </AdminPageWrapper>
   );
 };
