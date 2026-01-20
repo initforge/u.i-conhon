@@ -165,7 +165,7 @@ const HomePage: React.FC = () => {
                   </p>
                 </div>
                 <Link
-                  to="/mua-con-vat"
+                  to="/dang-nhap"
                   className="btn-primary text-lg px-8 py-4 inline-flex items-center space-x-2"
                 >
                   <span>{GAME_CONFIG.PLAY_BUTTON_TEXT}</span>
@@ -542,7 +542,7 @@ const HomePage: React.FC = () => {
                   <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{GAME_CONFIG.getExamplePrize().toLocaleString('vi-VN')}đ</span>
                 </p>
                 <Link
-                  to="/mua-con-vat"
+                  to="/dang-nhap"
                   className="btn-primary"
                 >
                   Đặt tịch
@@ -637,7 +637,8 @@ const HomePage: React.FC = () => {
                       <div className="absolute top-1 left-1 md:top-2 md:left-2">
                         <p className="text-[0.6rem] md:text-xs font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{animal.order}. {animal.alias}</p>
                       </div>
-                      <h4 className="text-sm md:text-lg text-font mb-1 md:mb-2 mt-6 md:mt-8" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif", fontWeight: 400 }}>
+                      {/* Name prominently displayed */}
+                      <h4 className="text-sm md:text-lg font-bold mt-6 md:mt-8" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>
                         {animal.name}
                       </h4>
                       {/* Animal Image */}

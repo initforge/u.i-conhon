@@ -38,7 +38,7 @@ const BottomNavBar: React.FC = () => {
     {
       icon: '/assets/logo-moi.jpg',
       label: 'CHƠI NGAY',
-      link: '/mua-con-vat',
+      link: '/dang-nhap',
       isLogo: true
     },
     {
