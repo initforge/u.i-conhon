@@ -160,12 +160,12 @@ const HomePage: React.FC = () => {
                   <p className="font-bold mb-2" style={{ fontSize: '1.5rem', lineHeight: '1.2', color: '#b2012f' }}>
                     Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}
                   </p>
-                  <p className="text-sm" style={{ color: '#6b5c4c' }}>
+                  <p className="text-sm font-semibold" style={{ color: '#b91c1c' }}>
                     Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70
                   </p>
                 </div>
                 <Link
-                  to="/chon-thai"
+                  to="/mua-con-vat"
                   className="btn-primary text-lg px-8 py-4 inline-flex items-center space-x-2"
                 >
                   <span>{GAME_CONFIG.PLAY_BUTTON_TEXT}</span>
@@ -533,7 +533,7 @@ const HomePage: React.FC = () => {
                   <p className="font-bold mb-1" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
                     <strong>Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}</strong>
                   </p>
-                  <p className="text-xs" style={{ color: '#6b5c4c', fontFamily: "'Nunito', sans-serif" }}>
+                  <p className="text-xs font-semibold" style={{ color: '#b91c1c', fontFamily: "'Nunito', sans-serif" }}>
                     Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70
                   </p>
                 </div>
@@ -542,7 +542,7 @@ const HomePage: React.FC = () => {
                   <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{GAME_CONFIG.getExamplePrize().toLocaleString('vi-VN')}đ</span>
                 </p>
                 <Link
-                  to="/chon-thai"
+                  to="/mua-con-vat"
                   className="btn-primary"
                 >
                   Đặt tịch
