@@ -25,7 +25,7 @@ const UserNavHeader: React.FC = () => {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2">
-                        <img src="/assets/logo-co-nhon.svg" alt="Logo" className="h-10 w-10" />
+                        <img src="/assets/logo-moi.jpg" alt="Logo" className="h-10 w-10" />
                         <span className="font-bold text-red-700 hidden md:block">Cổ Nhơn</span>
                     </Link>
 
@@ -36,8 +36,8 @@ const UserNavHeader: React.FC = () => {
                                 key={item.path}
                                 to={item.path}
                                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${isActive(item.path)
-                                        ? 'bg-red-100 text-red-700'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
                                 {item.label}
@@ -76,8 +76,8 @@ const UserNavHeader: React.FC = () => {
                                 to={item.path}
                                 onClick={() => setIsMenuOpen(false)}
                                 className={`block px-4 py-3 font-medium transition-colors ${isActive(item.path)
-                                        ? 'bg-red-100 text-red-700'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
                                 {item.label}

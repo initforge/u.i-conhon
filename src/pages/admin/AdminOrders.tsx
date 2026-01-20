@@ -246,13 +246,14 @@ const AdminOrders: React.FC = () => {
                       <div className="flex flex-wrap gap-1">
                         {order.items.slice(0, 2).map((item) => {
                           const animal = mockAnimals.find((a) => a.id === item.animalId);
+                          const itemTotal = item.price * item.quantity;
                           return (
                             <span
                               key={item.animalId}
                               className="px-2 py-0.5 rounded text-xs"
                               style={{ backgroundColor: '#f5f2ed', color: '#6b5c4c' }}
                             >
-                              {animal?.name} x{item.quantity}
+                              {animal?.name}: {itemTotal.toLocaleString('vi-VN')}đ
                             </span>
                           );
                         })}

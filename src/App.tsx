@@ -29,7 +29,6 @@ import AdminUsers from './pages/admin/AdminUsers'
 import AdminKetQua from './pages/admin/AdminKetQua'
 import AdminBaoCao from './pages/admin/AdminBaoCao'
 import AdminCMS from './pages/admin/AdminCMS'
-import AdminNhiemVuMXH from './pages/admin/AdminNhiemVuMXH'
 import AdminTime from './pages/admin/AdminTime'
 
 function App() {
@@ -70,7 +69,6 @@ function App() {
                 <Route path="bao-cao" element={<AdminBaoCao />} />
                 <Route path="ket-qua" element={<AdminKetQua />} />
                 <Route path="cms" element={<AdminCMS />} />
-                <Route path="nhiem-vu-mxh" element={<AdminNhiemVuMXH />} />
                 <Route path="cai-dat" element={<AdminTime />} />
               </Route>
 

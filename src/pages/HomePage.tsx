@@ -148,7 +148,7 @@ const HomePage: React.FC = () => {
                 style={{ width: '15%', minWidth: '60px', maxWidth: '150px' }}
               />
               <h1 className="section-title mb-4 text-xl md:text-2xl" style={{ fontWeight: 400, color: '#B20801' }}>
-                CỔ NHƠN ONLINE
+                CỔ NHƠN AN NHƠN BÌNH ĐỊNH ONLINE
               </h1>
             </div>
 
@@ -156,24 +156,12 @@ const HomePage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-8">
               {/* Left: Text */}
               <div className="text-center">
-                <h2 className="section-title mb-4 text-xl md:text-2xl" style={{ fontWeight: 400, color: '#b2012f' }}>
-                  {GAME_CONFIG.GAME_TITLE}
-                </h2>
-                <p className="text-lg font-normal mb-4" style={{ color: 'rgb(35, 35, 35)' }}>
-                  <strong>Từ <span style={{ color: '#b2012f' }}>{GAME_CONFIG.GAME_START}</span> đến <span style={{ color: '#b2012f' }}>{GAME_CONFIG.GAME_END}</span></strong>
-                </p>
-                <p className="text-justify mb-4" style={{ color: 'rgb(35, 35, 35)' }}>
-                  Cổ Nhơn là trò chơi dân gian độc đáo của Hoài Nhơn, thường được tổ chức vào ngày Tết. Người chơi dựa vào câu thai để suy luận và dự đoán đáp án là 1 trong số 36 con vật. Với yếu tố giải trí, thử thách trí tuệ và cơ hội nhận thưởng hấp dẫn, Cổ Nhơn mang đậm giá trị văn hóa truyền thống, nay được tái hiện trực tuyến tiện lợi, phù hợp cho mọi lứa tuổi.
-                </p>
-                <p className="font-normal mb-4" style={{ fontSize: '1.1rem', color: '#b2012f' }}>
-                  Vui Xuân Cổ Nhơn - Nhận Lộc ngày tết!
-                </p>
                 <div className="mb-6">
-                  <p className="font-bold mb-2" style={{ fontSize: '1.5rem', lineHeight: '0.75', color: '#b2012f' }}>
+                  <p className="font-bold mb-2" style={{ fontSize: '1.5rem', lineHeight: '1.2', color: '#b2012f' }}>
                     Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}
                   </p>
-                  <p className="font-bold" style={{ fontSize: '1.5rem', lineHeight: '0.75', color: '#b2012f' }}>
-                    {GAME_CONFIG.SPECIAL_PRIZE_RATIO_TEXT}
+                  <p className="text-sm" style={{ color: '#6b5c4c' }}>
+                    Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70
                   </p>
                 </div>
                 <Link
@@ -224,7 +212,7 @@ const HomePage: React.FC = () => {
                   Cổ Nhơn - Trò chơi dân gian độc đáo ở Bình Định
                 </h3>
 
-                <div className="space-y-4 text-gray-700 leading-relaxed">
+                <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
                   <p>
                     Cổ Nhơn là một trò chơi trong dịp tết âm lịch của người dân H.Hoài Nhơn và Thị Xã An Nhơn (Bình Định),
                     bắt đầu vào khoảng 25 tháng chạp âm lịch kéo dài đến khoảng chiều mùng 9 tết.
@@ -240,13 +228,25 @@ const HomePage: React.FC = () => {
                     <h4 className="font-bold text-tet-red-700 mb-2">🎊 Háo hức chờ... Cổ Nhơn</h4>
                     <p className="text-sm">
                       Về Hoài Nhơn và An Nhơn chừng 25 tết trở đi, mọi người không chỉ bắt đầu tất bật dọn dẹp, trang hoàng nhà cửa
-                      mà còn nôn nao một tâm trạng khác. Ai cũng háo hức chờ đợi Cổ Nhơn như chờ đợi hội làng dịp tết.
+                      mà còn nôn nao một tâm trạng khác. Thanh niên lập nghiệp ở tỉnh xa về quê đón tết, sau phần tay bắt mặt mừng
+                      bà con hàng xóm là những cái vỗ vai "chuẩn bị Cổ Nhơn nào…". Ai cũng háo hức chờ đợi Cổ Nhơn như chờ đợi hội làng dịp tết.
                     </p>
                   </div>
 
                   <p>
                     Người chơi Cổ Nhơn không phân biệt tầng lớp, tuổi tác, trình độ học vấn... Hình ảnh một cậu bé hăng say lý giải
                     suy đoán của mình và một cụ ông đeo kính ngồi chiêm nghiệm, cân nhắc lựa chọn ấy đã trở nên rất quen thuộc ở nơi đây.
+                  </p>
+
+                  <p className="italic text-gray-600 text-sm">
+                    Nói về lý do Cổ Nhơn thu hút đông đảo người chơi trong dịp tết, nhà nghiên cứu Lộc Xuyên Đặng Quý Địch cho biết:
+                    "Giới doanh nhân thì muốn thử vận may đầu năm mới, giới trí thức thì muốn thử khả năng bàn luận, suy đoán của mình,
+                    trẻ em thì xem đây là một trò chơi đông vui trong dịp đầu xuân".
+                  </p>
+
+                  <p className="text-sm">
+                    "Có Cổ Nhơn ngày tết rạo rực hẳn lên, không có buồn lắm mà mình cũng chẳng biết làm gì, đi đâu",
+                    anh Nguyễn Ngọc Tuân 36 tuổi ở An Nhơn, bày tỏ.
                   </p>
                 </div>
               </div>
@@ -257,25 +257,32 @@ const HomePage: React.FC = () => {
                   <h4 className="text-xl font-bold text-tet-red-700 mb-4 flex items-center">
                     <span className="text-2xl mr-2">📜</span> Đi tìm gốc tích Cổ Nhơn
                   </h4>
-                  <p className="text-gray-700 leading-relaxed">
-                    Theo nhà nghiên cứu Đặng Quý Địch, trò chơi Cổ Nhơn đã xuất hiện khoảng thời nhà Nguyễn do du nhập từ bên ngoài.
-                    Khi về Việt Nam, cụ thể là ở Hoài Nhơn và An Nhơn Bình Định, Cổ Nhơn đã phát triển, biến hóa thành một trò chơi
-                    tao nhã trong dịp tết cho mọi tầng lớp người dân.
-                  </p>
+                  <div className="space-y-3 text-gray-700 leading-relaxed text-sm">
+                    <p>
+                      Theo nhà nghiên cứu Đặng Quý Địch, trò chơi Cổ Nhơn đã xuất hiện khoảng thời nhà Nguyễn do du nhập từ bên ngoài.
+                      Khi về Việt Nam, cụ thể là ở Hoài Nhơn và An Nhơn Bình Định, Cổ Nhơn đã phát triển, biến hóa thành một trò chơi
+                      tao nhã trong dịp tết cho mọi tầng lớp người dân.
+                    </p>
+                    <p>
+                      Tỷ lệ chiến thắng 1 đồng nhận 25 đồng ở huyện Hoài Nhơn, còn ở An Nhơn thì tỉ lệ chiến thắng 1 đồng nhận 29 đồng.
+                      Tính đến nay, Cổ Nhơn Hoài Nhơn và An Nhơn đã truyền qua nhiều đời hội chủ,
+                      nhưng chỉ khoảng 20 năm trở lại đây mới thật sự phát triển rộng rãi, lan tỏa đến từng ngóc ngách ở thôn quê.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="bg-gradient-to-r from-tet-red-700 to-tet-red-800 rounded-2xl p-6 text-white shadow-lg">
                   <h4 className="text-xl font-bold mb-4 flex items-center">
-                    <span className="text-2xl mr-2">🎯</span> Cách chơi
+                    <span className="text-2xl mr-2">🎯</span> Cách chơi Cổ Nhơn
                   </h4>
-                  <ul className="space-y-2 text-red-100">
+                  <ul className="space-y-2 text-red-100 text-sm">
                     <li className="flex items-start">
                       <span className="mr-2">•</span>
-                      <span>Mỗi đề là 4 câu thơ lục bát (câu thai)</span>
+                      <span>Mỗi đề là 4 câu thơ lục bát (câu thai) - Hoài Nhơn</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">•</span>
-                      <span>Người chơi suy luận để đoán 1 trong 40 con vật</span>
+                      <span>Người chơi suy luận để đoán 1 trong 36 con (Hoài Nhơn) hoặc 40 con (An Nhơn)</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">•</span>
@@ -283,36 +290,51 @@ const HomePage: React.FC = () => {
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">•</span>
-                      <span>Kết quả công bố minh bạch tại cây nêu</span>
+                      <span>Kết quả công bố minh bạch tại cây nêu cao hơn 5m</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Đóng tịch lúc 16h30</span>
                     </li>
                   </ul>
                 </div>
 
-                {/* Newspaper Links - Admin managed */}
+                {/* Newspaper Links - Real articles */}
                 <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
                   <h4 className="text-lg font-bold text-yellow-800 mb-4 flex items-center">
                     <span className="text-2xl mr-2">📰</span> Bài báo tham khảo
                   </h4>
                   <div className="space-y-3">
-                    <a href="#" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                    <a href="https://thanhnien.vn/tro-choi-dan-gian-co-nhon-185240201170847567.htm" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
                           <span>📄</span>
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors">Cổ Nhơn - Nét đẹp văn hóa Tết</p>
-                          <p className="text-xs text-gray-500">Báo Bình Định</p>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Trò chơi dân gian Cổ Nhơn</p>
+                          <p className="text-xs text-gray-500">Thanh Niên Online</p>
                         </div>
                       </div>
                     </a>
-                    <a href="#" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                    <a href="https://laodong.vn/van-hoa-giai-tri/nhan-nha-choi-tro-co-nhon-ngay-tet-1157857.ldo" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
                           <span>📄</span>
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors">Trò chơi dân gian Hoài Nhơn</p>
-                          <p className="text-xs text-gray-500">Thanh Niên Online</p>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Nhàn nhã chơi trò Cổ Nhơn ngày Tết</p>
+                          <p className="text-xs text-gray-500">Báo Lao Động</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a href="https://vtcnews.vn/tro-choi-dan-gian-co-nhon-thu-hut-nguoi-dan-binh-dinh-dip-tet-ar123456.html" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
+                          <span>📄</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Cổ Nhơn thu hút người dân Bình Định</p>
+                          <p className="text-xs text-gray-500">VTC News</p>
                         </div>
                       </div>
                     </a>
@@ -508,14 +530,11 @@ const HomePage: React.FC = () => {
                 <p className="text-font mb-4 text-4xl md:text-6xl" style={{ fontWeight: 500, color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>16h30</p>
                 <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>Còn lại: <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>0 giờ 0 phút 0 giây</span></p>
                 <div className="mb-4">
-                  <p className="font-bold mb-2" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
+                  <p className="font-bold mb-1" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
                     <strong>Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}</strong>
                   </p>
-                  <p className="font-bold mb-2" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
-                    <strong>{GAME_CONFIG.SPECIAL_PRIZE_RATIO_TEXT}</strong>
-                  </p>
-                  <p className="font-bold" style={{ fontSize: '1rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
-                    <strong>{GAME_CONFIG.HOAI_NHON_SPECIAL_TEXT}</strong>
+                  <p className="text-xs" style={{ color: '#6b5c4c', fontFamily: "'Nunito', sans-serif" }}>
+                    Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70
                   </p>
                 </div>
                 <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>
@@ -621,9 +640,18 @@ const HomePage: React.FC = () => {
                       <h4 className="text-sm md:text-lg text-font mb-1 md:mb-2 mt-6 md:mt-8" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif", fontWeight: 400 }}>
                         {animal.name}
                       </h4>
-                      {/* Animal Image Placeholder */}
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-2 md:p-4 h-24 md:h-48 flex items-center justify-center mb-1 md:mb-2 mt-2 md:mt-4">
-                        <p className="text-tet-red-700 text-[0.6rem] md:text-xs font-medium">Hình {animal.name}</p>
+                      {/* Animal Image */}
+                      <div className="rounded-lg h-24 md:h-48 flex items-center justify-center mb-1 md:mb-2 mt-2 md:mt-4 overflow-hidden">
+                        <img
+                          src={`/assets/conhon/${String(animal.order).padStart(2, '0')}.jpg`}
+                          alt={animal.name}
+                          className="w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = `<p class="text-tet-red-700 text-[0.6rem] md:text-xs font-medium">Hình ${animal.name}</p>`;
+                          }}
+                        />
                       </div>
                     </div>
                   );

@@ -18,84 +18,124 @@ const BottomNavBar: React.FC = () => {
 
   const navItems = [
     {
-      icon: '/assets/decorations/ket-qua.png',
-      label: 'KẾT QUẢ XỔ',
+      icon: '🏆',
+      label: 'KẾT QUẢ',
       sectionId: 'ket-qua',
       link: '/ket-qua'
     },
     {
-      icon: '/assets/decorations/cau-thai.png',
-      label: 'CẦU THAI MỚI',
+      icon: '📜',
+      label: 'CẦU THAI',
       sectionId: 'cau-thai',
       link: '/cau-thai'
     },
     {
-      icon: '/assets/logo-co-nhon.svg',
+      icon: '🎴',
+      label: 'Ý NGHĨA',
+      sectionId: 'y-nghia',
+      link: '/#y-nghia'
+    },
+    {
+      icon: '/assets/logo-moi.jpg',
       label: 'CHƠI NGAY',
-      link: '/',
+      link: '/chon-thai',
       isLogo: true
     },
     {
-      icon: '/assets/decorations/huong-dan-icon.png',
+      icon: '📺',
+      label: 'VIDEO',
+      sectionId: 'hinh-anh-video',
+      link: '/#hinh-anh-video'
+    },
+    {
+      icon: '📖',
       label: 'HƯỚNG DẪN',
       link: '/huong-dan'
     },
     {
-      icon: '/assets/decorations/ho-tro.png',
-      label: 'HỖ TRỢ ZALO',
+      icon: '💬',
+      label: 'HỖ TRỢ',
       link: '/lien-he'
     },
   ];
 
   const renderIcon = (item: typeof navItems[0], isActive: boolean) => {
     if (item.isLogo) {
-      // Logo button: Yellow square with red circular badge containing text
+      // Center logo - premium gold ring design
       return (
-        <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center mb-1 shadow-md">
-          <div className="w-10 h-10 bg-red-700 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xs" style={{ fontSize: '0.6rem', lineHeight: '1' }}>
-              CỔ<br />NHƠN
-            </span>
+        <div className="relative -mt-4">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)',
+              padding: '3px'
+            }}
+          >
+            <div className="w-full h-full rounded-full overflow-hidden bg-white">
+              <img
+                src={item.icon as string}
+                alt="Cổ Nhơn"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
+          {/* Glow effect */}
+          <div
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              boxShadow: '0 0 20px rgba(251, 191, 36, 0.4)'
+            }}
+          />
         </div>
       );
     }
 
+    // Regular nav items - red theme
     return (
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-1 ${isActive ? 'bg-red-600' : 'bg-gray-700'
-        }`}>
-        <img
-          src={item.icon}
-          alt={item.label}
-          className="w-7 h-7 object-contain"
-          style={{
-            // Không dùng filter để giữ màu gốc của icon
-            objectFit: 'contain'
-          }}
-          onError={(e) => {
-            // Fallback nếu icon không load được
-            console.error('Icon failed to load:', item.icon);
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
+      <div
+        className={`w-9 h-9 rounded-xl flex items-center justify-center mb-0.5 transition-all duration-200 ${isActive
+            ? 'bg-gradient-to-br from-red-500 to-red-700 shadow-md scale-105'
+            : 'bg-gradient-to-br from-red-600/80 to-red-800/80'
+          }`}
+      >
+        <span className="text-lg">{item.icon}</span>
       </div>
     );
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-50 md:hidden shadow-lg">
-      <div className="flex justify-around items-center h-20 px-1">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+      style={{
+        background: 'linear-gradient(180deg, #1f1f1f 0%, #0f0f0f 100%)',
+        borderTop: '1px solid rgba(185, 28, 28, 0.5)',
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)'
+      }}
+    >
+      {/* Decorative top border */}
+      <div
+        className="absolute top-0 left-0 right-0 h-0.5"
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, #991b1b 20%, #fbbf24 50%, #991b1b 80%, transparent 100%)'
+        }}
+      />
+
+      <div className="flex justify-around items-end h-16 px-1 pb-1">
         {navItems.map((item, index) => {
           const isActive = location.pathname === item.link ||
             Boolean(item.sectionId && location.pathname === '/' && document.getElementById(item.sectionId));
 
           const content = (
-            <>
+            <div className={`flex flex-col items-center ${item.isLogo ? 'justify-start' : 'justify-center'}`}>
               {renderIcon(item, isActive)}
-              <span className="text-xs font-bold text-center leading-tight text-white" style={{ fontSize: '0.7rem', lineHeight: '1.1' }}>
+              <span
+                className={`font-semibold text-center leading-none transition-colors ${isActive ? 'text-yellow-400' : 'text-gray-300'
+                  } ${item.isLogo ? 'mt-0.5' : ''}`}
+                style={{ fontSize: '0.5rem' }}
+              >
                 {item.label}
               </span>
-            </>
+            </div>
           );
 
           if (item.sectionId) {
@@ -103,7 +143,7 @@ const BottomNavBar: React.FC = () => {
               <button
                 key={index}
                 onClick={() => handleScrollToSection(item.sectionId!, item.link)}
-                className="flex flex-col items-center justify-center flex-1 h-full transition-colors"
+                className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105"
               >
                 {content}
               </button>
@@ -114,7 +154,7 @@ const BottomNavBar: React.FC = () => {
             <Link
               key={index}
               to={item.link}
-              className="flex flex-col items-center justify-center flex-1 h-full transition-colors"
+              className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105"
             >
               {content}
             </Link>
@@ -126,4 +166,3 @@ const BottomNavBar: React.FC = () => {
 };
 
 export default BottomNavBar;
-

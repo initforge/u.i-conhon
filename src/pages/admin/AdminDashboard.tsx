@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
 
-const AdminDashboard: React.FC = () => {
-  const [timeFilter, setTimeFilter] = useState('this-tet');
-  const [selectedDate, setSelectedDate] = useState('');
+const mockThais = [
+  { id: 'thai-1', name: 'Thai Sáng' },
+  { id: 'thai-2', name: 'Thai Trưa' },
+  { id: 'thai-3', name: 'Thai Chiều' },
+];
 
-  // Mock data
-  const stats = {
-    todayRevenue: 15600000,
-    totalOrders: 52,
-    todayOrders: 12,
+const AdminDashboard: React.FC = () => {
+  const [timeFilter, setTimeFilter] = useState('all');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedThai, setSelectedThai] = useState('all');
+
+  // Mock data - varies by thai
+  const getStats = () => {
+    const multiplier = selectedThai === 'thai-1' ? 0.4 : selectedThai === 'thai-2' ? 0.3 : selectedThai === 'thai-3' ? 0.3 : 1;
+    return {
+      todayRevenue: Math.round(15600000 * multiplier),
+      totalOrders: Math.round(52 * multiplier),
+      todayOrders: Math.round(12 * multiplier),
+    };
   };
+  const stats = getStats();
 
   const topBought = [
-    { rank: 1, name: 'Rồng', emoji: '🐉', count: 156, amount: 4680000 },
-    { rank: 2, name: 'Hổ', emoji: '🐅', count: 134, amount: 4020000 },
+    { rank: 1, name: 'Rồng Bay', emoji: '🐉', count: 156, amount: 4680000 },
+    { rank: 2, name: 'Cọp', emoji: '🐅', count: 134, amount: 4020000 },
     { rank: 3, name: 'Ngựa', emoji: '🐴', count: 98, amount: 2940000 },
     { rank: 4, name: 'Mèo', emoji: '🐱', count: 87, amount: 2610000 },
     { rank: 5, name: 'Rắn', emoji: '🐍', count: 76, amount: 2280000 },
@@ -21,32 +32,24 @@ const AdminDashboard: React.FC = () => {
 
   const leastBought = [
     { rank: 1, name: 'Tôm', emoji: '🦐', count: 3, amount: 90000 },
-    { rank: 2, name: 'Nhím', emoji: '🦔', count: 5, amount: 150000 },
+    { rank: 2, name: 'Hòn Đá', emoji: '🪨', count: 5, amount: 150000 },
     { rank: 3, name: 'Bướm', emoji: '🦋', count: 7, amount: 210000 },
     { rank: 4, name: 'Ong', emoji: '🐝', count: 9, amount: 270000 },
-    { rank: 5, name: 'Sóc', emoji: '🐿️', count: 11, amount: 330000 },
+    { rank: 5, name: 'Cú', emoji: '🦉', count: 11, amount: 330000 },
   ];
 
   return (
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Tổng quan</h1>
         <p className="text-gray-600">Tổng quan hệ thống Cổ Nhơn</p>
       </div>
 
-      {/* Time Filter */}
+      {/* Filters */}
       <div className="mb-6 flex flex-wrap items-center gap-4">
+        {/* Time Filter */}
         <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
-          <button
-            onClick={() => { setTimeFilter('this-tet'); setSelectedDate(''); }}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${timeFilter === 'this-tet'
-              ? 'bg-white shadow-md text-amber-700'
-              : 'text-gray-600 hover:bg-gray-200'
-              }`}
-          >
-            Dịp Tết
-          </button>
           <button
             onClick={() => setTimeFilter('by-date')}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${timeFilter === 'by-date'
@@ -67,7 +70,7 @@ const AdminDashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* Date Picker - only show when "Theo ngày" is selected */}
+        {/* Date Picker */}
         {timeFilter === 'by-date' && (
           <input
             type="date"
@@ -76,6 +79,31 @@ const AdminDashboard: React.FC = () => {
             className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-200"
           />
         )}
+
+        {/* Thai Filter */}
+        <div className="flex gap-2 p-1 bg-amber-50 rounded-xl">
+          <button
+            onClick={() => setSelectedThai('all')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedThai === 'all'
+              ? 'bg-white shadow-md text-amber-700'
+              : 'text-amber-600 hover:bg-amber-100'
+              }`}
+          >
+            Tất cả Thai
+          </button>
+          {mockThais.map((thai) => (
+            <button
+              key={thai.id}
+              onClick={() => setSelectedThai(thai.id)}
+              className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
+                ? 'bg-white shadow-md text-amber-700'
+                : 'text-amber-600 hover:bg-amber-100'
+                }`}
+            >
+              {thai.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -30,7 +30,7 @@ const UserLayout: React.FC = () => {
                     <div className="flex items-center justify-between">
                         {/* Logo */}
                         <Link to="/" className="flex items-center space-x-2">
-                            <img src="/assets/logo-co-nhon.svg" alt="Logo" className="h-8 w-8" />
+                            <img src="/assets/logo-moi.jpg" alt="Logo" className="h-8 w-8" />
                             <span className="font-bold text-red-700 hidden md:block">Cổ Nhơn</span>
                         </Link>
 

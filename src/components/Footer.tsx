@@ -5,7 +5,7 @@ const Footer: React.FC = () => {
   return (
     <>
       {/* HÌNH ẢNH VÀ VIDEO THAM KHẢO Section */}
-      <section className="bg-gradient-to-r from-tet-red-800 to-tet-red-900 py-10">
+      <section id="hinh-anh-video" className="bg-gradient-to-r from-tet-red-800 to-tet-red-900 py-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
@@ -18,46 +18,58 @@ const Footer: React.FC = () => {
           {/* Carousel Container */}
           <div className="relative overflow-hidden">
             <div className="flex gap-4 animate-scroll-left">
-              {/* Media Items */}
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div key={item} className="flex-shrink-0 w-64 md:w-80">
+              {/* Media Items - Real Images */}
+              {[
+                { img: '/assets/gallery/1_hoi_tu.png', title: 'Hội tụ ngày Tết', desc: 'Người dân quây quần dịp lễ hội' },
+                { img: '/assets/gallery/2_cau_thai.png', title: 'Đọc Câu Thai', desc: 'Nghệ nhân giải thích câu thai' },
+                { img: '/assets/gallery/3_cay_neu.png', title: 'Cây Nêu Cổ Nhơn', desc: 'Hộp bí mật treo trên cây nêu' },
+                { img: '/assets/gallery/4_mua_tich.png', title: 'Mua Tịch', desc: 'Người chơi đặt cược tại quầy' },
+                { img: '/assets/gallery/5_con_vat.png', title: '36 Con Đề', desc: 'Bảng danh vật truyền thống' },
+                { img: '/assets/gallery/6_xo_thuong.png', title: 'Giây Phút Xổ Thưởng', desc: 'Niềm vui chiến thắng' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex-shrink-0 w-64 md:w-80">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
                     <div className="relative aspect-video bg-gray-100">
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-100 to-orange-100">
-                        <div className="text-center p-4">
-                          <span className="text-4xl mb-2 block">🖼️</span>
-                          <p className="text-gray-500 text-sm">Hình ảnh {item}</p>
-                        </div>
-                      </div>
+                      <img
+                        src={item.img}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
-                        <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity">▶</span>
+                        <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
                       </div>
                     </div>
                     <div className="p-3">
-                      <h4 className="font-semibold text-gray-800 text-sm line-clamp-1">Cổ Nhơn mùa Tết 2025</h4>
-                      <p className="text-xs text-gray-500">Video tham khảo</p>
+                      <h4 className="font-semibold text-gray-800 text-sm line-clamp-1">{item.title}</h4>
+                      <p className="text-xs text-gray-500">{item.desc}</p>
                     </div>
                   </div>
                 </div>
               ))}
               {/* Duplicate for seamless loop */}
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div key={`dup-${item}`} className="flex-shrink-0 w-64 md:w-80">
+              {[
+                { img: '/assets/gallery/1_hoi_tu.png', title: 'Hội tụ ngày Tết', desc: 'Người dân quây quần dịp lễ hội' },
+                { img: '/assets/gallery/2_cau_thai.png', title: 'Đọc Câu Thai', desc: 'Nghệ nhân giải thích câu thai' },
+                { img: '/assets/gallery/3_cay_neu.png', title: 'Cây Nêu Cổ Nhơn', desc: 'Hộp bí mật treo trên cây nêu' },
+                { img: '/assets/gallery/4_mua_tich.png', title: 'Mua Tịch', desc: 'Người chơi đặt cược tại quầy' },
+                { img: '/assets/gallery/5_con_vat.png', title: '36 Con Đề', desc: 'Bảng danh vật truyền thống' },
+                { img: '/assets/gallery/6_xo_thuong.png', title: 'Giây Phút Xổ Thưởng', desc: 'Niềm vui chiến thắng' },
+              ].map((item, idx) => (
+                <div key={`dup-${idx}`} className="flex-shrink-0 w-64 md:w-80">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
                     <div className="relative aspect-video bg-gray-100">
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-100 to-orange-100">
-                        <div className="text-center p-4">
-                          <span className="text-4xl mb-2 block">📹</span>
-                          <p className="text-gray-500 text-sm">Video {item}</p>
-                        </div>
-                      </div>
+                      <img
+                        src={item.img}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
-                        <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity">▶</span>
+                        <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
                       </div>
                     </div>
                     <div className="p-3">
-                      <h4 className="font-semibold text-gray-800 text-sm line-clamp-1">Hoạt động Cổ Nhơn</h4>
-                      <p className="text-xs text-gray-500">Hình ảnh tham khảo</p>
+                      <h4 className="font-semibold text-gray-800 text-sm line-clamp-1">{item.title}</h4>
+                      <p className="text-xs text-gray-500">{item.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -82,7 +94,7 @@ const Footer: React.FC = () => {
             <div className="text-center md:text-left">
               <h3 className="footer-title mb-4" style={{ color: '#333333' }}>Về Cổ Nhơn</h3>
               <p className="text-sm text-red-200">
-                Trò chơi dân gian truyền thống của vùng Hoài Nhơn, Bình Định
+                Trò chơi dân gian truyền thống của vùng Hoài Nhơn An Nhơn, Bình Định
               </p>
             </div>
 

@@ -13,7 +13,7 @@ const HoTroPage: React.FC = () => {
         { q: 'Làm sao để chơi Cổ Nhơn?', a: 'Chọn Thai → Đăng ký → Like/Share bài viết → Chọn con vật → Thanh toán → Chờ kết quả' },
         { q: 'Khi nào công bố kết quả?', a: 'Thai An Nhơn và Thai Nhơn Phong: 11h, 17h. Riêng Thai An Nhơn từ mùng 1 Tết có thêm 21h. Thai Hoài Nhơn: 13h và 19h' },
         { q: 'Tiền thưởng được chuyển khi nào?', a: 'Tiền thưởng sẽ được chuyển vào tài khoản ngân hàng của bạn trong vòng 1-2 giờ sau khi xổ.' },
-        { q: 'Tỉ lệ thưởng là bao nhiêu?', a: 'Tỉ lệ thưởng 1 chung 30. Ví dụ: Mua 30.000đ trúng 900.000đ.' },
+        { q: 'Tỉ lệ thưởng là bao nhiêu?', a: 'Tỉ lệ thưởng 1 chung 30. Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70. Ví dụ: Mua 30.000đ trúng 900.000đ.' },
         { q: 'Đơn hàng được xác nhận như thế nào?', a: 'Tự động xác nhận đơn hàng khi KH ck thành công. KH chỉ cần chụp lại đơn hàng.' },
     ];
 

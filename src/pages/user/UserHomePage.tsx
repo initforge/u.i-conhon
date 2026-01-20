@@ -48,7 +48,7 @@ const UserHomePage: React.FC = () => {
                 }}
             >
                 <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
-                    <img src="/assets/logo-co-nhon.svg" className="w-64 h-64" alt="" />
+                    <img src="/assets/logo-moi.jpg" className="w-64 h-64" alt="" />
                 </div>
                 <div className="relative z-10">
                     <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">

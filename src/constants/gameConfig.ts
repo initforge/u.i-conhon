@@ -2,12 +2,9 @@
 export const GAME_CONFIG = {
   // Prize ratios
   PRIZE_RATIO: 30, // 1 ăn 30
-  SPECIAL_PRIZE_RATIO: 70, // Chí Cao (Con Trùn) 1 ăn 70
 
   // Prize ratio text
   PRIZE_RATIO_TEXT: '1 chung 30',
-  SPECIAL_PRIZE_RATIO_TEXT: 'Chí Cao (Con Trùn) chung 70',
-  HOAI_NHON_SPECIAL_TEXT: 'Riêng thai Hoài Nhơn, Chí Cao (Con Trùn) chung 70',
 
   // Example calculation
   EXAMPLE_BET: 10000, // 10.000đ
@@ -22,6 +19,9 @@ export const GAME_CONFIG = {
   GAME_YEAR: '2025',
   GAME_TITLE: 'Tết Ất Tỵ 2025',
 
+  // Đóng tịch time
+  CLOSE_TIME: '16h30',
+
   // Thai time slots
   THAI_AN_NHON_TIMES: ['11h', '17h'],
   THAI_AN_NHON_TET_EXTRA: '21h',
@@ -29,4 +29,3 @@ export const GAME_CONFIG = {
   THAI_NHON_PHONG_TET_EXTRA: '20:30',
   THAI_HOAI_NHON_TIMES: ['13h', '19h'],
 } as const;
-

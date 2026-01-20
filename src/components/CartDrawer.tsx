@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 interface CartItem {
     id: string;
     name: string;
-    emoji: string;
-    price: number;
-    quantity: number;
+    alias: string;
+    number: number;
+    amount: number;
 }
 
 interface CartDrawerProps {
@@ -14,10 +14,13 @@ interface CartDrawerProps {
     onClose: () => void;
     items: CartItem[];
     onRemove: (id: string) => void;
+    onUpdateAmount: (id: string, newAmount: number) => void;
     totalPrice: number;
 }
 
-const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemove, totalPrice }) => {
+const PRICE_STEP = 10000;
+
+const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemove, onUpdateAmount, totalPrice }) => {
     if (!isOpen) return null;
 
     return (
@@ -55,16 +58,40 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemov
                                     key={item.id}
                                     className="flex items-center space-x-3 bg-gray-50 rounded-lg p-3"
                                 >
-                                    <span className="text-3xl">{item.emoji}</span>
-                                    <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                                        <p className="text-sm text-gray-500">
-                                            {item.price.toLocaleString()}đ x {item.quantity}
-                                        </p>
+                                    {/* Animal Image */}
+                                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                                        <img
+                                            src={`/assets/conhon/${String(item.number).padStart(2, '0')}.jpg`}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.parentElement!.innerHTML = `<span class="text-2xl flex items-center justify-center w-full h-full bg-red-100">${item.number}</span>`;
+                                            }}
+                                        />
                                     </div>
-                                    <p className="font-bold text-red-600">
-                                        {(item.price * item.quantity).toLocaleString()}đ
-                                    </p>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-800 text-sm">{item.number}. {item.name}</h3>
+                                        <p className="text-xs text-gray-500">{item.alias}</p>
+                                    </div>
+                                    {/* Amount with +/- */}
+                                    <div className="flex items-center space-x-1">
+                                        <button
+                                            onClick={() => onUpdateAmount(item.id, item.amount - PRICE_STEP)}
+                                            className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300"
+                                        >
+                                            −
+                                        </button>
+                                        <span className="text-sm font-bold text-red-600 w-16 text-center">
+                                            {item.amount.toLocaleString()}đ
+                                        </span>
+                                        <button
+                                            onClick={() => onUpdateAmount(item.id, item.amount + PRICE_STEP)}
+                                            className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
                                     <button
                                         onClick={() => onRemove(item.id)}
                                         className="p-1 text-gray-400 hover:text-red-600"
@@ -96,7 +123,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemov
                             Mua thêm
                         </button>
                         <Link
-                            to="/thanh-toan"
+                            to="/user/thanh-toan"
                             className="flex-1 py-3 bg-red-600 text-white text-center rounded-lg font-semibold hover:bg-red-700"
                         >
                             Thanh toán

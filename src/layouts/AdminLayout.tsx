@@ -19,14 +19,13 @@ const AdminLayout: React.FC = () => {
     }
 
     const menuItems = [
-        { path: '/admin', icon: '📊', label: 'Dashboard', exact: true },
+        { path: '/admin', icon: '📊', label: 'Tổng quan', exact: true },
         { path: '/admin/don-hang', icon: '📦', label: 'Đơn hàng' },
         { path: '/admin/con-vat', icon: '🐾', label: 'Con vật' },
         { path: '/admin/nguoi-choi', icon: '👥', label: 'Người chơi' },
         { path: '/admin/bao-cao', icon: '📈', label: 'Báo cáo' },
         { path: '/admin/ket-qua', icon: '🎯', label: 'Kết quả xổ' },
-        { path: '/admin/cms', icon: '📄', label: 'CMS' },
-        { path: '/admin/nhiem-vu-mxh', icon: '🔗', label: 'Nhiệm vụ MXH' },
+        { path: '/admin/cms', icon: '💬', label: 'Quản lý cộng đồng' },
         { path: '/admin/cai-dat', icon: '⚙️', label: 'Cài đặt' },
     ];
 
@@ -61,7 +60,7 @@ const AdminLayout: React.FC = () => {
                         <div className="flex items-center space-x-3 group cursor-pointer">
                             <div className="relative group-hover:scale-105 transition-transform duration-300">
                                 <img
-                                    src="/assets/logo-co-nhon.svg"
+                                    src="/assets/logo-moi.jpg"
                                     alt="Cổ Nhơn"
                                     className="h-9 w-9"
                                 />
@@ -197,7 +196,7 @@ const AdminLayout: React.FC = () => {
                                 }}
                             >
                                 <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/3 -translate-y-1/3 pointer-events-none">
-                                    <img src="/assets/logo-co-nhon.svg" className="w-24 h-24" alt="" />
+                                    <img src="/assets/logo-moi.jpg" className="w-24 h-24" alt="" />
                                 </div>
                                 <span className="text-xs font-semibold text-red-800 relative z-10">🎋 Cổ Nhơn System</span>
                                 <p className="text-[10px] text-red-500 mt-1 relative z-10">Version 1.0.0</p>

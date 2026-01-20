@@ -1,27 +1,55 @@
 import React, { useState } from 'react';
 import CartDrawer from '../components/CartDrawer';
 
-// Mock data for 40 animals
+// Mock data for 40 animals - Đúng thứ tự từ Cá Trắng (1) đến Ông Táo (40)
 const generateAnimals = () => {
-    const animalNames = [
-        'Chuột', 'Trâu', 'Hổ', 'Mèo', 'Rồng', 'Rắn', 'Ngựa', 'Dê', 'Khỉ', 'Gà',
-        'Chó', 'Heo', 'Voi', 'Sư tử', 'Báo', 'Gấu', 'Thỏ', 'Rùa', 'Cá', 'Chim',
-        'Công', 'Hạc', 'Phượng', 'Lân', 'Cọp', 'Bò', 'Nai', 'Hươu', 'Sóc', 'Nhím',
-        'Cáo', 'Sói', 'Đại bàng', 'Quạ', 'Thiên nga', 'Vịt', 'Ngỗng', 'Ong', 'Bướm', 'Tôm'
+    const animalData = [
+        { name: 'Cá Trắng', alias: 'Chiếm Khôi' },
+        { name: 'Ốc', alias: 'Bản Quế' },
+        { name: 'Ngỗng', alias: 'Vinh Sanh' },
+        { name: 'Công', alias: 'Phùng Xuân' },
+        { name: 'Trùn', alias: 'Chí Cao' },
+        { name: 'Cọp', alias: 'Khôn Sơn' },
+        { name: 'Heo', alias: 'Chánh Thuận' },
+        { name: 'Thỏ', alias: 'Nguyệt Bửu' },
+        { name: 'Trâu', alias: 'Hớn Vân' },
+        { name: 'Rồng Bay', alias: 'Giang Từ' },
+        { name: 'Chó', alias: 'Phước Tôn' },
+        { name: 'Ngựa', alias: 'Quang Minh' },
+        { name: 'Voi', alias: 'Hữu Tài' },
+        { name: 'Mèo', alias: 'Chỉ Đắc' },
+        { name: 'Chuột', alias: 'Tất Khắc' },
+        { name: 'Ong', alias: 'Mậu Lâm' },
+        { name: 'Hạc', alias: 'Trọng Tiên' },
+        { name: 'Kỳ Lân', alias: 'Thiên Thân' },
+        { name: 'Bướm', alias: 'Cấn Ngọc' },
+        { name: 'Hòn Đá', alias: 'Trân Châu' },
+        { name: 'Én', alias: 'Thượng Chiêu' },
+        { name: 'Cú', alias: 'Song Đồng' },
+        { name: 'Khỉ', alias: 'Tam Hòe' },
+        { name: 'Ếch', alias: 'Hiệp Hải' },
+        { name: 'Quạ', alias: 'Cửu Quan' },
+        { name: 'Rồng Nằm', alias: 'Thái Bình' },
+        { name: 'Rùa', alias: 'Hỏa Diệm' },
+        { name: 'Gà', alias: 'Nhựt Thăng' },
+        { name: 'Lươn', alias: 'Địa Lương' },
+        { name: 'Cá Đỏ', alias: 'Tỉnh Lợi' },
+        { name: 'Tôm', alias: 'Trường Thọ' },
+        { name: 'Rắn', alias: 'Vạn Kim' },
+        { name: 'Nhện', alias: 'Thanh Tiền' },
+        { name: 'Nai', alias: 'Nguyên Kiết' },
+        { name: 'Dê', alias: 'Nhứt Phẩm' },
+        { name: 'Yêu', alias: 'An Sỹ' },
+        { name: 'Ông Trời', alias: 'Thiên Quân' },
+        { name: 'Ông Địa', alias: 'Địa Chủ' },
+        { name: 'Thần Tài', alias: 'Tài Thần' },
+        { name: 'Ông Táo', alias: 'Táo Quân' },
     ];
 
-    const emojis = [
-        '🐭', '🐃', '🐅', '🐱', '🐉', '🐍', '🐴', '🐐', '🐵', '🐔',
-        '🐕', '🐷', '🐘', '🦁', '🐆', '🐻', '🐰', '🐢', '🐟', '🐦',
-        '🦚', '🦢', '🦅', '🦄', '🐯', '🐂', '🦌', '🦌', '🐿️', '🦔',
-        '🦊', '🐺', '🦅', '🐦‍⬛', '🦢', '🦆', '🦆', '🐝', '🦋', '🦐'
-    ];
-
-    return animalNames.map((name, index) => ({
+    return animalData.map((animal, index) => ({
         id: `animal-${index + 1}`,
-        name,
-        emoji: emojis[index],
-        price: 30000,
+        name: animal.name,
+        alias: animal.alias,
         number: index + 1,
         liked: false
     }));
@@ -30,35 +58,60 @@ const generateAnimals = () => {
 interface Animal {
     id: string;
     name: string;
-    emoji: string;
-    price: number;
+    alias: string;
     number: number;
     liked: boolean;
 }
 
 interface CartItem extends Animal {
-    quantity: number;
+    amount: number; // Số tiền người chơi muốn mua
 }
 
 const MuaConVatPage: React.FC = () => {
     const [animals] = useState<Animal[]>(generateAnimals());
     const [cart, setCart] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const [hasLikedShared, setHasLikedShared] = useState(false);
+    const [hasLikedShared, setHasLikedShared] = useState(true); // Mặc định true cho demo
+    const [inputAmounts, setInputAmounts] = useState<{ [key: string]: number }>({});
+
+    const PRICE_STEP = 10000; // 10,000đ mỗi bước
+    const MIN_AMOUNT = 10000;
+
+    const handleInputChange = (animalId: string, value: string) => {
+        const numValue = parseInt(value.replace(/[^0-9]/g, '')) || 0;
+        // Round to nearest 10000
+        const roundedValue = Math.round(numValue / PRICE_STEP) * PRICE_STEP;
+        setInputAmounts(prev => ({ ...prev, [animalId]: roundedValue }));
+    };
+
+    const handleIncrement = (animalId: string) => {
+        const currentAmount = inputAmounts[animalId] || 0;
+        setInputAmounts(prev => ({ ...prev, [animalId]: currentAmount + PRICE_STEP }));
+    };
+
+    const handleDecrement = (animalId: string) => {
+        const currentAmount = inputAmounts[animalId] || 0;
+        if (currentAmount >= PRICE_STEP) {
+            setInputAmounts(prev => ({ ...prev, [animalId]: currentAmount - PRICE_STEP }));
+        }
+    };
 
     const handleAddToCart = (animal: Animal) => {
-        if (!hasLikedShared) return;
+        const amount = inputAmounts[animal.id] || 0;
+        if (amount < MIN_AMOUNT) return;
 
         const existingItem = cart.find(item => item.id === animal.id);
         if (existingItem) {
             setCart(cart.map(item =>
                 item.id === animal.id
-                    ? { ...item, quantity: item.quantity + 1 }
+                    ? { ...item, amount: item.amount + amount }
                     : item
             ));
         } else {
-            setCart([...cart, { ...animal, quantity: 1 }]);
+            setCart([...cart, { ...animal, amount }]);
         }
+        // Reset input after adding
+        setInputAmounts(prev => ({ ...prev, [animal.id]: 0 }));
         setIsCartOpen(true);
     };
 
@@ -66,17 +119,27 @@ const MuaConVatPage: React.FC = () => {
         setCart(cart.filter(item => item.id !== animalId));
     };
 
+    const handleUpdateCartAmount = (animalId: string, newAmount: number) => {
+        if (newAmount <= 0) {
+            handleRemoveFromCart(animalId);
+        } else {
+            setCart(cart.map(item =>
+                item.id === animalId
+                    ? { ...item, amount: newAmount }
+                    : item
+            ));
+        }
+    };
+
     const handleDoLikeShare = () => {
-        // Mock: Open Facebook in new tab
         window.open('https://facebook.com', '_blank');
-        // After 1 second, mark as done (mock)
         setTimeout(() => {
             setHasLikedShared(true);
         }, 1000);
     };
 
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const totalItems = cart.length;
+    const totalPrice = cart.reduce((sum, item) => sum + item.amount, 0);
 
     return (
         <div className="bg-gradient-to-b from-red-50 to-white min-h-screen">
@@ -122,57 +185,93 @@ const MuaConVatPage: React.FC = () => {
             {/* Animals Grid */}
             <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-4">
-                    {animals.map((animal) => (
-                        <div
-                            key={animal.id}
-                            className={`relative bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${!hasLikedShared ? 'opacity-60' : ''
-                                }`}
-                        >
-                            {/* Overlay if not liked/shared */}
-                            {!hasLikedShared && (
-                                <div className="absolute inset-0 bg-gray-900/50 z-10 flex items-center justify-center p-2">
-                                    <p className="text-white text-xs text-center font-medium">
-                                        Vui lòng Like/Share
+                    {animals.map((animal) => {
+                        const currentAmount = inputAmounts[animal.id] || 0;
+                        return (
+                            <div
+                                key={animal.id}
+                                className={`relative bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${!hasLikedShared ? 'opacity-60' : ''
+                                    }`}
+                            >
+                                {/* Overlay if not liked/shared */}
+                                {!hasLikedShared && (
+                                    <div className="absolute inset-0 bg-gray-900/50 z-10 flex items-center justify-center p-2">
+                                        <p className="text-white text-xs text-center font-medium">
+                                            Vui lòng Like/Share
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Animal Card */}
+                                <div className="p-3">
+                                    {/* Number Badge */}
+                                    <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                                        {animal.number}
+                                    </div>
+
+                                    {/* Animal Image */}
+                                    <div className="w-full h-16 md:h-20 flex items-center justify-center mb-2 mt-4 overflow-hidden rounded-lg">
+                                        <img
+                                            src={`/assets/conhon/${String(animal.number).padStart(2, '0')}.jpg`}
+                                            alt={animal.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                            }}
+                                        />
+                                    </div>
+
+                                    {/* Name */}
+                                    <h3 className="text-sm font-bold text-center text-gray-800 mb-0.5">
+                                        {animal.name}
+                                    </h3>
+                                    <p className="text-xs text-center text-gray-500 mb-2">
+                                        {animal.alias}
                                     </p>
+
+                                    {/* Price Input - Cho phép người dùng tự nhập */}
+                                    <div className="flex items-center justify-center mb-2 space-x-1">
+                                        <button
+                                            onClick={() => handleDecrement(animal.id)}
+                                            disabled={!hasLikedShared || currentAmount < PRICE_STEP}
+                                            className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300 disabled:opacity-50"
+                                        >
+                                            −
+                                        </button>
+                                        <input
+                                            type="text"
+                                            value={currentAmount > 0 ? currentAmount.toLocaleString() : ''}
+                                            onChange={(e) => handleInputChange(animal.id, e.target.value)}
+                                            placeholder="0"
+                                            disabled={!hasLikedShared}
+                                            className="w-16 text-center text-xs font-semibold border border-gray-300 rounded px-1 py-1 focus:outline-none focus:border-red-500"
+                                        />
+                                        <button
+                                            onClick={() => handleIncrement(animal.id)}
+                                            disabled={!hasLikedShared}
+                                            className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300 disabled:opacity-50"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                    <p className="text-[10px] text-center text-gray-400 mb-1">Bước: 10,000đ</p>
+
+                                    {/* Add Button */}
+                                    <button
+                                        onClick={() => handleAddToCart(animal)}
+                                        disabled={!hasLikedShared || currentAmount < MIN_AMOUNT}
+                                        className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors ${hasLikedShared && currentAmount >= MIN_AMOUNT
+                                            ? 'bg-red-600 text-white hover:bg-red-700'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        ➕ Thêm
+                                    </button>
                                 </div>
-                            )}
-
-                            {/* Animal Card */}
-                            <div className="p-3">
-                                {/* Number Badge */}
-                                <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                                    {animal.number}
-                                </div>
-
-                                {/* Emoji */}
-                                <div className="text-4xl text-center mb-2 mt-4">
-                                    {animal.emoji}
-                                </div>
-
-                                {/* Name */}
-                                <h3 className="text-sm font-bold text-center text-gray-800 mb-1">
-                                    {animal.name}
-                                </h3>
-
-                                {/* Price */}
-                                <p className="text-xs text-center text-red-600 font-semibold mb-2">
-                                    {animal.price.toLocaleString()}đ
-                                </p>
-
-                                {/* Add Button */}
-                                <button
-                                    onClick={() => handleAddToCart(animal)}
-                                    disabled={!hasLikedShared}
-                                    className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors ${hasLikedShared
-                                        ? 'bg-red-600 text-white hover:bg-red-700'
-                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        }`}
-                                >
-                                    ➕ Thêm
-                                </button>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
@@ -182,6 +281,7 @@ const MuaConVatPage: React.FC = () => {
                 onClose={() => setIsCartOpen(false)}
                 items={cart}
                 onRemove={handleRemoveFromCart}
+                onUpdateAmount={handleUpdateCartAmount}
                 totalPrice={totalPrice}
             />
         </div>
