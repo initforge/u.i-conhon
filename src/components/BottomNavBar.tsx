@@ -18,19 +18,19 @@ const BottomNavBar: React.FC = () => {
 
   const navItems = [
     {
-      icon: '🏆',
+      icon: '/assets/nav-icons/ketqua.png',
       label: 'KẾT QUẢ',
       sectionId: 'ket-qua',
       link: '/ket-qua'
     },
     {
-      icon: '📜',
+      icon: '/assets/nav-icons/cauthai.png',
       label: 'CẦU THAI',
       sectionId: 'cau-thai',
       link: '/cau-thai'
     },
     {
-      icon: '🎴',
+      icon: '/assets/nav-icons/ynghia.svg',
       label: 'Ý NGHĨA',
       sectionId: 'y-nghia',
       link: '/#y-nghia'
@@ -42,18 +42,18 @@ const BottomNavBar: React.FC = () => {
       isLogo: true
     },
     {
-      icon: '📺',
+      icon: '/assets/nav-icons/video.svg',
       label: 'VIDEO',
       sectionId: 'hinh-anh-video',
       link: '/#hinh-anh-video'
     },
     {
-      icon: '📖',
+      icon: '/assets/nav-icons/huongdan.svg',
       label: 'HƯỚNG DẪN',
       link: '/huong-dan'
     },
     {
-      icon: '💬',
+      icon: '/assets/nav-icons/hotro.svg',
       label: 'HỖ TRỢ',
       link: '/lien-he'
     },
@@ -73,7 +73,7 @@ const BottomNavBar: React.FC = () => {
           >
             <div className="w-full h-full rounded-full overflow-hidden bg-white">
               <img
-                src={item.icon as string}
+                src={item.icon}
                 alt="Cổ Nhơn"
                 className="w-full h-full object-cover"
               />
@@ -90,15 +90,19 @@ const BottomNavBar: React.FC = () => {
       );
     }
 
-    // Regular nav items - red theme
+    // Regular nav items - custom icons with red background
     return (
       <div
-        className={`w-9 h-9 rounded-xl flex items-center justify-center mb-0.5 transition-all duration-200 ${isActive
-            ? 'bg-gradient-to-br from-red-500 to-red-700 shadow-md scale-105'
-            : 'bg-gradient-to-br from-red-600/80 to-red-800/80'
+        className={`w-9 h-9 rounded-xl flex items-center justify-center mb-0.5 transition-all duration-200 overflow-hidden ${isActive
+            ? 'bg-gradient-to-br from-red-500 to-red-700 shadow-md scale-105 ring-2 ring-yellow-400'
+            : 'bg-gradient-to-br from-red-600/90 to-red-800/90'
           }`}
       >
-        <span className="text-lg">{item.icon}</span>
+        <img
+          src={item.icon}
+          alt={item.label}
+          className="w-7 h-7 object-contain"
+        />
       </div>
     );
   };
@@ -107,20 +111,20 @@ const BottomNavBar: React.FC = () => {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
       style={{
-        background: 'linear-gradient(180deg, #1f1f1f 0%, #0f0f0f 100%)',
-        borderTop: '1px solid rgba(185, 28, 28, 0.5)',
-        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)'
+        background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)',
+        borderTop: '1px solid rgba(185, 28, 28, 0.4)',
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)'
       }}
     >
-      {/* Decorative top border */}
+      {/* Decorative top border - red to gold gradient */}
       <div
         className="absolute top-0 left-0 right-0 h-0.5"
         style={{
-          background: 'linear-gradient(90deg, transparent 0%, #991b1b 20%, #fbbf24 50%, #991b1b 80%, transparent 100%)'
+          background: 'linear-gradient(90deg, transparent 0%, #991b1b 15%, #fbbf24 50%, #991b1b 85%, transparent 100%)'
         }}
       />
 
-      <div className="flex justify-around items-end h-16 px-1 pb-1">
+      <div className="flex justify-around items-end h-16 px-0.5 pb-1">
         {navItems.map((item, index) => {
           const isActive = location.pathname === item.link ||
             Boolean(item.sectionId && location.pathname === '/' && document.getElementById(item.sectionId));
@@ -143,7 +147,7 @@ const BottomNavBar: React.FC = () => {
               <button
                 key={index}
                 onClick={() => handleScrollToSection(item.sectionId!, item.link)}
-                className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105"
+                className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105 active:scale-95"
               >
                 {content}
               </button>
@@ -154,7 +158,7 @@ const BottomNavBar: React.FC = () => {
             <Link
               key={index}
               to={item.link}
-              className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105"
+              className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105 active:scale-95"
             >
               {content}
             </Link>
