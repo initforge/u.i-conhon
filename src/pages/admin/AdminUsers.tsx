@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockUsers, mockOrders, mockThais } from '../../mock-data/mockData';
+import { mockUsers, mockOrders, mockThais, mockAnimals } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminCard, StatusBadge, StatCard, AdminButton } from '../../components/AdminPageWrapper';
 
 const AdminUsers: React.FC = () => {
@@ -62,13 +62,13 @@ const AdminUsers: React.FC = () => {
                             key={thai.id}
                             onClick={() => setSelectedThai(thai.id)}
                             className={`flex-1 min-w-[100px] px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
-                                    ? 'bg-white shadow-md text-amber-700'
-                                    : 'text-gray-600 hover:bg-gray-200'
+                                ? 'bg-white shadow-md text-amber-700'
+                                : 'text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             <span className={`w-2 h-2 rounded-full inline-block mr-2 ${thai.color === 'green' ? 'bg-green-500' :
-                                    thai.color === 'yellow' ? 'bg-yellow-500' :
-                                        thai.color === 'blue' ? 'bg-blue-500' : 'bg-gray-400'
+                                thai.color === 'yellow' ? 'bg-yellow-500' :
+                                    thai.color === 'blue' ? 'bg-blue-500' : 'bg-gray-400'
                                 }`}></span>
                             {thai.name}
                         </button>
@@ -195,18 +195,30 @@ const AdminUsers: React.FC = () => {
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>Lịch sử tịch</p>
-                                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                                                {userOrders.slice(0, 5).map((order) => (
-                                                    <div key={order.id} className="flex justify-between items-center p-2 rounded" style={{ backgroundColor: '#faf8f5' }}>
-                                                        <span className="text-xs" style={{ color: '#6b5c4c' }}>{getThaiName(order.thaiId)}</span>
-                                                        <div className="text-right">
-                                                            <span className="text-xs font-medium" style={{ color: '#a5673f' }}>{order.total.toLocaleString('vi-VN')} đ</span>
-                                                            <StatusBadge status={order.status === 'completed' ? 'success' : order.status === 'paid' ? 'info' : 'warning'}>
-                                                                {order.status === 'completed' ? '✓' : order.status === 'paid' ? 'TT' : '⏳'}
-                                                            </StatusBadge>
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                {userOrders.slice(0, 5).map((order) => {
+                                                    // Get animal names from order items
+                                                    const animalNames = order.items.map((item) => {
+                                                        const animal = mockAnimals.find((a) => a.id === item.animalId);
+                                                        return animal?.name || 'N/A';
+                                                    }).join(', ');
+                                                    return (
+                                                        <div key={order.id} className="p-2 rounded" style={{ backgroundColor: '#faf8f5' }}>
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className="text-xs font-medium" style={{ color: '#6b5c4c' }}>{getThaiName(order.thaiId)}</span>
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-xs font-medium" style={{ color: '#a5673f' }}>{order.total.toLocaleString('vi-VN')} đ</span>
+                                                                    <StatusBadge status={order.status === 'completed' ? 'success' : order.status === 'paid' ? 'info' : 'warning'}>
+                                                                        {order.status === 'completed' ? '✓' : order.status === 'paid' ? 'TT' : '⏳'}
+                                                                    </StatusBadge>
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-xs" style={{ color: '#991b1b' }}>
+                                                                🐾 {animalNames}
+                                                            </p>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     </div>
