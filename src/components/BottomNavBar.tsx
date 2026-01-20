@@ -43,7 +43,7 @@ const BottomNavBar: React.FC = () => {
     },
     {
       icon: '/assets/nav-icons/video.svg',
-      label: 'VIDEO',
+      label: 'HÌNH ẢNH',
       sectionId: 'hinh-anh-video',
       link: '/#hinh-anh-video'
     },
@@ -61,31 +61,22 @@ const BottomNavBar: React.FC = () => {
 
   const renderIcon = (item: typeof navItems[0], isActive: boolean) => {
     if (item.isLogo) {
-      // Center logo - premium gold ring design
+      // Center logo - simple gold border, no background
       return (
-        <div className="relative -mt-4">
+        <div className="relative -mt-3">
           <div
-            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg overflow-hidden"
+            className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)',
-              padding: '3px'
+              border: '2px solid #fbbf24',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
             }}
           >
-            <div className="w-full h-full rounded-full overflow-hidden bg-white">
-              <img
-                src={item.icon}
-                alt="Cổ Nhơn"
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <img
+              src={item.icon}
+              alt="Cổ Nhơn"
+              className="w-full h-full object-cover"
+            />
           </div>
-          {/* Glow effect */}
-          <div
-            className="absolute inset-0 rounded-full pointer-events-none"
-            style={{
-              boxShadow: '0 0 20px rgba(251, 191, 36, 0.4)'
-            }}
-          />
         </div>
       );
     }
@@ -94,8 +85,8 @@ const BottomNavBar: React.FC = () => {
     return (
       <div
         className={`w-9 h-9 rounded-xl flex items-center justify-center mb-0.5 transition-all duration-200 overflow-hidden ${isActive
-            ? 'bg-gradient-to-br from-red-500 to-red-700 shadow-md scale-105 ring-2 ring-yellow-400'
-            : 'bg-gradient-to-br from-red-600/90 to-red-800/90'
+          ? 'bg-gradient-to-br from-red-500 to-red-700 shadow-md scale-105 ring-2 ring-yellow-400'
+          : 'bg-gradient-to-br from-red-600/90 to-red-800/90'
           }`}
       >
         <img

@@ -99,3 +99,10 @@ body {
     background-color: #faf8f5;
     /* Cream background */
 }
+
+/* Mobile bottom padding to scroll past fixed nav bar */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 70px;
+    }
+}
