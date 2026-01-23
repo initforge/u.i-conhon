@@ -49,8 +49,23 @@ const bodyPartMapping: Record<number, { bodyPart: string; column: string }> = {
   30: { bodyPart: 'lá cờ', column: 'BÊN PHẢI' },
 };
 
+// Nhóm con vật
+const animalGroups = [
+  { id: 'tu-trang-nguyen', name: 'Tứ trạng nguyên', orders: [1, 2, 3, 4] },
+  { id: 'ngu-ho-tuong', name: 'Ngũ hổ tướng', orders: [5, 6, 7, 8, 9] },
+  { id: 'that-sinh-ly', name: 'Thất sinh lý', orders: [10, 11, 12, 13, 14, 15, 16] },
+  { id: 'nhi-dao-si', name: 'Nhị đạo sĩ', orders: [17, 18] },
+  { id: 'tu-my-nu', name: 'Tứ mỹ nữ', orders: [19, 20, 21, 22] },
+  { id: 'tu-hao-mang', name: 'Tứ hảo mạng', orders: [23, 24, 25, 26] },
+  { id: 'tu-hoa-thuong', name: 'Tứ hòa thượng', orders: [27, 28, 29, 30] },
+  { id: 'ngu-khat-thuc', name: 'Ngũ khất thực', orders: [31, 32, 33, 34, 35] },
+  { id: 'nhat-ni-co', name: 'Nhất ni cô', orders: [36] },
+  { id: 'tu-than-linh', name: 'Tứ thần linh', orders: [37, 38, 39, 40] },
+];
+
 const AdminKetQua: React.FC = () => {
   const [selectedThai, setSelectedThai] = useState('an-nhon');
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [ketQuas, setKetQuas] = useState(mockKetQuas);
   const [formData, setFormData] = useState({
     thaiId: mockThais[0]?.id || '',
@@ -64,6 +79,9 @@ const AdminKetQua: React.FC = () => {
     { id: 'nhon-phong', name: 'Nhơn Phong', thaiId: 'thai-nhon-phong' },
     { id: 'hoai-nhon', name: 'Hoài Nhơn', thaiId: 'thai-hoai-nhon' },
   ];
+
+  // Available years
+  const availableYears = [2025, 2024, 2023, 2022, 2021];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +146,49 @@ const AdminKetQua: React.FC = () => {
   };
 
   const yearGroups = groupByYear();
+
+  // Thống kê theo nhóm cho năm được chọn
+  const getGroupStatistics = () => {
+    if (!selectedYear) return [];
+
+    const yearKetQuas = filteredKetQuas.filter(kq =>
+      new Date(kq.date).getFullYear() === selectedYear
+    );
+
+    return animalGroups.map(group => {
+      let count = 0;
+      const animalCounts: Record<number, number> = {};
+
+      yearKetQuas.forEach(kq => {
+        kq.winningAnimalIds.forEach(animalId => {
+          const animal = mockAnimals.find(a => a.id === animalId);
+          if (animal && group.orders.includes(animal.order)) {
+            count++;
+            animalCounts[animal.order] = (animalCounts[animal.order] || 0) + 1;
+          }
+        });
+      });
+
+      const animalsInGroup = group.orders.map(order => {
+        const animal = mockAnimals.find(a => a.order === order);
+        return {
+          order,
+          name: animal?.name || '',
+          count: animalCounts[order] || 0
+        };
+      });
+
+      return {
+        ...group,
+        totalCount: count,
+        animals: animalsInGroup
+      };
+    }).sort((a, b) => b.totalCount - a.totalCount);
+  };
+
+  const groupStats = getGroupStatistics();
+  const mostDrawnGroup = groupStats[0];
+  const leastDrawnGroup = groupStats[groupStats.length - 1];
 
   return (
     <AdminPageWrapper
@@ -289,6 +350,118 @@ const AdminKetQua: React.FC = () => {
             )}
           </div>
         </AdminCard>
+      </div>
+
+      {/* Year Selector at Bottom */}
+      <div className="mt-6 bg-white rounded-xl shadow-md p-6">
+        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <span>📅</span>
+          <span>Chọn năm để xem thống kê NHÓM</span>
+        </h3>
+        <div className="flex flex-wrap gap-2 mb-6">
+          {availableYears.map(year => (
+            <button
+              key={year}
+              onClick={() => setSelectedYear(selectedYear === year ? null : year)}
+              className={`px-6 py-3 rounded-lg font-semibold text-sm transition-all ${selectedYear === year
+                ? 'bg-amber-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+            >
+              Năm {year}
+            </button>
+          ))}
+        </div>
+
+        {/* Group Statistics */}
+        {selectedYear ? (
+          <div>
+            {/* Summary Cards - Always show both side by side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Most Drawn Group - Green */}
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <h4 className="font-bold text-green-800 mb-2">🔥 Nhóm xổ nhiều nhất</h4>
+                {mostDrawnGroup ? (
+                  <>
+                    <p className="text-2xl font-bold text-green-700">{mostDrawnGroup.name}</p>
+                    <p className="text-sm text-green-600">{mostDrawnGroup.totalCount} lần xổ</p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {mostDrawnGroup.animals.filter(a => a.count > 0).length > 0
+                        ? mostDrawnGroup.animals.filter(a => a.count > 0).map(a => (
+                          <span key={a.order} className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
+                            {a.name} ({a.count})
+                          </span>
+                        ))
+                        : <span className="text-xs text-green-600">Chưa có dữ liệu</span>
+                      }
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-gray-500">Chưa có dữ liệu</p>
+                )}
+              </div>
+
+              {/* Least Drawn Group - Red */}
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <h4 className="font-bold text-red-800 mb-2">❄️ Nhóm xổ ít nhất</h4>
+                {leastDrawnGroup ? (
+                  <>
+                    <p className="text-2xl font-bold text-red-700">{leastDrawnGroup.name}</p>
+                    <p className="text-sm text-red-600">{leastDrawnGroup.totalCount} lần xổ</p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {leastDrawnGroup.animals.map(a => (
+                        <span key={a.order} className={`px-2 py-1 rounded text-xs ${a.count === 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                          {a.name} ({a.count})
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-gray-500">Chưa có dữ liệu</p>
+                )}
+              </div>
+            </div>
+
+            {/* All Groups Table */}
+            <h4 className="font-bold text-gray-700 mb-3">📊 Thống kê tất cả nhóm - Năm {selectedYear}</h4>
+            <div className="space-y-3">
+              {groupStats.map((group, index) => (
+                <div
+                  key={group.id}
+                  className={`p-4 rounded-lg border ${index === 0 && group.totalCount > 0 ? 'bg-green-50 border-green-200' : index === groupStats.length - 1 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm">
+                        {index + 1}
+                      </span>
+                      <span className="font-bold text-gray-800">{group.name}</span>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full font-bold text-sm ${group.totalCount > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {group.totalCount} lần
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {group.animals.map(a => (
+                      <div
+                        key={a.order}
+                        className={`px-3 py-1.5 rounded text-xs font-medium ${a.count > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                      >
+                        #{a.order} {a.name}
+                        {a.count > 0 && <span className="ml-1 font-bold">({a.count})</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8 bg-gray-50 rounded-lg">
+            <span className="text-4xl mb-2 block">👆</span>
+            <p className="text-gray-500">Chọn năm ở trên để xem thống kê theo nhóm</p>
+          </div>
+        )}
       </div>
     </AdminPageWrapper>
   );

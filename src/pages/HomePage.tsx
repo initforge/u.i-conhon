@@ -175,9 +175,11 @@ const HomePage: React.FC = () => {
 
               {/* Right: Image */}
               <div className="relative">
-                <div className="bg-gray-200 rounded-lg p-8 h-96 flex items-center justify-center">
-                  <p className="text-gray-500">Ảnh minh họa người chơi Cổ Nhơn</p>
-                </div>
+                <img
+                  src="/assets/player-illustration.png"
+                  alt="Người chơi Cổ Nhơn vui vẻ trong dịp Tết"
+                  className="w-full h-auto rounded-lg shadow-lg"
+                />
               </div>
             </div>
           </div>
@@ -635,11 +637,11 @@ const HomePage: React.FC = () => {
                   return (
                     <div key={animal.order} className="bg-white border-2 border-tet-red-800 p-2 md:p-4 text-center relative rounded-lg shadow-md">
                       <div className="absolute top-1 left-1 md:top-2 md:left-2">
-                        <p className="text-[0.6rem] md:text-xs font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{animal.order}. {animal.alias}</p>
+                        <p className="text-[0.6rem] md:text-xs font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{animal.order}. {animal.name}</p>
                       </div>
-                      {/* Name prominently displayed */}
+                      {/* Alias prominently displayed */}
                       <h4 className="text-sm md:text-lg font-bold mt-6 md:mt-8" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>
-                        {animal.name}
+                        {animal.alias}
                       </h4>
                       {/* Animal Image */}
                       <div className="rounded-lg h-24 md:h-48 flex items-center justify-center mb-1 md:mb-2 mt-2 md:mt-4 overflow-hidden">

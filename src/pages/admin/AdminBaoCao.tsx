@@ -346,8 +346,100 @@ const AdminBaoCao: React.FC = () => {
             </div>
 
             {/* Animal Layout based on Thai type */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto mb-6">
                 {selectedThai === 'hoai-nhon' ? renderHoaiNhonLayout() : renderAnNhonLayout()}
+            </div>
+
+            {/* Top 5 / Bottom 5 Animals Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Top 5 Most Purchased (Green) */}
+                <div className="bg-white rounded-xl shadow-sm border border-green-200 overflow-hidden">
+                    <div className="px-4 py-3 bg-green-50 border-b border-green-200">
+                        <h3 className="font-bold text-green-800 flex items-center gap-2">
+                            <span>🔥</span>
+                            <span>Top 5 con được mua nhiều nhất</span>
+                        </h3>
+                    </div>
+                    <div className="p-4 space-y-2">
+                        {(() => {
+                            const animalsWithPurchase = animals
+                                .map(a => ({ ...a, ...getMockPurchaseData(a.order) }))
+                                .filter(a => a.count > 0)
+                                .sort((a, b) => b.count - a.count)
+                                .slice(0, 5);
+
+                            if (animalsWithPurchase.length === 0) {
+                                return <p className="text-gray-500 text-center py-4">Chưa có dữ liệu mua</p>;
+                            }
+
+                            return animalsWithPurchase.map((animal, index) => (
+                                <div
+                                    key={animal.order}
+                                    className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-100"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">
+                                            {index + 1}
+                                        </span>
+                                        <div>
+                                            <span className="font-bold text-green-800">#{animal.order} {animal.name}</span>
+                                            <span className="text-xs text-gray-500 ml-2">"{animal.alias}"</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-green-700">{animal.count} lượt</p>
+                                        <p className="text-xs text-green-600">{animal.amount.toLocaleString('vi-VN')}đ</p>
+                                    </div>
+                                </div>
+                            ));
+                        })()}
+                    </div>
+                </div>
+
+                {/* Bottom 5 Least Purchased (Red) */}
+                <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
+                    <div className="px-4 py-3 bg-red-50 border-b border-red-200">
+                        <h3 className="font-bold text-red-800 flex items-center gap-2">
+                            <span>❄️</span>
+                            <span>Top 5 con được mua ít nhất</span>
+                        </h3>
+                    </div>
+                    <div className="p-4 space-y-2">
+                        {(() => {
+                            const animalsWithPurchase = animals
+                                .map(a => ({ ...a, ...getMockPurchaseData(a.order) }))
+                                .sort((a, b) => a.count - b.count)
+                                .slice(0, 5);
+
+                            return animalsWithPurchase.map((animal, index) => (
+                                <div
+                                    key={animal.order}
+                                    className={`flex items-center justify-between p-3 rounded-lg ${animal.count === 0 ? 'bg-red-50 border border-red-100' : 'bg-orange-50 border border-orange-100'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${animal.count === 0 ? 'bg-red-600 text-white' : 'bg-orange-500 text-white'}`}>
+                                            {index + 1}
+                                        </span>
+                                        <div>
+                                            <span className={animal.count === 0 ? 'font-bold text-red-800' : 'font-bold text-orange-800'}>
+                                                #{animal.order} {animal.name}
+                                            </span>
+                                            <span className="text-xs text-gray-500 ml-2">"{animal.alias}"</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className={animal.count === 0 ? 'font-bold text-red-700' : 'font-bold text-orange-700'}>
+                                            {animal.count === 0 ? 'Chưa mua' : `${animal.count} lượt`}
+                                        </p>
+                                        {animal.count > 0 && (
+                                            <p className="text-xs text-orange-600">{animal.amount.toLocaleString('vi-VN')}đ</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ));
+                        })()}
+                    </div>
+                </div>
             </div>
         </AdminPageWrapper>
     );
