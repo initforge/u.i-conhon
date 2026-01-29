@@ -20,12 +20,12 @@ export const GAME_CONFIG = {
   GAME_TITLE: 'Tết Ất Tỵ 2025',
 
   // Đóng tịch time
-  CLOSE_TIME: '16h30',
+  CLOSE_TIME: '17h',
 
   // Thai time slots
   THAI_AN_NHON_TIMES: ['11h', '17h'],
   THAI_AN_NHON_TET_EXTRA: '21h',
   THAI_NHON_PHONG_TIMES: ['11h', '17h'],
-  THAI_NHON_PHONG_TET_EXTRA: '20:30',
+  THAI_NHON_PHONG_TET_EXTRA: '21:00',
   THAI_HOAI_NHON_TIMES: ['13h', '19h'],
 } as const;

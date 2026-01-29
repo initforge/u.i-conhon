@@ -36,7 +36,7 @@ const AdminTime: React.FC = () => {
           <span className="text-xl">🎋</span>
           <div>
             <p className="text-sm font-medium" style={{ color: '#3d3428' }}>Chế độ Tết</p>
-            <p className="text-xs" style={{ color: '#9a8c7a' }}>Thêm khung 20:30 cho An Nhơn/Nhơn Phong</p>
+            <p className="text-xs" style={{ color: '#9a8c7a' }}>Thêm khung 21:00 cho An Nhơn/Nhơn Phong</p>
           </div>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
@@ -81,7 +81,7 @@ const AdminTime: React.FC = () => {
                   <label className="w-24 text-sm" style={{ color: '#c9a86c' }}>🎋 Tết</label>
                   <input
                     type="time"
-                    value="20:30"
+                    value="21:00"
                     disabled
                     className="flex-1 px-3 py-2 rounded-lg text-sm"
                     style={{ border: '1px solid #fde68a', backgroundColor: '#fef8ec', color: '#9a7a2d' }}

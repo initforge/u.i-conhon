@@ -128,7 +128,7 @@ const HoaDonPage: React.FC = () => {
                 {/* Info */}
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-yellow-800 text-center">
-                        📌 Kết quả sẽ được công bố vào <strong>18h30</strong> hàng ngày
+                        📌 Kết quả sẽ được công bố vào <strong>19h</strong> hàng ngày
                     </p>
                 </div>
             </div>

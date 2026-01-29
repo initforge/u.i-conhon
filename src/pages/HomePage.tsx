@@ -217,7 +217,7 @@ const HomePage: React.FC = () => {
                 <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
                   <p>
                     Cổ Nhơn là một trò chơi trong dịp tết âm lịch của người dân H.Hoài Nhơn và Thị Xã An Nhơn (Bình Định),
-                    bắt đầu vào khoảng 25 tháng chạp âm lịch kéo dài đến khoảng chiều mùng 9 tết.
+                    bắt đầu vào khoảng 25 tháng chạp âm lịch kéo dài đến khoảng chiều mùng 5 tết.
                   </p>
 
                   <p>
@@ -238,6 +238,7 @@ const HomePage: React.FC = () => {
                   <p>
                     Người chơi Cổ Nhơn không phân biệt tầng lớp, tuổi tác, trình độ học vấn... Hình ảnh một cậu bé hăng say lý giải
                     suy đoán của mình và một cụ ông đeo kính ngồi chiêm nghiệm, cân nhắc lựa chọn ấy đã trở nên rất quen thuộc ở nơi đây.
+                    Mọi người lắng nghe, tranh luận và ghi nhận ý kiến lẫn nhau để giải đáp được trò chơi.
                   </p>
 
                   <p className="italic text-gray-600 text-sm">
@@ -247,8 +248,9 @@ const HomePage: React.FC = () => {
                   </p>
 
                   <p className="text-sm">
-                    "Có Cổ Nhơn ngày tết rạo rực hẳn lên, không có buồn lắm mà mình cũng chẳng biết làm gì, đi đâu",
-                    anh Nguyễn Ngọc Tuân 36 tuổi ở An Nhơn, bày tỏ.
+                    Không chỉ tại những điểm chơi Cổ Nhơn mà khi đến nhà chúc tết, đi chơi, họp lớp, thậm chí ngồi vào bàn nhậu cũng bàn luận,
+                    hỏi nhau í ơi về Cổ Nhơn. "Có Cổ Nhơn ngày tết rạo rực hẳn lên, không có buồn lắm mà mình cũng chẳng biết làm gì, đi đâu",
+                    anh Nguyễn Ngọc Tuân 31 tuổi ở An Nhơn, bày tỏ.
                   </p>
                 </div>
               </div>
@@ -266,47 +268,97 @@ const HomePage: React.FC = () => {
                       tao nhã trong dịp tết cho mọi tầng lớp người dân.
                     </p>
                     <p>
-                      Tính đến nay, Cổ Nhơn Hoài Nhơn và An Nhơn đã truyền qua nhiều đời hội chủ,
-                      nhưng chỉ khoảng 20 năm trở lại đây mới thật sự phát triển rộng rãi, lan tỏa đến từng ngóc ngách ở thôn quê.
+                      Trò chơi này có một ban tổ chức, gọi là Hội xổ Cổ Nhơn. Hội này chịu trách nhiệm ra đề, thu tịch và sẽ chung tiền
+                      cho những người giải đáp chính xác. Tỷ lệ chiến thắng 1 đồng nhận 25 đồng ở huyện Hoài Nhơn, còn ở An Nhơn thì
+                      tỉ lệ chiến thắng 1 đồng nhận 29 đồng. 😊
+                    </p>
+                    <p>
+                      Tính đến nay, Cổ Nhơn Hoài Nhơn và An Nhơn tỉnh Bình Định đã truyền qua nhiều đời hội chủ,
+                      nhưng chỉ khoảng 10 năm trở lại đây mới thật sự phát triển rộng rãi, lan tỏa đến từng ngóc ngách ở thôn quê.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                  <h4 className="text-xl font-bold text-tet-red-700 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">🎯</span> Tịch và con vật
+                  </h4>
+                  <div className="space-y-3 text-gray-700 leading-relaxed text-sm">
+                    <p>
+                      Tịch của trò chơi này ở Hoài Nhơn gồm có 36 con vật và ở An Nhơn gồm có 36 con vật và 4 ông thần, dùng để ghi số tiền mà người chơi mua.
+                    </p>
+                    <p>
+                      Ở Hoài Nhơn 36 con trong bảng Cổ Nhơn được chia thành 9 nhóm: <strong>Tứ trạng nguyên:</strong> cá trắng, ốc, ngỗng, công;
+                      <strong> Ngũ hổ tướng:</strong> trùn, cọp, heo, thỏ, trâu; <strong>Thất sinh lý:</strong> rồng bay, chó, ngựa, voi, mèo, chuột, ong;
+                      <strong> Nhị đạo sĩ:</strong> hạc, kỳ lân; <strong>Tứ mỹ nữ:</strong> bướm, hòn đá, én, cu; <strong>Tứ hảo mạng:</strong> khỉ, ếch, quạ, rồng nằm;
+                      <strong> Tứ Hòa Thượng:</strong> rùa, gà, lươn, cá đỏ; <strong>Ngũ khất thực:</strong> tôm, rắn, nhện, nai, dê; <strong>Nhất ni cô:</strong> con yêu.
+                    </p>
+                    <p>
+                      Ở An Nhơn thêm 4 ông thần gọi là tứ thần linh gồm ông táo, ông địa, ông thần tài và ông trời.
                     </p>
                   </div>
                 </div>
 
                 <div className="bg-gradient-to-r from-tet-red-700 to-tet-red-800 rounded-2xl p-6 text-white shadow-lg">
                   <h4 className="text-xl font-bold mb-4 flex items-center">
-                    <span className="text-2xl mr-2">🎯</span> Cách chơi Cổ Nhơn
+                    <span className="text-2xl mr-2">🎲</span> Cách chơi Cổ Nhơn
                   </h4>
-                  <ul className="space-y-2 text-red-100 text-sm">
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Mỗi đề là 4 câu thơ lục bát (câu thai) - Hoài Nhơn</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Người chơi suy luận để đoán 1 trong 36 con (Hoài Nhơn) hoặc 40 con (An Nhơn)</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Tỷ lệ thưởng hấp dẫn: 1 chung 30</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Kết quả công bố minh bạch tại cây nêu cao hơn 5m</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>
-                        <strong>Thời gian đóng tịch:</strong><br />
-                        - Thai Hoài Nhơn: Sáng 12h30, Chiều 18h30<br />
-                        - Thai Nhơn Phong: Sáng 10h30, Chiều 16h30<br />
-                        - Thai An Nhơn: Sáng 10h30, Chiều 16h30<br />
-                        - Từ mùng 1 Tết: Buổi tối 20h30
-                      </span>
-                    </li>
-                  </ul>
+                  <div className="space-y-3 text-red-100 text-sm">
+                    <p>
+                      Cứ một ngày hai lần, 6 giờ sáng và 13 giờ chiều, hội chủ sẽ chọn một trong 36 con (ở Hoài Nhơn), và 40 con (ở An Nhơn)
+                      cho vào một chiếc hộp gỗ có khóa, niêm phong, rồi mang đến nơi treo đề. Hộp gỗ sẽ được treo trên ngọn cây tre (cây nêu)
+                      trước sự chứng kiến của đại diện chính quyền địa phương, các cổ đông trong hội và người dân.
+                    </p>
+                    <p>
+                      Riêng ở Thị xã An Nhơn thì đặc biệt hơn vào mồng 1, mồng 2 và mồng 3 tết thì một ngày là 3 lần hội sẽ xổ vào 11h trưa, 17h chiều và 21h tối. 😊
+                    </p>
+                    <p>
+                      Cây nêu này cao hơn 5m thường được đặt trước sân của trụ sở chính quyền. Dưới sân lúc nào cũng có dân quân trực canh gác.
+                      Đến 11 giờ trưa và 17 giờ tối, đại diện hội sẽ có người kéo hộp gỗ xuống, mở và công bố đáp án.
+                    </p>
+                  </div>
                 </div>
 
-                {/* Newspaper Links - Real articles */}
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                  <h4 className="text-xl font-bold text-tet-red-700 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">�</span> Câu thai và cách luận
+                  </h4>
+                  <div className="space-y-3 text-gray-700 leading-relaxed text-sm">
+                    <p>
+                      Mỗi đề của trò chơi này là 4 câu thơ lục bát (còn gọi là câu thai). Người chơi dựa vào ý nghĩa của những câu thai đó mà luận ra đáp án.
+                      Đây chính là phần sôi nổi nhất.
+                    </p>
+                    <p>
+                      Nội dung của 4 câu thai thường về danh lam, thắng cảnh, các chiến thắng lịch sử, câu chuyện văn học, cuộc sống đời thường,...
+                      Đáp án cũng bám vào những ý đó, tuy nhiên không phải ai cũng là người chiến thắng.
+                    </p>
+                    <p className="italic">
+                      Chưa chắc người luận hay đã thắng, cũng chưa hẳn người chọn bừa sẽ thua. Đây giống với câu nói vui, đúng nhưng không trúng.
+                      Vì đã là thơ thì luận kiểu nào cũng có lý, cũng đúng nhưng để trúng (trùng) với lựa chọn của ban tổ chức thì không hề đơn giản.
+                    </p>
+                    <div className="bg-red-50 p-3 rounded-lg border border-red-100 mt-3">
+                      <p className="font-medium text-tet-red-700 mb-1">Ví dụ câu thai:</p>
+                      <p className="italic text-gray-600">
+                        "Thương Kiều ở chốn lầu xanh/ Yêu chàng Kim Trọng hóa thành mộng mơ/
+                        Thương anh Từ Hải đợi chờ/ Trai tài gái sắc trong thơ đoạn trường."
+                      </p>
+                      <p className="text-sm mt-2"><strong>Đáp án:</strong> Con ngựa (Quang Minh)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200">
+                  <h4 className="text-xl font-bold text-yellow-800 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">✨</span> Sức hút văn hóa
+                  </h4>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Người chơi Cổ Nhơn đông không phải vì tính thắng thua mà chính vì cái tao nhã, bình dị của nó, phấn khởi, rồi tiếc nuối
+                    là những cảm xúc rất hay trong ngày tết. Chính sức hút của trò chơi này đã trở thành một nét văn hóa mà bất kỳ du khách nào
+                    cũng phải tò mò và thích thú khi ghé đến Hoài Nhơn và An Nhơn những ngày tết.
+                  </p>
+                </div>
+
+                {/* Newspaper Links - Only Báo Gia Lai */}
                 <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
                   <h4 className="text-lg font-bold text-yellow-800 mb-4 flex items-center">
                     <span className="text-2xl mr-2">📰</span> Bài báo tham khảo
@@ -320,39 +372,6 @@ const HomePage: React.FC = () => {
                         <div>
                           <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Cổ Nhơn - Trò chơi dân gian Hoài Nhơn Bình Định</p>
                           <p className="text-xs text-gray-500">Báo Gia Lai</p>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="https://thanhnien.vn/tro-choi-dan-gian-co-nhon-185240201170847567.htm" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
-                          <span>📄</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Trò chơi dân gian Cổ Nhơn</p>
-                          <p className="text-xs text-gray-500">Thanh Niên Online</p>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="https://laodong.vn/van-hoa-giai-tri/nhan-nha-choi-tro-co-nhon-ngay-tet-1157857.ldo" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
-                          <span>📄</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Nhàn nhã chơi trò Cổ Nhơn ngày Tết</p>
-                          <p className="text-xs text-gray-500">Báo Lao Động</p>
-                        </div>
-                      </div>
-                    </a>
-                    <a href="https://vtcnews.vn/tro-choi-dan-gian-co-nhon-thu-hut-nguoi-dan-binh-dinh-dip-tet-ar123456.html" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
-                          <span>📄</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Cổ Nhơn thu hút người dân Bình Định</p>
-                          <p className="text-xs text-gray-500">VTC News</p>
                         </div>
                       </div>
                     </a>
@@ -668,7 +687,7 @@ const HomePage: React.FC = () => {
               {/* Right: Countdown and Info */}
               <div className="text-center">
                 <p className="mb-2" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}><strong>Đóng tịch lúc</strong></p>
-                <p className="text-font mb-4 text-4xl md:text-6xl" style={{ fontWeight: 500, color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>16h30</p>
+                <p className="text-font mb-4 text-4xl md:text-6xl" style={{ fontWeight: 500, color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>17h</p>
                 <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>Còn lại: <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>0 giờ 0 phút 0 giây</span></p>
                 <div className="mb-4">
                   <p className="font-bold mb-1" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>

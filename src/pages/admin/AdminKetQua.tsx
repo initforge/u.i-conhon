@@ -229,18 +229,18 @@ const AdminKetQua: React.FC = () => {
                   required
                 >
                   <optgroup label="Thai An Nhơn">
-                    <option value="thai-an-nhon-sang">Thai An Nhơn - Sáng (10:30)</option>
-                    <option value="thai-an-nhon-chieu">Thai An Nhơn - Chiều (16:30)</option>
-                    <option value="thai-an-nhon-toi">Thai An Nhơn - Tối (20:30)</option>
+                    <option value="thai-an-nhon-sang">Thai An Nhơn - Sáng (11:00)</option>
+                    <option value="thai-an-nhon-chieu">Thai An Nhơn - Chiều (17:00)</option>
+                    <option value="thai-an-nhon-toi">Thai An Nhơn - Tối (21:00)</option>
                   </optgroup>
                   <optgroup label="Thai Nhơn Phong">
-                    <option value="thai-nhon-phong-sang">Thai Nhơn Phong - Sáng (10:30)</option>
-                    <option value="thai-nhon-phong-chieu">Thai Nhơn Phong - Chiều (16:30)</option>
-                    <option value="thai-nhon-phong-toi">Thai Nhơn Phong - Tối (20:30)</option>
+                    <option value="thai-nhon-phong-sang">Thai Nhơn Phong - Sáng (11:00)</option>
+                    <option value="thai-nhon-phong-chieu">Thai Nhơn Phong - Chiều (17:00)</option>
+                    <option value="thai-nhon-phong-toi">Thai Nhơn Phong - Tối (21:00)</option>
                   </optgroup>
                   <optgroup label="Thai Hoài Nhơn">
-                    <option value="thai-hoai-nhon-trua">Thai Hoài Nhơn - Trưa (12:30)</option>
-                    <option value="thai-hoai-nhon-chieu">Thai Hoài Nhơn - Chiều (18:30)</option>
+                    <option value="thai-hoai-nhon-trua">Thai Hoài Nhơn - Trưa (13:00)</option>
+                    <option value="thai-hoai-nhon-chieu">Thai Hoài Nhơn - Chiều (19:00)</option>
                   </optgroup>
                 </select>
               </div>
@@ -535,10 +535,10 @@ const AdminKetQua: React.FC = () => {
                     key={thai.id}
                     onClick={() => setSelectedThai(thai.id)}
                     className={`flex-1 px-4 py-3 font-semibold text-sm transition-all ${selectedThai === thai.id
-                        ? thai.id === 'an-nhon' ? 'bg-green-100 text-green-700 border-b-2 border-green-500'
-                          : thai.id === 'nhon-phong' ? 'bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500'
-                            : 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
-                        : 'text-gray-500 hover:bg-gray-50'
+                      ? thai.id === 'an-nhon' ? 'bg-green-100 text-green-700 border-b-2 border-green-500'
+                        : thai.id === 'nhon-phong' ? 'bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500'
+                          : 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
+                      : 'text-gray-500 hover:bg-gray-50'
                       }`}
                   >
                     {thai.name}
@@ -755,7 +755,7 @@ const AdminKetQua: React.FC = () => {
                             <tbody>
                               {mockProfitLoss.sang && (
                                 <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Sáng (10:30)</td>
+                                  <td className="py-2 px-3 font-medium">Sáng (11:00)</td>
                                   <td className="py-2 px-3 text-right">{mockProfitLoss.sang.revenue.toLocaleString()}đ</td>
                                   <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.sang.payout.toLocaleString()}đ</td>
                                   <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.sang.revenue - mockProfitLoss.sang.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -765,7 +765,7 @@ const AdminKetQua: React.FC = () => {
                               )}
                               {mockProfitLoss.trua && (
                                 <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Trưa (12:30)</td>
+                                  <td className="py-2 px-3 font-medium">Trưa (13:00)</td>
                                   <td className="py-2 px-3 text-right">{mockProfitLoss.trua.revenue.toLocaleString()}đ</td>
                                   <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.trua.payout.toLocaleString()}đ</td>
                                   <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.trua.revenue - mockProfitLoss.trua.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -775,7 +775,7 @@ const AdminKetQua: React.FC = () => {
                               )}
                               {mockProfitLoss.chieu && (
                                 <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Chiều ({selectedThai === 'hoai-nhon' ? '18:30' : '16:30'})</td>
+                                  <td className="py-2 px-3 font-medium">Chiều ({selectedThai === 'hoai-nhon' ? '19:00' : '17:00'})</td>
                                   <td className="py-2 px-3 text-right">{mockProfitLoss.chieu.revenue.toLocaleString()}đ</td>
                                   <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.chieu.payout.toLocaleString()}đ</td>
                                   <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.chieu.revenue - mockProfitLoss.chieu.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -785,7 +785,7 @@ const AdminKetQua: React.FC = () => {
                               )}
                               {mockProfitLoss.toi && (
                                 <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Tối (20:30)</td>
+                                  <td className="py-2 px-3 font-medium">Tối (21:00)</td>
                                   <td className="py-2 px-3 text-right">{mockProfitLoss.toi.revenue.toLocaleString()}đ</td>
                                   <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.toi.payout.toLocaleString()}đ</td>
                                   <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.toi.revenue - mockProfitLoss.toi.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>

@@ -156,7 +156,7 @@ const UserHomePage: React.FC = () => {
                     </div>
                     <div className="flex items-start space-x-3">
                         <span className="text-red-500 font-bold">•</span>
-                        <p>Kết quả xổ số được công bố vào 18h30 hàng ngày</p>
+                        <p>Kết quả xổ số được công bố vào 19h hàng ngày</p>
                     </div>
                     <div className="flex items-start space-x-3">
                         <span className="text-red-500 font-bold">•</span>

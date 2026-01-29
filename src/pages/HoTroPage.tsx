@@ -6,12 +6,12 @@ const HoTroPage: React.FC = () => {
         { icon: '📞', label: 'Hotline', value: '0332 697 909', action: 'tel:0332697909' },
         { icon: '💬', label: 'Zalo', value: '0332 697 909', action: 'https://zalo.me/0332697909' },
         { icon: '📧', label: 'Email', value: 'nguyenngoctuan211189@gmail.com', action: 'mailto:nguyenngoctuan211189@gmail.com' },
-        { icon: '🌐', label: 'Facebook', value: 'Ngọc Tuấn Nguyễn', action: 'https://www.facebook.com/ngoctuan.nguyen.5209' },
+        { icon: '🌐', label: 'Facebook', value: 'Nguyễn Ngọc Tuân', action: 'https://www.facebook.com/ngoctuan.nguyen.5209' },
     ];
 
     const faqs = [
         { q: 'Làm sao để chơi Cổ Nhơn?', a: 'Chọn Thai → Đăng ký → Like/Share bài viết → Chọn con vật → Thanh toán → Chờ kết quả' },
-        { q: 'Khi nào công bố kết quả?', a: 'Thai An Nhơn: 10h30, 16h30 (Tết có thêm 20h30). Thai Nhơn Phong: 10h30, 16h30. Thai Hoài Nhơn: 12h30, 18h30' },
+        { q: 'Khi nào công bố kết quả?', a: 'Thai An Nhơn: 11h, 17h (Tết có thêm 21h). Thai Nhơn Phong: 11h, 17h. Thai Hoài Nhơn: 13h, 19h' },
         { q: 'Tiền thưởng được chuyển khi nào?', a: 'Tiền thưởng sẽ được chuyển vào tài khoản ngân hàng của bạn trong vòng 1-2 giờ sau khi xổ.' },
         { q: 'Tỉ lệ thưởng là bao nhiêu?', a: 'Tỉ lệ thưởng 1 chung 30. Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70. Ví dụ: Mua 30.000đ trúng 900.000đ.' },
         { q: 'Đơn hàng được xác nhận như thế nào?', a: 'Tự động xác nhận đơn hàng khi KH ck thành công. KH chỉ cần chụp lại đơn hàng.' },

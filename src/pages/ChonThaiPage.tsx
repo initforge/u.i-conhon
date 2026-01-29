@@ -115,7 +115,7 @@ const ChonThaiPage: React.FC = () => {
                     <ul className="text-gray-600 text-sm space-y-1 text-left max-w-md mx-auto">
                         <li>• Tỉ lệ thưởng chung: <strong>1 chung 30</strong></li>
                         <li>• Riêng Thai Hoài Nhơn: Chí Cao (Con Trùn) <strong>chung 70</strong></li>
-                        <li>• Đóng tịch lúc <strong>16h30</strong> mỗi ngày</li>
+                        <li>• Đóng tịch lúc <strong>17h</strong> mỗi ngày</li>
                         <li>• Mỗi đơn hàng thuộc 1 Thai, bạn có thể mua nhiều Thai</li>
                     </ul>
                 </div>

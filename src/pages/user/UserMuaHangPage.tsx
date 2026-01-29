@@ -88,8 +88,8 @@ const UserMuaHangPage: React.FC = () => {
                             <div
                                 key={task.id}
                                 className={`bg-white rounded-xl shadow-md border-2 transition-all duration-300 ${task.completed
-                                        ? 'border-green-300 bg-green-50'
-                                        : 'border-gray-200 hover:border-red-300'
+                                    ? 'border-green-300 bg-green-50'
+                                    : 'border-gray-200 hover:border-red-300'
                                     }`}
                             >
                                 <div className="p-6">
@@ -236,7 +236,7 @@ const UserMuaHangPage: React.FC = () => {
                         <div className="space-y-2 text-gray-700">
                             <div className="flex items-start space-x-3">
                                 <span className="text-red-500 font-bold">•</span>
-                                <p>Kết quả xổ số được công bố vào 18h30 hàng ngày</p>
+                                <p>Kết quả xổ số được công bố vào 19h hàng ngày</p>
                             </div>
                             <div className="flex items-start space-x-3">
                                 <span className="text-red-500 font-bold">•</span>

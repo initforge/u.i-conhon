@@ -63,7 +63,7 @@ const HuongDanPage: React.FC = () => {
                   </h2>
                   <div className="space-y-4 text-gray-700 leading-relaxed">
                     <p>
-                      <strong>Cổ Nhơn</strong> là trò chơi dân gian độc đáo của thị xã Hoài Nhơn, thường tổ chức vào dịp Tết Nguyên đán.
+                      <strong>Cổ Nhơn</strong> là trò chơi dân gian độc đáo của thị xã Hoài Nhơn và An Nhơn, thường tổ chức vào dịp Tết Nguyên đán.
                       Người chơi suy luận từ bốn câu thơ lục bát (câu thai) để đoán đáp án.
                       <strong>Thai Hoài Nhơn có 36 con vật</strong>, trong khi <strong>Thai An Nhơn và Nhơn Phong có 40 con vật</strong>.
                       Hộp gỗ chứa đáp án được treo trên cây nêu cao hơn 5m, tạo không khí hồi hộp và thú vị.
@@ -132,9 +132,9 @@ const HuongDanPage: React.FC = () => {
                           Chọn một trong 3 Thai để tham gia:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li><strong>Thai An Nhơn:</strong> Khung giờ 10h30, 16h30 (Tết có thêm 20h30)</li>
-                          <li><strong>Thai Nhơn Phong:</strong> Khung giờ 10h30, 16h30 (không có khung giờ tối)</li>
-                          <li><strong>Thai Hoài Nhơn:</strong> Khung giờ 12h30, 18h30</li>
+                          <li><strong>Thai An Nhơn:</strong> Khung giờ 11h, 17h (Tết có thêm 21h)</li>
+                          <li><strong>Thai Nhơn Phong:</strong> Khung giờ 11h, 17h (không có khung giờ tối)</li>
+                          <li><strong>Thai Hoài Nhơn:</strong> Khung giờ 13h, 19h</li>
                         </ul>
                       </div>
                     </div>

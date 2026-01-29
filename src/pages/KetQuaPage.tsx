@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 // Mock data cho các thai - sử dụng tên Thai thực tế với khung giờ
 const mockThais = [
-  { id: 'an-nhon', name: 'Thai An Nhơn', times: ['Sáng (10:30)', 'Chiều (16:30)', 'Tối (20:30)'], color: 'green' },
-  { id: 'nhon-phong', name: 'Thai Nhơn Phong', times: ['Sáng (10:30)', 'Chiều (16:30)', 'Tối (20:30)'], color: 'yellow' },
-  { id: 'hoai-nhon', name: 'Thai Hoài Nhơn', times: ['Trưa (12:30)', 'Chiều (18:30)'], color: 'blue' },
+  { id: 'an-nhon', name: 'Thai An Nhơn', times: ['Sáng (11:00)', 'Chiều (17:00)', 'Tối (21:00)'], color: 'green' },
+  { id: 'nhon-phong', name: 'Thai Nhơn Phong', times: ['Sáng (11:00)', 'Chiều (17:00)', 'Tối (21:00)'], color: 'yellow' },
+  { id: 'hoai-nhon', name: 'Thai Hoài Nhơn', times: ['Trưa (13:00)', 'Chiều (19:00)'], color: 'blue' },
 ];
 
 const KetQuaPage: React.FC = () => {
@@ -163,22 +163,22 @@ const KetQuaPage: React.FC = () => {
                 <tr className="bg-tet-red-700 text-xs">
                   {(selectedThai === 'all' || selectedThai === 'an-nhon') && (
                     <>
-                      <th className="px-2 py-1 border-l border-white/20">Sáng<br /><span className="text-green-200">10:30</span></th>
-                      <th className="px-2 py-1">Chiều<br /><span className="text-green-200">16:30</span></th>
-                      <th className="px-2 py-1">Tối<br /><span className="text-green-200">20:30</span></th>
+                      <th className="px-2 py-1 border-l border-white/20">Sáng<br /><span className="text-green-200">11:00</span></th>
+                      <th className="px-2 py-1">Chiều<br /><span className="text-green-200">17:00</span></th>
+                      <th className="px-2 py-1">Tối<br /><span className="text-green-200">21:00</span></th>
                     </>
                   )}
                   {(selectedThai === 'all' || selectedThai === 'nhon-phong') && (
                     <>
-                      <th className="px-2 py-1 border-l border-white/20">Sáng<br /><span className="text-yellow-200">10:30</span></th>
-                      <th className="px-2 py-1">Chiều<br /><span className="text-yellow-200">16:30</span></th>
-                      <th className="px-2 py-1">Tối<br /><span className="text-yellow-200">20:30</span></th>
+                      <th className="px-2 py-1 border-l border-white/20">Sáng<br /><span className="text-yellow-200">11:00</span></th>
+                      <th className="px-2 py-1">Chiều<br /><span className="text-yellow-200">17:00</span></th>
+                      <th className="px-2 py-1">Tối<br /><span className="text-yellow-200">21:00</span></th>
                     </>
                   )}
                   {(selectedThai === 'all' || selectedThai === 'hoai-nhon') && (
                     <>
-                      <th className="px-2 py-1 border-l border-white/20">Trưa<br /><span className="text-blue-200">12:30</span></th>
-                      <th className="px-2 py-1">Chiều<br /><span className="text-blue-200">18:30</span></th>
+                      <th className="px-2 py-1 border-l border-white/20">Trưa<br /><span className="text-blue-200">13:00</span></th>
+                      <th className="px-2 py-1">Chiều<br /><span className="text-blue-200">19:00</span></th>
                     </>
                   )}
                 </tr>
@@ -268,15 +268,15 @@ const KetQuaPage: React.FC = () => {
           <div className="mt-4 space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <span className="w-4 h-4 bg-green-100 rounded border border-green-300"></span>
-              <span className="text-gray-600">Thai An Nhơn: Sáng (10:30) • Chiều (16:30) • Tối (20:30)</span>
+              <span className="text-gray-600">Thai An Nhơn: Sáng (11:00) • Chiều (17:00) • Tối (21:00)</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-4 h-4 bg-yellow-100 rounded border border-yellow-300"></span>
-              <span className="text-gray-600">Thai Nhơn Phong: Sáng (10:30) • Chiều (16:30) • Tối (20:30)</span>
+              <span className="text-gray-600">Thai Nhơn Phong: Sáng (11:00) • Chiều (17:00) • Tối (21:00)</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-4 h-4 bg-blue-100 rounded border border-blue-300"></span>
-              <span className="text-gray-600">Thai Hoài Nhơn: Trưa (12:30) • Chiều (18:30)</span>
+              <span className="text-gray-600">Thai Hoài Nhơn: Trưa (13:00) • Chiều (19:00)</span>
             </div>
           </div>
         </div>
