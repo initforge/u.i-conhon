@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getCurrentYear, getAvailableYears } from '../utils/yearUtils';
 
 // Mock data cho các thai - sử dụng tên Thai thực tế với khung giờ
 const mockThais = [
@@ -8,9 +9,9 @@ const mockThais = [
 ];
 
 const KetQuaPage: React.FC = () => {
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(getCurrentYear());
   const [selectedThai, setSelectedThai] = useState('all');
-  const years = [2025, 2024, 2023, 2022];
+  const years = getAvailableYears(4);
 
   // Results data by year with 3 thais (An Nhơn, Nhơn Phong, Hoài Nhơn) và khung giờ
   const resultsByYear: {
@@ -67,8 +68,8 @@ const KetQuaPage: React.FC = () => {
     ],
   };
 
-  // Get results for selected year
-  const mockResults = resultsByYear[selectedYear] || resultsByYear[2025];
+  // Get results for selected year - fallback to current year or most recent available
+  const mockResults = resultsByYear[selectedYear] || resultsByYear[getCurrentYear()] || resultsByYear[2025];
 
   return (
     <div className="container mx-auto px-4 py-8">

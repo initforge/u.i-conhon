@@ -41,12 +41,19 @@ export const mockUsers: User[] = [
 ];
 
 // Mock data: Thais
+export interface TimeSlot {
+  startTime: string;  // Giờ bắt đầu được mua (VD: "07:00")
+  endTime: string;    // Giờ kết thúc/xổ (VD: "10:30")
+}
+
 export interface Thai {
   id: string;
   name: string;
   slug: string;
-  times: string[];
-  tetTimes?: string[];
+  times: string[];           // Legacy: backward compatible
+  timeSlots: TimeSlot[];     // New: giờ bắt đầu + kết thúc
+  tetTimeSlot?: TimeSlot;    // Khung giờ Tết (21:00)
+  isTetMode: boolean;        // Toggle Tết riêng cho mỗi thai
   description: string;
   isOpen: boolean;
 }
@@ -56,8 +63,13 @@ export const mockThais: Thai[] = [
     id: 'thai-an-nhon',
     name: 'Thai An Nhơn',
     slug: 'an-nhon',
-    times: ['11:00', '17:00'],
-    tetTimes: ['11:00', '17:00', '21:00'],
+    times: ['10:30', '16:30'],
+    timeSlots: [
+      { startTime: '07:00', endTime: '10:30' },
+      { startTime: '12:00', endTime: '16:30' },
+    ],
+    tetTimeSlot: { startTime: '18:00', endTime: '20:30' },
+    isTetMode: false,
     description: 'Khu vực An Nhơn - Bình Định',
     isOpen: true,
   },
@@ -65,8 +77,13 @@ export const mockThais: Thai[] = [
     id: 'thai-nhon-phong',
     name: 'Thai Nhơn Phong',
     slug: 'nhon-phong',
-    times: ['11:00', '17:00'],
-    tetTimes: ['11:00', '17:00', '21:00'],
+    times: ['10:30', '16:30'],
+    timeSlots: [
+      { startTime: '07:00', endTime: '10:30' },
+      { startTime: '12:00', endTime: '16:30' },
+    ],
+    tetTimeSlot: { startTime: '18:00', endTime: '20:30' },
+    isTetMode: false,
     description: 'Khu vực Nhơn Phong',
     isOpen: true,
   },
@@ -75,6 +92,11 @@ export const mockThais: Thai[] = [
     name: 'Thai Hoài Nhơn',
     slug: 'hoai-nhon',
     times: ['13:00', '19:00'],
+    timeSlots: [
+      { startTime: '10:00', endTime: '13:00' },
+      { startTime: '15:00', endTime: '19:00' },
+    ],
+    isTetMode: false,
     description: 'Khu vực Hoài Nhơn',
     isOpen: true,
   },

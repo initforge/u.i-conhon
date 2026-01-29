@@ -295,11 +295,11 @@ const MuaConVatPage: React.FC = () => {
                                             </div>
 
                                             {/* Animal Image */}
-                                            <div className="w-full h-16 md:h-20 flex items-center justify-center mb-2 mt-4 overflow-hidden rounded-lg">
+                                            <div className="w-full aspect-square flex items-center justify-center mt-4 overflow-hidden rounded-lg bg-gray-50">
                                                 <img
                                                     src={`/assets/conhon/${String(animal.number).padStart(2, '0')}.jpg`}
                                                     alt={animal.name}
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-contain"
                                                     onError={(e) => {
                                                         const target = e.target as HTMLImageElement;
                                                         target.style.display = 'none';

@@ -172,68 +172,77 @@ const AdminBaoCao: React.FC = () => {
         ];
 
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full border-collapse">
-                    <tbody>
-                        {rows.map((row, rowIndex) => {
-                            const startOrder = rowIndex * 10 + 1;
-                            const endOrder = (rowIndex + 1) * 10;
-                            const rowTotal = getRowTotal(startOrder, endOrder);
+            <div className="relative">
+                {/* Mobile scroll indicator */}
+                <div className="md:hidden flex items-center justify-center gap-2 text-xs text-gray-500 mb-2 py-2 bg-blue-50 rounded-lg">
+                    <span>←</span>
+                    <span>Vuốt ngang để xem thêm</span>
+                    <span>→</span>
+                </div>
 
-                            return (
-                                <tr key={rowIndex} className="border-b border-gray-200 last:border-b-0">
-                                    {row.map((animal) => {
-                                        const purchaseData = getMockPurchaseData(animal.order);
-                                        const hasPurchase = purchaseData.count > 0;
-                                        return (
-                                            <td
-                                                key={animal.order}
-                                                className={`border border-gray-200 p-2 text-center align-top min-w-[80px] ${hasPurchase ? 'bg-green-50 cursor-pointer hover:bg-green-100' : 'bg-white'
-                                                    }`}
-                                                onClick={() => hasPurchase && setSelectedAnimal(animal)}
-                                            >
-                                                <div className="flex flex-col items-center gap-0.5">
-                                                    <span
-                                                        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold border"
-                                                        style={{ borderColor: '#1e3a8a', color: '#1e3a8a' }}
-                                                    >
-                                                        {String(animal.order).padStart(2, '0')}
-                                                    </span>
-                                                    <div className="font-bold text-xs" style={{ color: '#1e3a8a' }}>
-                                                        {animal.name}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+                    <table className="border-collapse" style={{ minWidth: '900px' }}>
+                        <tbody>
+                            {rows.map((row, rowIndex) => {
+                                const startOrder = rowIndex * 10 + 1;
+                                const endOrder = (rowIndex + 1) * 10;
+                                const rowTotal = getRowTotal(startOrder, endOrder);
+
+                                return (
+                                    <tr key={rowIndex} className="border-b border-gray-200 last:border-b-0">
+                                        {row.map((animal) => {
+                                            const purchaseData = getMockPurchaseData(animal.order);
+                                            const hasPurchase = purchaseData.count > 0;
+                                            return (
+                                                <td
+                                                    key={animal.order}
+                                                    className={`border border-gray-200 p-2 text-center align-top min-w-[80px] ${hasPurchase ? 'bg-green-50 cursor-pointer hover:bg-green-100' : 'bg-white'
+                                                        }`}
+                                                    onClick={() => hasPurchase && setSelectedAnimal(animal)}
+                                                >
+                                                    <div className="flex flex-col items-center gap-0.5">
+                                                        <span
+                                                            className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold border"
+                                                            style={{ borderColor: '#1e3a8a', color: '#1e3a8a' }}
+                                                        >
+                                                            {String(animal.order).padStart(2, '0')}
+                                                        </span>
+                                                        <div className="font-bold text-xs" style={{ color: '#1e3a8a' }}>
+                                                            {animal.name}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500">
+                                                            "{animal.alias}"
+                                                        </div>
                                                     </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        "{animal.alias}"
-                                                    </div>
-                                                </div>
-                                                {hasPurchase && (
-                                                    <div className="mt-1 text-xs font-bold text-green-600">
-                                                        {purchaseData.count} lượt
-                                                        <br />
-                                                        <span className="text-red-600">{purchaseData.amount.toLocaleString('vi-VN')}đ</span>
-                                                    </div>
-                                                )}
-                                            </td>
-                                        );
-                                    })}
-                                    {/* Cột Tổng Cộng */}
-                                    <td className="border border-gray-200 p-2 text-center align-middle min-w-[80px]" style={{ backgroundColor: '#eff6ff' }}>
-                                        <div className="font-bold text-sm" style={{ color: '#1e3a8a' }}>
-                                            Tổng Cộng
-                                        </div>
-                                        {rowTotal.totalCount > 0 && (
-                                            <div className="text-xs text-green-600 font-semibold mt-1">
-                                                {rowTotal.totalCount} lượt
-                                                <br />
-                                                {rowTotal.totalAmount.toLocaleString('vi-VN')}đ
+                                                    {hasPurchase && (
+                                                        <div className="mt-1 text-xs font-bold text-green-600">
+                                                            {purchaseData.count} lượt
+                                                            <br />
+                                                            <span className="text-red-600">{purchaseData.amount.toLocaleString('vi-VN')}đ</span>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
+                                        {/* Cột Tổng Cộng */}
+                                        <td className="border border-gray-200 p-2 text-center align-middle min-w-[80px] sticky right-0" style={{ backgroundColor: '#eff6ff' }}>
+                                            <div className="font-bold text-sm" style={{ color: '#1e3a8a' }}>
+                                                Tổng Cộng
                                             </div>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                            {rowTotal.totalCount > 0 && (
+                                                <div className="text-xs text-green-600 font-semibold mt-1">
+                                                    {rowTotal.totalCount} lượt
+                                                    <br />
+                                                    {rowTotal.totalAmount.toLocaleString('vi-VN')}đ
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     };

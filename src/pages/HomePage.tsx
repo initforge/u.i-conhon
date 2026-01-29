@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GAME_CONFIG } from '../constants/gameConfig';
+import { getCurrentYear, getAvailableYears } from '../utils/yearUtils';
 
 const HomePage: React.FC = () => {
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(getCurrentYear());
   const [selectedGroup, setSelectedGroup] = useState('tất-cả');
   const [selectedThai, setSelectedThai] = useState('an-nhon');
 
@@ -85,8 +86,8 @@ const HomePage: React.FC = () => {
     ],
   };
 
-  // Get results for selected year
-  const mockResults = resultsByYear[selectedYear] || resultsByYear[2025];
+  // Get results for selected year - fallback to current year or most recent available
+  const mockResults = resultsByYear[selectedYear] || resultsByYear[getCurrentYear()] || resultsByYear[2025];
 
   // Animal names with their order and "thế thân" numbers from HTML
   const animalData = [
@@ -566,9 +567,10 @@ const HomePage: React.FC = () => {
                       </svg>
                     </div>
                     <ul className="flex justify-center space-x-4 relative z-10">
-                      {[2025, 2024, 2023, 2022].map((year) => {
+                      {getAvailableYears(4).map((year) => {
                         const isSelected = selectedYear === year;
-                        const isDisabled = year === 2025;
+                        const currentYear = getCurrentYear();
+                        const isDisabled = year === currentYear;
                         return (
                           <li key={year}>
                             <button

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getCurrentYear } from '../utils/yearUtils';
 
 const Footer: React.FC = () => {
   return (
@@ -197,7 +198,7 @@ const Footer: React.FC = () => {
           </div>
 
           <div className="border-t border-red-700 mt-8 pt-4 text-center text-sm text-red-200">
-            <p>&copy; 2026 Cổ Nhơn. All rights reserved.</p>
+            <p>&copy; {getCurrentYear()} Cổ Nhơn. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { mockThais, mockKetQuas, mockAnimals } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
+import { getAvailableYears } from '../../utils/yearUtils';
 
 // Mapping bộ phận cơ thể cho An Nhơn / Nhơn Phong (theo đồ hình nhơn)
 const bodyPartMapping: Record<number, { bodyPart: string; column: string }> = {
@@ -81,7 +82,7 @@ const AdminKetQua: React.FC = () => {
   ];
 
   // Available years
-  const availableYears = [2025, 2024, 2023, 2022, 2021];
+  const availableYears = getAvailableYears(5);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

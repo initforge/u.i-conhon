@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { mockCauThaiImages, CauThaiImage } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
+import { getCurrentYear, getAvailableYears } from '../../utils/yearUtils';
 
 const AdminCauThai: React.FC = () => {
   const [cauThaiImages, setCauThaiImages] = useState<CauThaiImage[]>(mockCauThaiImages);
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(getCurrentYear());
   const [selectedThai, setSelectedThai] = useState('thai-an-nhon');
   const [editingImage, setEditingImage] = useState<CauThaiImage | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -12,7 +13,7 @@ const AdminCauThai: React.FC = () => {
   const [uploadName, setUploadName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const availableYears = [2025, 2024, 2023, 2022];
+  const availableYears = getAvailableYears(4);
 
   const thaiTabs = [
     { id: 'thai-an-nhon', name: 'An Nhơn', color: 'green' },
