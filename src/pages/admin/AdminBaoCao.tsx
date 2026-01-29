@@ -528,7 +528,7 @@ const AdminBaoCao: React.FC = () => {
                         <div className="p-4 overflow-y-auto max-h-[50vh]">
                             <h3 className="font-bold text-gray-800 mb-4">Danh sách khách hàng mua (để trả thưởng):</h3>
                             <div className="space-y-3">
-                                {getMockCustomerDetails(selectedAnimal.order).map((customer, idx) => (
+                                {getMockCustomerDetails(selectedAnimal.order).map((customer) => (
                                     <div key={customer.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
