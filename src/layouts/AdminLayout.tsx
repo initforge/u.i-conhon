@@ -135,7 +135,7 @@ const AdminLayout: React.FC = () => {
                         borderRight: '1px solid #e8e4df'
                     }}
                 >
-                    <nav className="p-4 space-y-1.5">
+                    <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-180px)]">
                         {menuItems.map((item) => {
                             const active = item.exact
                                 ? location.pathname === item.path
