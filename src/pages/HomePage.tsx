@@ -29,7 +29,7 @@ const HomePage: React.FC = () => {
     'ngũ-hổ-tướng': [5, 6, 7, 8, 9], // Trùn, Cọp, Heo, Thỏ, Trâu
     'thất-sinh-lý': [10, 11, 12, 13, 14, 15, 16], // Rồng Bay, Chó, Ngựa, Voi, Mèo, Chuột, Ong
     'nhị-đạo-sĩ': [17, 18], // Hạc, Kỳ Lân
-    'tứ-mỹ-nữ': [19, 20, 21, 22], // Bướm, Hòn Đá, Én, Cu
+    'tứ-mỹ-nữ': [19, 20, 21, 22], // Bướm, Hòn Núi, Én, Bồ Câu
     'tứ-hảo-mạng': [23, 24, 25, 26], // Khỉ, Ếch, Quạ, Rồng Nằm
     'tứ-hòa-thượng': [27, 28, 29, 30], // Rùa, Gà, Lươn, Cá Đỏ
     'ngũ-khất-thực': [31, 32, 33, 34, 35], // Tôm, Rắn, Nhện, Nai, Dê
@@ -109,25 +109,25 @@ const HomePage: React.FC = () => {
     { order: 17, name: 'Hạc', alias: 'Trọng Tiên', theThan: '06' },
     { order: 18, name: 'Kỳ Lân', alias: 'Thiên Thân', theThan: '10' },
     { order: 19, name: 'Bướm', alias: 'Cấn Ngọc', theThan: '27' },
-    { order: 20, name: 'Hòn Đá', alias: 'Trân Châu', theThan: '08' },
+    { order: 20, name: 'Hòn Núi', alias: 'Trân Châu', theThan: '08' },
     { order: 21, name: 'Én', alias: 'Thượng Chiêu', theThan: '22' },
-    { order: 22, name: 'Cú', alias: 'Song Đồng', theThan: '21' },
+    { order: 22, name: 'Bồ Câu', alias: 'Song Đồng', theThan: '21' },
     { order: 23, name: 'Khỉ', alias: 'Tam Hòe', theThan: '30' },
     { order: 24, name: 'Ếch', alias: 'Hiệp Hải', theThan: '07' },
     { order: 25, name: 'Quạ', alias: 'Cửu Quan', theThan: '35' },
     { order: 26, name: 'Rồng Nằm', alias: 'Thái Bình', theThan: '31' },
     { order: 27, name: 'Rùa', alias: 'Hỏa Diệm', theThan: '19' },
     { order: 28, name: 'Gà', alias: 'Nhựt Thăng', theThan: '29' },
-    { order: 29, name: 'Lươn', alias: 'Địa Lương', theThan: '28' },
+    { order: 29, name: 'Lươn', alias: 'Địa Lươn', theThan: '28' },
     { order: 30, name: 'Cá Đỏ', alias: 'Tỉnh Lợi', theThan: '23' },
     { order: 31, name: 'Tôm', alias: 'Trường Thọ', theThan: '26' },
     { order: 32, name: 'Rắn', alias: 'Vạn Kim', theThan: '03' },
-    { order: 33, name: 'Nhện', alias: 'Thanh Tiền', theThan: '09' },
-    { order: 34, name: 'Nai', alias: 'Nguyên Kiết', theThan: '36' },
+    { order: 33, name: 'Nhện', alias: 'Thanh Tuyền', theThan: '09' },
+    { order: 34, name: 'Nai', alias: 'Nguyên Cát', theThan: '36' },
     { order: 35, name: 'Dê', alias: 'Nhứt Phẩm', theThan: '25' },
-    { order: 36, name: 'Yêu', alias: 'An Sỹ', theThan: '34' },
+    { order: 36, name: 'Bà Vãi', alias: 'An Sĩ', theThan: '34' },
     // Tứ Thần Linh (37-40)
-    { order: 37, name: 'Ông Trời', alias: 'Thiên Quân', theThan: '37' },
+    { order: 37, name: 'Ông Trời', alias: 'Thiên Quan', theThan: '37' },
     { order: 38, name: 'Ông Địa', alias: 'Địa Chủ', theThan: '38' },
     { order: 39, name: 'Thần Tài', alias: 'Tài Thần', theThan: '39' },
     { order: 40, name: 'Ông Táo', alias: 'Táo Quân', theThan: '40' },
@@ -266,7 +266,6 @@ const HomePage: React.FC = () => {
                       tao nhã trong dịp tết cho mọi tầng lớp người dân.
                     </p>
                     <p>
-                      Tỷ lệ chiến thắng 1 đồng nhận 25 đồng ở huyện Hoài Nhơn, còn ở An Nhơn thì tỉ lệ chiến thắng 1 đồng nhận 29 đồng.
                       Tính đến nay, Cổ Nhơn Hoài Nhơn và An Nhơn đã truyền qua nhiều đời hội chủ,
                       nhưng chỉ khoảng 20 năm trở lại đây mới thật sự phát triển rộng rãi, lan tỏa đến từng ngóc ngách ở thôn quê.
                     </p>
@@ -296,7 +295,13 @@ const HomePage: React.FC = () => {
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">•</span>
-                      <span>Đóng tịch lúc 16h30</span>
+                      <span>
+                        <strong>Thời gian đóng tịch:</strong><br />
+                        - Thai Hoài Nhơn: Sáng 12h30, Chiều 18h30<br />
+                        - Thai Nhơn Phong: Sáng 10h30, Chiều 16h30<br />
+                        - Thai An Nhơn: Sáng 10h30, Chiều 16h30<br />
+                        - Từ mùng 1 Tết: Buổi tối 20h30
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -307,6 +312,17 @@ const HomePage: React.FC = () => {
                     <span className="text-2xl mr-2">📰</span> Bài báo tham khảo
                   </h4>
                   <div className="space-y-3">
+                    <a href="https://baogialai.com.vn/viewer.aspx?macm=18&macmp=18&mabb=300641" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
+                          <span>📄</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Cổ Nhơn - Trò chơi dân gian Hoài Nhơn Bình Định</p>
+                          <p className="text-xs text-gray-500">Báo Gia Lai</p>
+                        </div>
+                      </div>
+                    </a>
                     <a href="https://thanhnien.vn/tro-choi-dan-gian-co-nhon-185240201170847567.htm" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
@@ -348,27 +364,128 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Section 2: Kết quả */}
-      <section id="ket-qua" className="section ket-qua relative" style={{ backgroundColor: 'rgb(243, 239, 236)', paddingTop: '0px', paddingBottom: '0px' }}>
+      {/* Section 2: Kết quả - Nền xanh mint nhẹ hài hòa */}
+      <section id="ket-qua" className="section ket-qua relative" style={{ background: 'linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdfa 100%)', paddingTop: '20px', paddingBottom: '20px' }}>
+        {/* Lồng đèn trang trí góc trái */}
+        <div className="absolute top-0 left-4 pointer-events-none" style={{ width: '60px' }}>
+          <svg viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="0" x2="30" y2="20" stroke="#b91c1c" strokeWidth="2" />
+            <ellipse cx="30" cy="50" rx="25" ry="35" fill="url(#lantern1)" />
+            <rect x="15" y="12" width="30" height="8" rx="2" fill="#fbbf24" />
+            <rect x="15" y="80" width="30" height="8" rx="2" fill="#fbbf24" />
+            <path d="M20 88 L20 100 M30 88 L30 105 M40 88 L40 100" stroke="#b91c1c" strokeWidth="2" />
+            <defs>
+              <linearGradient id="lantern1" x1="30" y1="15" x2="30" y2="85" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#ef4444" />
+                <stop offset="50%" stopColor="#dc2626" />
+                <stop offset="100%" stopColor="#b91c1c" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Lồng đèn trang trí góc phải */}
+        <div className="absolute top-0 right-4 pointer-events-none" style={{ width: '60px' }}>
+          <svg viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="0" x2="30" y2="20" stroke="#b91c1c" strokeWidth="2" />
+            <ellipse cx="30" cy="50" rx="25" ry="35" fill="url(#lantern2)" />
+            <rect x="15" y="12" width="30" height="8" rx="2" fill="#fbbf24" />
+            <rect x="15" y="80" width="30" height="8" rx="2" fill="#fbbf24" />
+            <path d="M20 88 L20 100 M30 88 L30 105 M40 88 L40 100" stroke="#b91c1c" strokeWidth="2" />
+            <defs>
+              <linearGradient id="lantern2" x1="30" y1="15" x2="30" y2="85" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#ef4444" />
+                <stop offset="50%" stopColor="#dc2626" />
+                <stop offset="100%" stopColor="#b91c1c" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Hoa đào nhỏ rải rác */}
+        <div className="absolute top-20 left-16 pointer-events-none opacity-60">
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="15" r="6" fill="#fda4af" />
+            <circle cx="14" cy="20" r="6" fill="#fda4af" />
+            <circle cx="26" cy="20" r="6" fill="#fda4af" />
+            <circle cx="16" cy="28" r="6" fill="#fda4af" />
+            <circle cx="24" cy="28" r="6" fill="#fda4af" />
+            <circle cx="20" cy="22" r="4" fill="#fde047" />
+          </svg>
+        </div>
+        <div className="absolute top-32 right-20 pointer-events-none opacity-50">
+          <svg width="30" height="30" viewBox="0 0 30 30">
+            <circle cx="15" cy="11" r="5" fill="#f9a8d4" />
+            <circle cx="10" cy="15" r="5" fill="#f9a8d4" />
+            <circle cx="20" cy="15" r="5" fill="#f9a8d4" />
+            <circle cx="12" cy="21" r="5" fill="#f9a8d4" />
+            <circle cx="18" cy="21" r="5" fill="#f9a8d4" />
+            <circle cx="15" cy="16" r="3" fill="#fde047" />
+          </svg>
+        </div>
+
         <div className="section-content relative">
           <div className="container mx-auto px-4 py-8">
-            {/* Title */}
+            {/* Title - Màu đỏ Tết */}
             <div className="text-center mb-8">
-              <h2 className="section-title mb-2 text-4xl md:text-6xl" style={{ fontWeight: 400, color: '#B20801' }}>
-                CÂU THAI VÀ KẾT QUẢ XỔ
+              <h2 className="section-title mb-2 text-4xl md:text-6xl" style={{ fontWeight: 400, color: '#b91c1c' }}>
+                CÂU THAI MỚI NHẤT
               </h2>
             </div>
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              {/* Left: Image - Căn giữa con rồng */}
+              {/* Left: Cuốn giấy đỏ phong cách Tết */}
               <div className="flex items-center justify-center">
-                <img
-                  src="/assets/decorations/form_img.png"
-                  alt="Kết quả"
-                  className="mx-auto"
-                  style={{ width: '70%', maxWidth: '100%' }}
-                />
+                {/* Cuốn giấy với thanh vàng 2 đầu */}
+                <div className="relative" style={{ maxWidth: '400px', width: '100%' }}>
+                  {/* Thanh vàng trên */}
+                  <div className="flex items-center justify-between absolute -top-4 left-0 right-0 z-10">
+                    <div className="w-6 h-6 rounded-full" style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}></div>
+                    <div className="flex-1 h-3 mx-1" style={{ background: 'linear-gradient(180deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}></div>
+                    <div className="w-6 h-6 rounded-full" style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}></div>
+                  </div>
+
+                  {/* Nội dung cuốn giấy */}
+                  <div className="relative px-6 py-8 text-center" style={{
+                    background: 'linear-gradient(180deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%)',
+                    borderRadius: '4px',
+                    boxShadow: '0 8px 24px rgba(153, 27, 27, 0.4), inset 0 2px 8px rgba(255,255,255,0.1)',
+                    minHeight: '200px',
+                  }}>
+                    {/* Viền trang trí vàng */}
+                    <div className="absolute inset-2 border-2 border-yellow-400/40 rounded pointer-events-none"></div>
+
+                    <div className="relative z-10">
+                      <p className="text-yellow-300 text-sm font-medium mb-2 tracking-wider">ĐANG CHỜ CẬP NHẬT</p>
+                      <div className="w-16 h-0.5 bg-yellow-400/50 mx-auto mb-4"></div>
+                      <p className="text-white/90 text-sm leading-relaxed mb-4" style={{ fontFamily: 'serif' }}>
+                        Câu thai sẽ được admin cập nhật<br />
+                        trước mỗi lần xổ
+                      </p>
+
+                      {/* Thai tabs */}
+                      <div className="flex justify-center gap-2 flex-wrap">
+                        {[
+                          { name: 'An Nhơn', color: 'bg-green-500' },
+                          { name: 'Nhơn Phong', color: 'bg-yellow-500' },
+                          { name: 'Hoài Nhơn', color: 'bg-blue-500' },
+                        ].map(thai => (
+                          <span key={thai.name} className={`${thai.color} text-white px-3 py-1 text-xs font-medium rounded-full shadow`}>
+                            {thai.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Thanh vàng dưới */}
+                  <div className="flex items-center justify-between absolute -bottom-4 left-0 right-0 z-10">
+                    <div className="w-6 h-6 rounded-full" style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}></div>
+                    <div className="flex-1 h-3 mx-1" style={{ background: 'linear-gradient(180deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}></div>
+                    <div className="w-6 h-6 rounded-full" style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}></div>
+                  </div>
+                </div>
               </div>
 
               {/* Right: Results Table */}
@@ -493,10 +610,32 @@ const HomePage: React.FC = () => {
         <div className="section-content relative">
           <div className="container mx-auto px-4">
             {/* Title */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-4">
               <h2 className="section-title text-2xl md:text-3xl" style={{ fontWeight: 400, color: '#b2012f' }}>
                 CÂU THAI MỚI NHẤT
               </h2>
+            </div>
+
+            {/* Thai Tabs for Cau Thai */}
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex bg-gray-100 rounded-lg p-1">
+                {[
+                  { id: 'an-nhon', name: 'Thai An Nhơn' },
+                  { id: 'nhon-phong', name: 'Thai Nhơn Phong' },
+                  { id: 'hoai-nhon', name: 'Thai Hoài Nhơn' },
+                ].map((thai) => (
+                  <button
+                    key={thai.id}
+                    onClick={() => setSelectedThai(thai.id)}
+                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
+                      ? 'bg-tet-red-700 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gray-200'
+                      }`}
+                  >
+                    {thai.name}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Content Grid */}
@@ -682,6 +821,135 @@ const HomePage: React.FC = () => {
               <p className="mt-4 text-gray-600">40 con vật trong bảng Cổ Nhơn với ý nghĩa và biểu tượng đặc trưng</p>
             </div>
 
+            {/* Bảng Thế Thân */}
+            <div className="mb-12">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold" style={{ color: '#B20801' }}>BẢNG THẾ THÂN CỦA 40 DANH VẬT</h3>
+                <p className="mt-2 text-gray-600">Mỗi danh vật đều có một danh vật thế thân tương ứng</p>
+              </div>
+              <div className="bg-white rounded-xl shadow-lg border-2 border-tet-red-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-tet-red-800 text-white">
+                      <tr>
+                        <th className="px-3 py-2 text-center font-bold border-r border-tet-red-700">Danh Vật</th>
+                        <th className="px-3 py-2 text-center font-bold border-r border-tet-red-700">Thế Thân</th>
+                        <th className="px-3 py-2 text-center font-bold border-r border-tet-red-700">Danh Vật</th>
+                        <th className="px-3 py-2 text-center font-bold">Thế Thân</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        [{ num: '01', name: 'Cá Trắng', than: '05. Trùn' }, { num: '21', name: 'Én', than: '22. Bồ Câu' }],
+                        [{ num: '02', name: 'Ốc', than: '16. Ong' }, { num: '22', name: 'Bồ Câu', than: '21. Én' }],
+                        [{ num: '03', name: 'Ngỗng', than: '32. Rắn' }, { num: '23', name: 'Khỉ', than: '30. Cá Đỏ' }],
+                        [{ num: '04', name: 'Công', than: '12. Ngựa' }, { num: '24', name: 'Ếch', than: '07. Heo' }],
+                        [{ num: '05', name: 'Trùn', than: '01. Cá Trắng' }, { num: '25', name: 'Quạ', than: '35. Dê' }],
+                        [{ num: '06', name: 'Cọp', than: '17. Hạc' }, { num: '26', name: 'Rồng Nằm', than: '31. Tôm' }],
+                        [{ num: '07', name: 'Heo', than: '24. Ếch' }, { num: '27', name: 'Rùa', than: '19. Bướm' }],
+                        [{ num: '08', name: 'Thỏ', than: '20. Núi' }, { num: '28', name: 'Gà', than: '29. Lươn' }],
+                        [{ num: '09', name: 'Trâu', than: '33. Nhện' }, { num: '29', name: 'Lươn', than: '28. Gà' }],
+                        [{ num: '10', name: 'Rồng Bay', than: '18. Kỳ Lân' }, { num: '30', name: 'Cá Đỏ', than: '23. Khỉ' }],
+                        [{ num: '11', name: 'Chó', than: '15. Chuột' }, { num: '31', name: 'Tôm', than: '26. Rồng Nằm' }],
+                        [{ num: '12', name: 'Ngựa', than: '04. Công' }, { num: '32', name: 'Rắn', than: '03. Ngỗng' }],
+                        [{ num: '13', name: 'Voi', than: '14. Mèo' }, { num: '33', name: 'Nhện', than: '09. Trâu' }],
+                        [{ num: '14', name: 'Mèo', than: '13. Voi' }, { num: '34', name: 'Nai', than: '36. Bà Vãi' }],
+                        [{ num: '15', name: 'Chuột', than: '11. Chó' }, { num: '35', name: 'Dê', than: '25. Quạ' }],
+                        [{ num: '16', name: 'Ong', than: '02. Ốc' }, { num: '36', name: 'Bà Vãi', than: '34. Nai' }],
+                        [{ num: '17', name: 'Hạc', than: '06. Cọp' }, { num: '37', name: 'Ông Trời', than: '40. Ông Táo' }],
+                        [{ num: '18', name: 'Kỳ Lân', than: '10. Rồng Bay' }, { num: '38', name: 'Ông Địa', than: '39. Thần Tài' }],
+                        [{ num: '19', name: 'Bướm', than: '27. Rùa' }, { num: '39', name: 'Thần Tài', than: '38. Ông Địa' }],
+                        [{ num: '20', name: 'Núi', than: '08. Thỏ' }, { num: '40', name: 'Ông Táo', than: '37. Ông Trời' }],
+                      ].map((row, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
+                          <td className="px-3 py-2 border-r border-gray-200">
+                            <span className="font-bold text-tet-red-700">{row[0].num}. {row[0].name}</span>
+                          </td>
+                          <td className="px-3 py-2 border-r border-gray-200 text-gray-700">{row[0].than}</td>
+                          <td className="px-3 py-2 border-r border-gray-200">
+                            <span className="font-bold text-tet-red-700">{row[1].num}. {row[1].name}</span>
+                          </td>
+                          <td className="px-3 py-2 text-gray-700">{row[1].than}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Bảng Sơ Đồ Hình Nhơn */}
+            <div className="mb-12">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold" style={{ color: '#B20801' }}>SƠ ĐỒ HÌNH NHƠN</h3>
+                <p className="mt-2 text-gray-600">Vị trí của 40 danh vật theo sơ đồ hình nhơn</p>
+              </div>
+              <div className="bg-white rounded-xl shadow-lg border-2 border-tet-red-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-tet-red-800 text-white">
+                      <tr>
+                        <th className="px-3 py-2 text-center font-bold border-r border-tet-red-700">BÊN TRÁI</th>
+                        <th className="px-3 py-2 text-center font-bold border-r border-tet-red-700">Ở GIỮA</th>
+                        <th className="px-3 py-2 text-center font-bold">BÊN PHẢI</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { vi_tri_trai: 'thượng', trai: '39. Thần Tài', vi_tri_giua: 'đầu', giua: '05. Trùn', vi_tri_phai: 'thượng', phai: '37. Ông Trời' },
+                        { vi_tri_trai: 'lỗ tai', trai: '26. Rồng Nằm', vi_tri_giua: 'trán', giua: '12. Ngựa', vi_tri_phai: 'lỗ tai', phai: '19. Bướm' },
+                        { vi_tri_trai: 'bả vai', trai: '34. Nai', vi_tri_giua: 'miệng', giua: '14. Mèo', vi_tri_phai: 'bả vai', phai: '36. Bà Vãi' },
+                        { vi_tri_trai: 'đầu vai', trai: '23. Khỉ', vi_tri_giua: 'cổ họng', giua: '28. Gà', vi_tri_phai: 'đầu vai', phai: '03. Ngỗng' },
+                        { vi_tri_trai: 'chỏ tay', trai: '33. Nhện', vi_tri_giua: 'tim', giua: '06. Cọp', vi_tri_phai: 'chỏ tay', phai: '02. Ốc' },
+                        { vi_tri_trai: 'cùi tay', trai: '17. Hạc', vi_tri_giua: 'bụng', giua: '07. Heo', vi_tri_phai: 'cùi tay', phai: '10. Rồng Bay' },
+                        { vi_tri_trai: 'nách', trai: '32. Rắn', vi_tri_giua: 'rún', giua: '08. Thỏ', vi_tri_phai: 'nách', phai: '27. Rùa' },
+                        { vi_tri_trai: 'vú', trai: '21. Én', vi_tri_giua: 'hậu môn', giua: '35. Dê', vi_tri_phai: 'vú', phai: '04. Công' },
+                        { vi_tri_trai: 'hông', trai: '11. Chó', vi_tri_giua: 'sinh dục', giua: '31. Tôm', vi_tri_phai: 'hông', phai: '13. Voi' },
+                        { vi_tri_trai: 'đùi', trai: '18. Kỳ Lân', vi_tri_giua: '', giua: '', vi_tri_phai: 'đùi', phai: '25. Quạ' },
+                        { vi_tri_trai: 'vế đùi', trai: '01. Cá Trắng', vi_tri_giua: '', giua: '', vi_tri_phai: 'vế đùi', phai: '09. Trâu' },
+                        { vi_tri_trai: 'đầu gối', trai: '16. Ong', vi_tri_giua: '', giua: '', vi_tri_phai: 'đầu gối', phai: '20. Núi' },
+                        { vi_tri_trai: 'bụng chân', trai: '24. Ếch', vi_tri_giua: '', giua: '', vi_tri_phai: 'bụng chân', phai: '22. Bồ Câu' },
+                        { vi_tri_trai: 'bàn chân', trai: '15. Chuột', vi_tri_giua: '', giua: '', vi_tri_phai: 'bàn chân', phai: '29. Lươn' },
+                        { vi_tri_trai: 'hạ', trai: '40. Ông Táo', vi_tri_giua: '', giua: '', vi_tri_phai: 'hạ', phai: '38. Ông Địa' },
+                        { vi_tri_trai: '', trai: '', vi_tri_giua: '', giua: '', vi_tri_phai: 'lá cờ', phai: '30. Cá Đỏ' },
+                      ].map((row, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
+                          <td className="px-3 py-2 border-r border-gray-200">
+                            {row.trai ? (
+                              <div>
+                                <span className="font-bold text-tet-red-700">{row.trai}</span>
+                                <div className="text-xs text-gray-500">{row.vi_tri_trai}</div>
+                              </div>
+                            ) : row.vi_tri_trai ? (
+                              <div className="text-xs text-gray-400 italic">{row.vi_tri_trai}</div>
+                            ) : null}
+                          </td>
+                          <td className="px-3 py-2 border-r border-gray-200 text-center">
+                            {row.giua ? (
+                              <div>
+                                <span className="font-bold text-tet-red-700">{row.giua}</span>
+                                <div className="text-xs text-gray-500">{row.vi_tri_giua}</div>
+                              </div>
+                            ) : null}
+                          </td>
+                          <td className="px-3 py-2">
+                            {row.phai ? (
+                              <div>
+                                <span className="font-bold text-tet-red-700">{row.phai}</span>
+                                <div className="text-xs text-gray-500">{row.vi_tri_phai}</div>
+                              </div>
+                            ) : row.vi_tri_phai ? (
+                              <div className="text-xs text-gray-400 italic">{row.vi_tri_phai}</div>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
             {/* Animal Meanings Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
@@ -704,24 +972,24 @@ const HomePage: React.FC = () => {
                 { name: 'Hạc', alias: 'Trọng Tiên', meaning: 'Tượng trưng cho sự trường thọ và thanh cao' },
                 { name: 'Kỳ Lân', alias: 'Thiên Thân', meaning: 'Đại diện cho điềm lành và sự may mắn lớn' },
                 { name: 'Bướm', alias: 'Cấn Ngọc', meaning: 'Biểu tượng của sự biến đổi và vẻ đẹp' },
-                { name: 'Hòn Đá', alias: 'Trân Châu', meaning: 'Tượng trưng cho sự vững chắc và kiên định' },
+                { name: 'Hòn Núi', alias: 'Trân Châu', meaning: 'Tượng trưng cho sự vững chắc và kiên định' },
                 { name: 'Én', alias: 'Thượng Chiêu', meaning: 'Đại diện cho mùa xuân và tin vui' },
-                { name: 'Cu', alias: 'Song Đồng', meaning: 'Biểu tượng của sự hòa bình và yên ấm' },
+                { name: 'Bồ Câu', alias: 'Song Đồng', meaning: 'Biểu tượng của sự hòa bình và yên ấm' },
                 { name: 'Khỉ', alias: 'Tam Hòe', meaning: 'Tượng trưng cho sự thông minh và nhanh nhẹn' },
                 { name: 'Ếch', alias: 'Hiệp Hải', meaning: 'Đại diện cho sự phồn thịnh và sung túc' },
                 { name: 'Quạ', alias: 'Cửu Quan', meaning: 'Biểu tượng của trí tuệ và sự tiên tri' },
                 { name: 'Rồng Nằm', alias: 'Thái Bình', meaning: 'Tượng trưng cho sự an bình và thịnh vương' },
                 { name: 'Rùa', alias: 'Hỏa Diệm', meaning: 'Đại diện cho sự trường thọ và kiên nhẫn' },
                 { name: 'Gà', alias: 'Nhựt Thăng', meaning: 'Biểu tượng của bình minh và sự thức tỉnh' },
-                { name: 'Lươn', alias: 'Địa Lương', meaning: 'Tượng trưng cho sự linh hoạt và khéo léo' },
+                { name: 'Lươn', alias: 'Địa Lươn', meaning: 'Tượng trưng cho sự linh hoạt và khéo léo' },
                 { name: 'Cá Đỏ', alias: 'Tỉnh Lợi', meaning: 'Đại diện cho sự thịnh vượng và may mắn' },
                 { name: 'Tôm', alias: 'Trường Thọ', meaning: 'Biểu tượng của sự sống động và phát triển' },
                 { name: 'Rắn', alias: 'Vạn Kim', meaning: 'Tượng trưng cho sự tái sinh và trí tuệ' },
-                { name: 'Nhện', alias: 'Thanh Tiền', meaning: 'Đại diện cho sự kiên nhẫn và sáng tạo' },
-                { name: 'Nai', alias: 'Nguyên Kiết', meaning: 'Biểu tượng của sự nhẹ nhàng và thanh tao' },
+                { name: 'Nhện', alias: 'Thanh Tuyền', meaning: 'Đại diện cho sự kiên nhẫn và sáng tạo' },
+                { name: 'Nai', alias: 'Nguyên Cát', meaning: 'Biểu tượng của sự nhẹ nhàng và thanh tao' },
                 { name: 'Dê', alias: 'Nhứt Phẩm', meaning: 'Tượng trưng cho sự hiền lành và tốt bụng' },
-                { name: 'Yêu', alias: 'An Sỹ', meaning: 'Đại diện cho sự bí ẩn và huyền diệu' },
-                { name: 'Ông Trời', alias: 'Thiên Quân', meaning: 'Tượng trưng cho quyền năng tối cao và sự che chở' },
+                { name: 'Bà Vãi', alias: 'An Sĩ', meaning: 'Đại diện cho sự bí ẩn và huyền diệu' },
+                { name: 'Ông Trời', alias: 'Thiên Quan', meaning: 'Tượng trưng cho quyền năng tối cao và sự che chở' },
                 { name: 'Ông Địa', alias: 'Địa Chủ', meaning: 'Biểu tượng của sự phì nhiêu và thịnh vượng' },
                 { name: 'Thần Tài', alias: 'Tài Thần', meaning: 'Đại diện cho tài lộc và sự giàu có' },
                 { name: 'Ông Táo', alias: 'Táo Quân', meaning: 'Biểu tượng của gia đình và sự bảo hộ' },

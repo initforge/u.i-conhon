@@ -55,7 +55,7 @@ const BottomNavBar: React.FC = () => {
     {
       icon: '/assets/nav-icons/hotro.svg',
       label: 'HỖ TRỢ',
-      link: '/lien-he'
+      link: '/user/ho-tro'
     },
   ];
 

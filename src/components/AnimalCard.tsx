@@ -48,7 +48,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal, onAddToCart }) => {
       <div className="absolute bottom-2 right-2 text-sm font-semibold text-gray-600">
         Thế thân {theThanValues[animal.order] || animal.order}
       </div>
-      
+
       <div className="space-y-2 mb-4 mt-4">
         <div className="flex justify-between">
           <span className="text-gray-600">Giá:</span>
@@ -58,24 +58,36 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal, onAddToCart }) => {
         </div>
         <div className="flex justify-between">
           <span className="text-gray-600">Còn lại:</span>
-          <span className="font-semibold">
-            {animal.remainingLimit.toLocaleString('vi-VN')} đ
+          <span className={`font-semibold ${animal.remainingLimit <= 0 ? 'text-red-600' : ''}`}>
+            {animal.remainingLimit <= 0 ? 'Hết hạn mức' : `${animal.remainingLimit.toLocaleString('vi-VN')} đ`}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-600">Trạng thái:</span>
-          <span className={`font-semibold ${
-            animal.isBanned ? 'text-red-600' :
-            !animal.isEnabled ? 'text-yellow-600' :
-            'text-green-600'
-          }`}>
+          <span className={`font-semibold ${animal.isBanned ? 'text-red-600' :
+              !animal.isEnabled ? 'text-yellow-600' :
+                'text-green-600'
+            }`}>
             {animal.isBanned ? 'Bị cấm' :
-             !animal.isEnabled ? 'Tạm tắt' :
-             'Đang bán'}
+              !animal.isEnabled ? 'Tạm tắt' :
+                'Đang bán'}
           </span>
         </div>
-        {animal.banReason && (
-          <p className="text-sm text-red-600 italic">{animal.banReason}</p>
+        {/* Hiển thị thông báo hạn mức */}
+        {animal.remainingLimit <= 0 && !animal.isBanned && (
+          <div className="p-2 bg-orange-50 border border-orange-200 rounded-lg">
+            <p className="text-sm text-orange-700 font-medium text-center">
+              ⚠️ Quý khách đã mua quá số tiền cho phép
+            </p>
+          </div>
+        )}
+        {/* Hiển thị lý do cấm từ admin */}
+        {animal.isBanned && animal.banReason && (
+          <div className="p-2 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600 font-medium">
+              🚫 Lý do: {animal.banReason}
+            </p>
+          </div>
         )}
       </div>
 
@@ -89,9 +101,8 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal, onAddToCart }) => {
         <button
           onClick={handleAddToCart}
           disabled={isDisabled}
-          className={`flex-1 btn-primary text-sm py-2 ${
-            isDisabled ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className={`flex-1 btn-primary text-sm py-2 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
         >
           Thêm giỏ
         </button>

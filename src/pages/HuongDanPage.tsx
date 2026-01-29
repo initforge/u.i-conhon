@@ -36,8 +36,8 @@ const HuongDanPage: React.FC = () => {
               <button
                 onClick={() => setActiveTab('intro')}
                 className={`px-6 py-3 font-bold text-lg transition-all ${activeTab === 'intro'
-                    ? 'text-tet-red-700 border-b-4 border-tet-red-700 -mb-0.5'
-                    : 'text-gray-500 hover:text-tet-red-600'
+                  ? 'text-tet-red-700 border-b-4 border-tet-red-700 -mb-0.5'
+                  : 'text-gray-500 hover:text-tet-red-600'
                   }`}
               >
                 Giới thiệu & Hướng dẫn
@@ -45,8 +45,8 @@ const HuongDanPage: React.FC = () => {
               <button
                 onClick={() => setActiveTab('rules')}
                 className={`px-6 py-3 font-bold text-lg transition-all ${activeTab === 'rules'
-                    ? 'text-tet-red-700 border-b-4 border-tet-red-700 -mb-0.5'
-                    : 'text-gray-500 hover:text-tet-red-600'
+                  ? 'text-tet-red-700 border-b-4 border-tet-red-700 -mb-0.5'
+                  : 'text-gray-500 hover:text-tet-red-600'
                   }`}
               >
                 Luật chơi
@@ -64,7 +64,8 @@ const HuongDanPage: React.FC = () => {
                   <div className="space-y-4 text-gray-700 leading-relaxed">
                     <p>
                       <strong>Cổ Nhơn</strong> là trò chơi dân gian độc đáo của thị xã Hoài Nhơn, thường tổ chức vào dịp Tết Nguyên đán.
-                      Người chơi suy luận từ bốn câu thơ lục bát (câu thai) để đoán đáp án là một trong 36 con vật trong bảng Cổ Nhơn.
+                      Người chơi suy luận từ bốn câu thơ lục bát (câu thai) để đoán đáp án.
+                      <strong>Thai Hoài Nhơn có 36 con vật</strong>, trong khi <strong>Thai An Nhơn và Nhơn Phong có 40 con vật</strong>.
                       Hộp gỗ chứa đáp án được treo trên cây nêu cao hơn 5m, tạo không khí hồi hộp và thú vị.
                     </p>
                     <p>
@@ -109,10 +110,10 @@ const HuongDanPage: React.FC = () => {
                           Để có thể mua con vật, bạn cần hoàn thành các nhiệm vụ bắt buộc:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li>Theo dõi trang Facebook Cổ Nhơn An Nhơn</li>
-                          <li>Đăng ký kênh YouTube Cậu Ba Họ Nguyễn</li>
-                          <li>Like bài viết gần nhất (cần làm lại mỗi lần đăng nhập)</li>
-                          <li>Share bài viết gần nhất (cần làm lại mỗi lần đăng nhập)</li>
+                          <li>Theo dõi trang Cổ Nhơn</li>
+                          <li>Tham gia nhóm An Nhơn</li>
+                          <li>Kết bạn Cậu Ba Họ Nguyễn</li>
+                          <li>Đăng ký YouTube Cậu 3 Họ Nguyễn</li>
                         </ul>
                         <p className="text-sm text-gray-600 italic">
                           Chỉ khi hoàn thành tất cả nhiệm vụ, bạn mới có thể mua con vật.
@@ -131,9 +132,9 @@ const HuongDanPage: React.FC = () => {
                           Chọn một trong 3 Thai để tham gia:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li><strong>Thai An Nhơn:</strong> Khung giờ 11h, 17h (Tết có thêm 21h)</li>
-                          <li><strong>Thai Nhơn Phong:</strong> Khung giờ 11h, 17h (Tết có thêm 20:30)</li>
-                          <li><strong>Thai Hoài Nhơn:</strong> Khung giờ 13h, 19h</li>
+                          <li><strong>Thai An Nhơn:</strong> Khung giờ 10h30, 16h30 (Tết có thêm 20h30)</li>
+                          <li><strong>Thai Nhơn Phong:</strong> Khung giờ 10h30, 16h30 (không có khung giờ tối)</li>
+                          <li><strong>Thai Hoài Nhơn:</strong> Khung giờ 12h30, 18h30</li>
                         </ul>
                       </div>
                     </div>
@@ -149,7 +150,9 @@ const HuongDanPage: React.FC = () => {
                           Sau khi chọn Thai, bạn có thể:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li>Xem danh sách 40 con vật</li>
+                          <li><strong>Thai An Nhơn:</strong> Xem danh sách 40 con vật</li>
+                          <li><strong>Thai Nhơn Phong:</strong> Xem danh sách 40 con vật</li>
+                          <li><strong>Thai Hoài Nhơn:</strong> Xem danh sách 36 con vật</li>
                           <li>Thêm con vật vào giỏ hàng</li>
                           <li>Kiểm tra giỏ hàng và thanh toán</li>
                           <li>Nhận hóa đơn với câu thai tương ứng</li>
@@ -163,13 +166,14 @@ const HuongDanPage: React.FC = () => {
                         5
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold mb-2">Chụp ảnh hóa đơn và gửi</h3>
+                        <h3 className="text-xl font-bold mb-2">Chụp ảnh chuyển khoản và hóa đơn mua hàng</h3>
                         <p className="text-gray-700 mb-4">
-                          Sau khi chuyển khoản, vui lòng:
+                          Sau khi có kết quả xổ, vui lòng:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li>Chụp ảnh hóa đơn chuyển khoản</li>
-                          <li>Gửi ảnh qua Zalo: 0332697909</li>
+                          <li>Chụp ảnh chuyển khoản</li>
+                          <li>Chụp hóa đơn mua hàng</li>
+                          <li>Gửi ảnh chuyển khoản và hóa đơn mua hàng qua Zalo: <strong className="text-tet-red-700">0332697909</strong></li>
                           <li>Chờ xác nhận và nhận thưởng</li>
                         </ul>
                       </div>
@@ -257,7 +261,8 @@ const HuongDanPage: React.FC = () => {
                             <div>
                               <p className="font-semibold mb-1">Suy luận:</p>
                               <p>
-                                Người chơi dựa vào nội dung câu thai để tìm đáp án là một trong 36 con vật.
+                                Người chơi dựa vào nội dung câu thai để tìm đáp án.
+                                <strong> Thai Hoài Nhơn: 36 con vật. Thai An Nhơn và Nhơn Phong: 40 con vật.</strong>
                               </p>
                             </div>
                           </div>

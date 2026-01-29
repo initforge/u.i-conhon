@@ -220,7 +220,7 @@ const AdminKetQua: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>Thai</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>Thai (Khung giờ)</label>
                 <select
                   value={formData.thaiId}
                   onChange={(e) => setFormData({ ...formData, thaiId: e.target.value })}
@@ -228,9 +228,20 @@ const AdminKetQua: React.FC = () => {
                   style={{ border: '1px solid #e8e4df' }}
                   required
                 >
-                  {mockThais.map((thai) => (
-                    <option key={thai.id} value={thai.id}>{thai.name}</option>
-                  ))}
+                  <optgroup label="Thai An Nhơn">
+                    <option value="thai-an-nhon-sang">Thai An Nhơn - Sáng (10:30)</option>
+                    <option value="thai-an-nhon-chieu">Thai An Nhơn - Chiều (16:30)</option>
+                    <option value="thai-an-nhon-toi">Thai An Nhơn - Tối (20:30)</option>
+                  </optgroup>
+                  <optgroup label="Thai Nhơn Phong">
+                    <option value="thai-nhon-phong-sang">Thai Nhơn Phong - Sáng (10:30)</option>
+                    <option value="thai-nhon-phong-chieu">Thai Nhơn Phong - Chiều (16:30)</option>
+                    <option value="thai-nhon-phong-toi">Thai Nhơn Phong - Tối (20:30)</option>
+                  </optgroup>
+                  <optgroup label="Thai Hoài Nhơn">
+                    <option value="thai-hoai-nhon-trua">Thai Hoài Nhơn - Trưa (12:30)</option>
+                    <option value="thai-hoai-nhon-chieu">Thai Hoài Nhơn - Chiều (18:30)</option>
+                  </optgroup>
                 </select>
               </div>
               <div>
@@ -460,6 +471,363 @@ const AdminKetQua: React.FC = () => {
           <div className="text-center py-8 bg-gray-50 rounded-lg">
             <span className="text-4xl mb-2 block">👆</span>
             <p className="text-gray-500">Chọn năm ở trên để xem thống kê theo nhóm</p>
+          </div>
+        )}
+      </div>
+
+      {/* ===== TỔNG KẾT CUỐI MÙA ===== */}
+      <div className="mt-8 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-lg p-6 border border-amber-200">
+        <h2 className="text-2xl font-bold text-amber-800 mb-6 flex items-center gap-3">
+          <span className="text-3xl">📊</span>
+          TỔNG KẾT CUỐI MÙA - NĂM {selectedYear || new Date().getFullYear()}
+        </h2>
+
+        {/* Chọn năm để tổng kết */}
+        {!selectedYear && (
+          <div className="text-center py-8 bg-white/50 rounded-xl">
+            <span className="text-5xl mb-4 block">👆</span>
+            <p className="text-amber-700 font-medium">Chọn năm ở phần trên để xem tổng kết cuối mùa</p>
+          </div>
+        )}
+
+        {selectedYear && (
+          <div className="space-y-6">
+            {/* Stats Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {thaiTabs.map((thai) => {
+                const thaiKetQuas = ketQuas.filter(kq =>
+                  kq.thaiId === thai.thaiId &&
+                  new Date(kq.date).getFullYear() === selectedYear
+                );
+                const uniqueAnimals = new Set(thaiKetQuas.flatMap(kq => kq.winningAnimalIds));
+                const totalDraws = thaiKetQuas.length;
+
+                const colorClass = thai.id === 'an-nhon' ? 'green' : thai.id === 'nhon-phong' ? 'yellow' : 'blue';
+
+                return (
+                  <div key={thai.id} className={`bg-${colorClass}-50 border border-${colorClass}-200 rounded-xl p-4`}>
+                    <h3 className={`font-bold text-${colorClass}-800 mb-3 text-lg`}>🏛️ {thai.name}</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Tổng số lần xổ:</span>
+                        <span className="font-bold">{totalDraws} lần</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Số con unique:</span>
+                        <span className="font-bold">{uniqueAnimals.size}/40 con</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Con chưa xổ:</span>
+                        <span className="font-bold text-red-600">{40 - uniqueAnimals.size} con</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Detailed Stats by Thai */}
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+              {/* Thai Tabs */}
+              <div className="flex border-b">
+                {thaiTabs.map((thai) => (
+                  <button
+                    key={thai.id}
+                    onClick={() => setSelectedThai(thai.id)}
+                    className={`flex-1 px-4 py-3 font-semibold text-sm transition-all ${selectedThai === thai.id
+                        ? thai.id === 'an-nhon' ? 'bg-green-100 text-green-700 border-b-2 border-green-500'
+                          : thai.id === 'nhon-phong' ? 'bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500'
+                            : 'bg-blue-100 text-blue-700 border-b-2 border-blue-500'
+                        : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                  >
+                    {thai.name}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-4 space-y-6">
+                {(() => {
+                  const currentThai = thaiTabs.find(t => t.id === selectedThai);
+                  const thaiKetQuas = ketQuas.filter(kq =>
+                    kq.thaiId === currentThai?.thaiId &&
+                    new Date(kq.date).getFullYear() === selectedYear
+                  );
+
+                  // Đếm số lần xổ của từng con
+                  const animalCounts: Record<string, number> = {};
+                  thaiKetQuas.forEach(kq => {
+                    kq.winningAnimalIds.forEach(id => {
+                      animalCounts[id] = (animalCounts[id] || 0) + 1;
+                    });
+                  });
+
+                  // Top 5 con vật
+                  const sortedAnimals = Object.entries(animalCounts)
+                    .map(([id, count]) => ({ animal: mockAnimals.find(a => a.id === id), count }))
+                    .filter(a => a.animal)
+                    .sort((a, b) => b.count - a.count);
+                  const top5 = sortedAnimals.slice(0, 5);
+
+                  // Con không xổ
+                  const drawnIds = new Set(Object.keys(animalCounts));
+                  const notDrawn = mockAnimals.filter(a => !drawnIds.has(a.id));
+
+                  // Thống kê nhóm
+                  const groupCounts = animalGroups.map(group => {
+                    let count = 0;
+                    thaiKetQuas.forEach(kq => {
+                      kq.winningAnimalIds.forEach(id => {
+                        const animal = mockAnimals.find(a => a.id === id);
+                        if (animal && group.orders.includes(animal.order)) count++;
+                      });
+                    });
+                    return { ...group, count };
+                  }).sort((a, b) => b.count - a.count);
+
+                  const top2Groups = groupCounts.slice(0, 2);
+                  const noDrawGroups = groupCounts.filter(g => g.count === 0);
+
+                  // Thống kê vị trí
+                  const positionCounts: Record<string, number> = {};
+                  thaiKetQuas.forEach(kq => {
+                    kq.winningAnimalIds.forEach(id => {
+                      const animal = mockAnimals.find(a => a.id === id);
+                      if (animal) {
+                        const bodyInfo = bodyPartMapping[animal.order];
+                        if (bodyInfo) {
+                          positionCounts[bodyInfo.bodyPart] = (positionCounts[bodyInfo.bodyPart] || 0) + 1;
+                        }
+                      }
+                    });
+                  });
+                  const sortedPositions = Object.entries(positionCounts)
+                    .sort((a, b) => b[1] - a[1]);
+                  const top5Positions = sortedPositions.slice(0, 5);
+
+                  // Vị trí không xổ
+                  const allPositions = new Set(Object.values(bodyPartMapping).map(b => b.bodyPart));
+                  const drawnPositions = new Set(Object.keys(positionCounts));
+                  const noDrawPositions = [...allPositions].filter(p => !drawnPositions.has(p));
+
+                  // Kiểm tra con Trùn (order = 5)
+                  const trunId = mockAnimals.find(a => a.order === 5)?.id;
+                  const trunDraws = thaiKetQuas.filter(kq => trunId && kq.winningAnimalIds.includes(trunId));
+
+                  // Mock thống kê thắng/thua
+                  const mockProfitLoss = {
+                    sang: { revenue: 5000000, payout: 3200000 },
+                    chieu: { revenue: 4500000, payout: 2800000 },
+                    toi: selectedThai === 'an-nhon' ? { revenue: 3000000, payout: 1500000 } : null,
+                    trua: selectedThai === 'hoai-nhon' ? { revenue: 2000000, payout: 1200000 } : null,
+                  };
+
+                  return (
+                    <>
+                      {/* Top 5 con vật */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                          <span>🏆</span> Top 5 con vật xổ nhiều nhất
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {top5.length > 0 ? top5.map((item, i) => (
+                            <div key={item.animal?.id} className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
+                              <span className="w-6 h-6 bg-green-200 rounded-full flex items-center justify-center font-bold text-xs">
+                                {i + 1}
+                              </span>
+                              <span>#{item.animal?.order} {item.animal?.name}</span>
+                              <span className="font-bold">({item.count} lần)</span>
+                            </div>
+                          )) : <span className="text-gray-500">Chưa có dữ liệu</span>}
+                        </div>
+                      </div>
+
+                      {/* Con không xổ */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                          <span>❌</span> Con vật chưa xổ ({notDrawn.length} con)
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {notDrawn.length > 0 ? notDrawn.map(animal => (
+                            <span key={animal.id} className="px-2 py-1 bg-red-50 text-red-600 rounded text-xs">
+                              #{animal.order} {animal.name}
+                            </span>
+                          )) : <span className="text-green-600 font-medium">✅ Tất cả con đều đã xổ!</span>}
+                        </div>
+                      </div>
+
+                      {/* Top 2 nhóm */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                          <span>🔥</span> Top 2 nhóm xổ nhiều nhất
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {top2Groups.map((group, i) => (
+                            <div key={group.id} className={`px-4 py-2 rounded-lg text-sm font-medium ${i === 0 ? 'bg-amber-100 text-amber-800' : 'bg-orange-100 text-orange-700'}`}>
+                              <span className="font-bold">#{i + 1}</span> {group.name} ({group.count} lần)
+                            </div>
+                          ))}
+                        </div>
+                        {noDrawGroups.length > 0 && (
+                          <p className="mt-2 text-sm text-gray-500">
+                            ❄️ Nhóm chưa xổ: {noDrawGroups.map(g => g.name).join(', ')}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Top 5 vị trí */}
+                      <div>
+                        <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                          <span>📍</span> Top 5 vị trí xổ nhiều nhất
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {top5Positions.length > 0 ? top5Positions.map(([pos, count], i) => (
+                            <div key={pos} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium">
+                              #{i + 1} {pos.charAt(0).toUpperCase() + pos.slice(1)} ({count} lần)
+                            </div>
+                          )) : <span className="text-gray-500">Chưa có dữ liệu</span>}
+                        </div>
+                        {noDrawPositions.length > 0 && (
+                          <p className="mt-2 text-sm text-gray-500">
+                            ❄️ Vị trí chưa xổ: {noDrawPositions.join(', ')}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Quy luật đặc biệt */}
+                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200">
+                        <h4 className="font-bold text-indigo-800 mb-3 flex items-center gap-2">
+                          <span>🔗</span> Quy luật xổ đặc biệt
+                        </h4>
+                        <div className="space-y-2 text-sm">
+                          {/* Con Trùn */}
+                          {(selectedThai === 'an-nhon' || selectedThai === 'nhon-phong') && (
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 bg-indigo-200 rounded-full flex items-center justify-center">🐛</span>
+                              <span>Con Trùn (số 5):</span>
+                              {trunDraws.length > 0 ? (
+                                <span className="text-green-600 font-medium">
+                                  ✅ Đã xổ {trunDraws.length} lần
+                                </span>
+                              ) : (
+                                <span className="text-red-600 font-medium">❌ Chưa xổ</span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Quy luật tối An Nhơn */}
+                          {selectedThai === 'an-nhon' && (
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 bg-indigo-200 rounded-full flex items-center justify-center">🌙</span>
+                              <span>Buổi tối:</span>
+                              <span className="text-indigo-600">
+                                Kiểm tra trùng/thế thân với sáng-chiều...
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Quy luật liên tiếp */}
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-indigo-200 rounded-full flex items-center justify-center">🔄</span>
+                            <span>Nhóm xổ liên tiếp:</span>
+                            <span className="text-indigo-600">
+                              Tứ trạng nguyên (3 lần), Ngũ hổ tướng (2 lần)...
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Báo cáo Thắng/Thua */}
+                      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200">
+                        <h4 className="font-bold text-emerald-800 mb-3 flex items-center gap-2">
+                          <span>💰</span> Báo cáo Thắng/Thua theo buổi
+                        </h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-emerald-200">
+                                <th className="text-left py-2 px-3">Buổi</th>
+                                <th className="text-right py-2 px-3">Doanh thu</th>
+                                <th className="text-right py-2 px-3">Trả thưởng</th>
+                                <th className="text-right py-2 px-3">Lãi/Lỗ</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {mockProfitLoss.sang && (
+                                <tr className="border-b border-emerald-100">
+                                  <td className="py-2 px-3 font-medium">Sáng (10:30)</td>
+                                  <td className="py-2 px-3 text-right">{mockProfitLoss.sang.revenue.toLocaleString()}đ</td>
+                                  <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.sang.payout.toLocaleString()}đ</td>
+                                  <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.sang.revenue - mockProfitLoss.sang.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {mockProfitLoss.sang.revenue - mockProfitLoss.sang.payout > 0 ? '+' : ''}{(mockProfitLoss.sang.revenue - mockProfitLoss.sang.payout).toLocaleString()}đ
+                                  </td>
+                                </tr>
+                              )}
+                              {mockProfitLoss.trua && (
+                                <tr className="border-b border-emerald-100">
+                                  <td className="py-2 px-3 font-medium">Trưa (12:30)</td>
+                                  <td className="py-2 px-3 text-right">{mockProfitLoss.trua.revenue.toLocaleString()}đ</td>
+                                  <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.trua.payout.toLocaleString()}đ</td>
+                                  <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.trua.revenue - mockProfitLoss.trua.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {mockProfitLoss.trua.revenue - mockProfitLoss.trua.payout > 0 ? '+' : ''}{(mockProfitLoss.trua.revenue - mockProfitLoss.trua.payout).toLocaleString()}đ
+                                  </td>
+                                </tr>
+                              )}
+                              {mockProfitLoss.chieu && (
+                                <tr className="border-b border-emerald-100">
+                                  <td className="py-2 px-3 font-medium">Chiều ({selectedThai === 'hoai-nhon' ? '18:30' : '16:30'})</td>
+                                  <td className="py-2 px-3 text-right">{mockProfitLoss.chieu.revenue.toLocaleString()}đ</td>
+                                  <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.chieu.payout.toLocaleString()}đ</td>
+                                  <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.chieu.revenue - mockProfitLoss.chieu.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {mockProfitLoss.chieu.revenue - mockProfitLoss.chieu.payout > 0 ? '+' : ''}{(mockProfitLoss.chieu.revenue - mockProfitLoss.chieu.payout).toLocaleString()}đ
+                                  </td>
+                                </tr>
+                              )}
+                              {mockProfitLoss.toi && (
+                                <tr className="border-b border-emerald-100">
+                                  <td className="py-2 px-3 font-medium">Tối (20:30)</td>
+                                  <td className="py-2 px-3 text-right">{mockProfitLoss.toi.revenue.toLocaleString()}đ</td>
+                                  <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.toi.payout.toLocaleString()}đ</td>
+                                  <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.toi.revenue - mockProfitLoss.toi.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {mockProfitLoss.toi.revenue - mockProfitLoss.toi.payout > 0 ? '+' : ''}{(mockProfitLoss.toi.revenue - mockProfitLoss.toi.payout).toLocaleString()}đ
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                            <tfoot>
+                              <tr className="bg-emerald-100 font-bold">
+                                <td className="py-2 px-3">TỔNG CỘNG</td>
+                                <td className="py-2 px-3 text-right">
+                                  {((mockProfitLoss.sang?.revenue || 0) + (mockProfitLoss.chieu?.revenue || 0) + (mockProfitLoss.toi?.revenue || 0) + (mockProfitLoss.trua?.revenue || 0)).toLocaleString()}đ
+                                </td>
+                                <td className="py-2 px-3 text-right text-red-600">
+                                  {((mockProfitLoss.sang?.payout || 0) + (mockProfitLoss.chieu?.payout || 0) + (mockProfitLoss.toi?.payout || 0) + (mockProfitLoss.trua?.payout || 0)).toLocaleString()}đ
+                                </td>
+                                <td className="py-2 px-3 text-right text-green-700">
+                                  +{(
+                                    ((mockProfitLoss.sang?.revenue || 0) - (mockProfitLoss.sang?.payout || 0)) +
+                                    ((mockProfitLoss.chieu?.revenue || 0) - (mockProfitLoss.chieu?.payout || 0)) +
+                                    ((mockProfitLoss.toi?.revenue || 0) - (mockProfitLoss.toi?.payout || 0)) +
+                                    ((mockProfitLoss.trua?.revenue || 0) - (mockProfitLoss.trua?.payout || 0))
+                                  ).toLocaleString()}đ
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+
+                        {/* Ghi chú thế thân */}
+                        {selectedThai !== 'hoai-nhon' && (
+                          <p className="mt-3 text-xs text-emerald-600 bg-emerald-100 rounded px-3 py-2">
+                            ℹ️ <strong>Lưu ý:</strong> Trả thưởng đã bao gồm con xổ + con thế thân (trừ Hoài Nhơn chỉ tính con xổ)
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
           </div>
         )}
       </div>

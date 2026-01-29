@@ -30,6 +30,7 @@ import AdminKetQua from './pages/admin/AdminKetQua'
 import AdminBaoCao from './pages/admin/AdminBaoCao'
 import AdminCMS from './pages/admin/AdminCMS'
 import AdminTime from './pages/admin/AdminTime'
+import AdminCauThai from './pages/admin/AdminCauThai'
 
 function App() {
   return (
@@ -69,6 +70,7 @@ function App() {
                 <Route path="bao-cao" element={<AdminBaoCao />} />
                 <Route path="ket-qua" element={<AdminKetQua />} />
                 <Route path="cms" element={<AdminCMS />} />
+                <Route path="cau-thai" element={<AdminCauThai />} />
                 <Route path="cai-dat" element={<AdminTime />} />
               </Route>
 

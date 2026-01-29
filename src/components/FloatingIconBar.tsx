@@ -14,7 +14,7 @@ const FloatingIconBar: React.FC = () => {
       const rightMargin = 20; // 20px from right edge
       const barWidth = 80; // Approximate width of the bar
       const x = window.innerWidth - barWidth - rightMargin;
-      
+
       setPosition({
         x: x,
         y: centerY - 100, // -100 to center the bar vertically (bar height ~200px)
@@ -52,29 +52,29 @@ const FloatingIconBar: React.FC = () => {
   };
 
   const icons = [
-    { 
-      src: '/assets/decorations/ket-qua.png', 
-      alt: 'Kết quả', 
+    {
+      src: '/assets/decorations/ket-qua.png',
+      alt: 'Kết quả',
       sectionId: 'ket-qua',
       label: 'KẾT QUẢ XỔ'
     },
-    { 
-      src: '/assets/decorations/cau-thai.png', 
-      alt: 'Câu thai', 
+    {
+      src: '/assets/decorations/cau-thai.png',
+      alt: 'Câu thai',
       sectionId: 'cau-thai',
       label: 'CẦU THAI MỚI'
     },
-    { 
-      src: '/assets/decorations/huong-dan-icon.png', 
-      alt: 'Hướng dẫn', 
+    {
+      src: '/assets/decorations/huong-dan-icon.png',
+      alt: 'Hướng dẫn',
       link: '/huong-dan',
       label: 'HƯỚNG DẪN'
     },
-    { 
-      src: '/assets/decorations/ho-tro.png', 
-      alt: 'Hỗ trợ', 
-      link: '/lien-he',
-      label: 'HỖ TRỢ ZALO'
+    {
+      src: '/assets/decorations/ho-tro.png',
+      alt: 'Hỗ trợ',
+      link: '/user/ho-tro',
+      label: 'HỖ TRỢ'
     },
   ];
 
@@ -103,9 +103,9 @@ const FloatingIconBar: React.FC = () => {
                   alt={icon.alt}
                   className="w-10 h-10 object-contain"
                 />
-                <span 
+                <span
                   className="text-xs font-extrabold whitespace-nowrap opacity-100 transition-all duration-200 ml-1 px-2 py-1 rounded"
-                  style={{ 
+                  style={{
                     color: '#7f1d1d',
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     textShadow: '0 1px 2px rgba(0,0,0,0.2)',
@@ -130,9 +130,9 @@ const FloatingIconBar: React.FC = () => {
                 alt={icon.alt}
                 className="w-10 h-10 object-contain"
               />
-              <span 
+              <span
                 className="text-xs font-extrabold whitespace-nowrap opacity-100 transition-all duration-200 ml-1 px-2 py-1 rounded"
-                style={{ 
+                style={{
                   color: '#7f1d1d',
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   textShadow: '0 1px 2px rgba(0,0,0,0.2)',

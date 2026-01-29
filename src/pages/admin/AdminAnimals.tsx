@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { mockAnimals } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminButton } from '../../components/AdminPageWrapper';
 
-// Data cho Hoài Nhơn (36 con)
+// Data cho Hoài Nhơn (36 con) - Thêm purchaseCount (đơn hàng)
 const animalsHoaiNhon36 = [
-  { id: 'hn-1', order: 1, name: 'Cá Trắng', alias: 'Chiếm Khôi', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 25000 },
-  { id: 'hn-2', order: 2, name: 'Ốc', alias: 'Bản Quế', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 45000 },
+  { id: 'hn-1', order: 1, name: 'Cá Trắng', alias: 'Chiếm Khôi', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 25000, purchaseCount: 2 },
+  { id: 'hn-2', order: 2, name: 'Ốc', alias: 'Bản Quế', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 45000, purchaseCount: 3 },
   { id: 'hn-3', order: 3, name: 'Ngỗng', alias: 'Vinh Sanh', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-4', order: 4, name: 'Công', alias: 'Phùng Xuân', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 12000 },
   { id: 'hn-5', order: 5, name: 'Trùn', alias: 'Chí Cao', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
@@ -32,21 +32,22 @@ const animalsHoaiNhon36 = [
   { id: 'hn-26', order: 26, name: 'Rồng Nằm', alias: 'Thái Bình', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 30000 },
   { id: 'hn-27', order: 27, name: 'Rùa', alias: 'Hỏa Diệm', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-28', order: 28, name: 'Gà', alias: 'Nhựt Thăng', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 47000 },
-  { id: 'hn-29', order: 29, name: 'Lươn', alias: 'Địa Lương', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
+  { id: 'hn-29', order: 29, name: 'Lươn', alias: 'Địa Lươn', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-30', order: 30, name: 'Cá Đỏ', alias: 'Tỉnh Lợi', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 28000 },
   { id: 'hn-31', order: 31, name: 'Tôm', alias: 'Trường Thọ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-32', order: 32, name: 'Rắn', alias: 'Vạn Kim', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 66000 },
-  { id: 'hn-33', order: 33, name: 'Nhện', alias: 'Thanh Tiền', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-34', order: 34, name: 'Nai', alias: 'Nguyên Kiết', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 35000 },
+  { id: 'hn-33', order: 33, name: 'Nhện', alias: 'Thanh Tuyền', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
+  { id: 'hn-34', order: 34, name: 'Nai', alias: 'Nguyên Cát', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 35000 },
   { id: 'hn-35', order: 35, name: 'Dê', alias: 'Nhứt Phẩm', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-36', order: 36, name: 'Bà Vải', alias: 'An Sỹ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 72000 },
+  { id: 'hn-36', order: 36, name: 'Bà Vãi', alias: 'An Sĩ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 72000 },
 ];
 
 // Tạo data cho An Nhơn / Nhơn Phong (40 con) với purchased và limit
 const createAnNhonAnimals = () => mockAnimals.map(a => ({
   ...a,
   purchaseLimit: 100000,
-  purchased: Math.floor(Math.random() * 80000)
+  purchased: Math.floor(Math.random() * 80000),
+  purchaseCount: Math.floor(Math.random() * 8) // Số lượt mua ngẫu nhiên 0-7
 }));
 
 // Common animal type
@@ -236,7 +237,9 @@ const AdminAnimals: React.FC = () => {
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-blue-600">Đã mua:</span>
-                  <span className="font-bold text-blue-700">{animal.purchased.toLocaleString('vi-VN')}đ</span>
+                  <span className="font-bold text-blue-700">
+                    {(animal as any).purchaseCount || 0} lượt • {animal.purchased.toLocaleString('vi-VN')}đ
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">

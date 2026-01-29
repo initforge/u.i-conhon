@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
 const mockThais = [
-  { id: 'thai-1', name: 'Thai Sáng' },
-  { id: 'thai-2', name: 'Thai Trưa' },
-  { id: 'thai-3', name: 'Thai Chiều' },
+  { id: 'thai-an-nhon', name: 'Thai An Nhơn' },
+  { id: 'thai-nhon-phong', name: 'Thai Nhơn Phong' },
+  { id: 'thai-hoai-nhon', name: 'Thai Hoài Nhơn' },
 ];
 
 const AdminDashboard: React.FC = () => {
@@ -32,7 +32,7 @@ const AdminDashboard: React.FC = () => {
 
   const leastBought = [
     { rank: 1, name: 'Tôm', emoji: '🦐', count: 3, amount: 90000 },
-    { rank: 2, name: 'Hòn Đá', emoji: '🪨', count: 5, amount: 150000 },
+    { rank: 2, name: 'Hòn Núi', emoji: '🪨', count: 5, amount: 150000 },
     { rank: 3, name: 'Bướm', emoji: '🦋', count: 7, amount: 210000 },
     { rank: 4, name: 'Ong', emoji: '🐝', count: 9, amount: 270000 },
     { rank: 5, name: 'Cú', emoji: '🦉', count: 11, amount: 330000 },

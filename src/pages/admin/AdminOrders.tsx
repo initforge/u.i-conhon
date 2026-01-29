@@ -176,17 +176,29 @@ const AdminOrders: React.FC = () => {
             <label className="block text-xs font-medium mb-2" style={{ color: '#9a8c7a' }}>
               Lọc theo Thai
             </label>
-            <select
-              value={selectedThai}
-              onChange={(e) => setSelectedThai(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-200"
-              style={{ border: '1px solid #e8e4df' }}
-            >
-              <option value="all">Tất cả</option>
+            <div className="flex flex-wrap gap-2 p-1 bg-amber-50 rounded-xl">
+              <button
+                onClick={() => setSelectedThai('all')}
+                className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedThai === 'all'
+                  ? 'bg-white shadow-md text-amber-700'
+                  : 'text-amber-600 hover:bg-amber-100'
+                  }`}
+              >
+                Tất cả
+              </button>
               {mockThais.map((thai) => (
-                <option key={thai.id} value={thai.id}>{thai.name}</option>
+                <button
+                  key={thai.id}
+                  onClick={() => setSelectedThai(thai.id)}
+                  className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
+                    ? 'bg-white shadow-md text-amber-700'
+                    : 'text-amber-600 hover:bg-amber-100'
+                    }`}
+                >
+                  {thai.name}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
           <div className="flex items-end">
             <div
@@ -211,7 +223,7 @@ const AdminOrders: React.FC = () => {
                 <th className="text-left p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>ID</th>
                 <th className="text-left p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Người mua</th>
                 <th className="text-left p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Thai</th>
-                <th className="text-left p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Sản phẩm</th>
+                <th className="text-left p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Con vật</th>
                 <th className="text-right p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Tổng tiền</th>
                 <th className="text-center p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Trạng thái</th>
                 <th className="text-center p-4 text-xs font-medium uppercase tracking-wider" style={{ color: '#9a8c7a' }}>Thao tác</th>

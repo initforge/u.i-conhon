@@ -155,30 +155,33 @@ const Footer: React.FC = () => {
             {/* Social Media */}
             <div className="text-center md:text-left">
               <h3 className="footer-title mb-4" style={{ color: '#333333' }}>Mạng xã hội</h3>
-              <div className="flex justify-center md:justify-start space-x-4">
+              <div className="flex flex-col space-y-2">
                 <a
-                  href="https://facebook.com/conhon"
+                  href="https://www.facebook.com/groups/1579571855393409"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-red-200 hover:text-white transition"
+                  className="text-red-200 hover:text-white transition flex items-center space-x-2"
                 >
-                  <img src="/assets/icons/ico_facebook.svg" alt="Facebook" className="w-6 h-6" />
+                  <img src="/assets/icons/ico_facebook.svg" alt="Facebook" className="w-5 h-5" />
+                  <span className="text-sm">Nhóm Cổ Nhơn</span>
                 </a>
                 <a
-                  href="https://instagram.com/conhon"
+                  href="https://www.facebook.com/ngoctuan.nguyen.5209/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-red-200 hover:text-white transition"
+                  className="text-red-200 hover:text-white transition flex items-center space-x-2"
                 >
-                  <img src="/assets/icons/ico_instagram.svg" alt="Instagram" className="w-6 h-6" />
+                  <img src="/assets/icons/ico_facebook.svg" alt="Facebook" className="w-5 h-5" />
+                  <span className="text-sm">Cậu ba họ Nguyễn</span>
                 </a>
                 <a
-                  href="https://youtube.com/@caubahonguyen"
+                  href="https://www.youtube.com/@caubahonguyenxunau3140"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-red-200 hover:text-white transition"
+                  className="text-red-200 hover:text-white transition flex items-center space-x-2"
                 >
-                  <img src="/assets/icons/ico_twitter.svg" alt="YouTube" className="w-6 h-6" />
+                  <img src="/assets/icons/ico_twitter.svg" alt="YouTube" className="w-5 h-5" />
+                  <span className="text-sm">YouTube Cậu 3 họ Nguyễn</span>
                 </a>
               </div>
             </div>

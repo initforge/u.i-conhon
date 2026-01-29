@@ -96,10 +96,10 @@ export interface Animal {
 }
 
 const animalNames = [
-  'Cá Trắng', 'Ốc', 'Ngỗng', 'Công', 'Trùn', 'Cóp', 'Heo', 'Thỏ', 'Trâu', 'Rồng Bay',
-  'Chó', 'Ngựa', 'Voi', 'Mèo', 'Chuột', 'Ong', 'Hạc', 'Kỳ Lân', 'Bướm', 'Hòn Đá',
-  'Én', 'Cú', 'Khỉ', 'Ếch', 'Quạ', 'Rồng Nằm', 'Rùa', 'Gà', 'Lươn', 'Cá Đỏ',
-  'Tôm', 'Rắn', 'Nhện', 'Nai', 'Dê', 'Yêu', 'Bọ Ngựa', 'Phượng', 'Hổ', 'Cọp Biển'
+  'Cá Trắng', 'Ốc', 'Ngỗng', 'Công', 'Trùn', 'Cọp', 'Heo', 'Thỏ', 'Trâu', 'Rồng Bay',
+  'Chó', 'Ngựa', 'Voi', 'Mèo', 'Chuột', 'Ong', 'Hạc', 'Kỳ Lân', 'Bướm', 'Hòn Núi',
+  'Én', 'Bồ Câu', 'Khỉ', 'Ếch', 'Quạ', 'Rồng Nằm', 'Rùa', 'Gà', 'Lươn', 'Cá Đỏ',
+  'Tôm', 'Rắn', 'Nhện', 'Nai', 'Dê', 'Bà Vãi', 'Ông Trời', 'Ông Địa', 'Thần Tài', 'Ông Táo'
 ];
 
 export const mockAnimals: Animal[] = animalNames.map((name, index) => ({
@@ -312,3 +312,52 @@ export const mockKetQuas: KetQua[] = [
   },
 ];
 
+// Mock data: Cau Thai Images (Ảnh câu thai)
+export interface CauThaiImage {
+  id: string;
+  thaiId: string;
+  year: number;
+  name: string;
+  imageUrl: string;
+  isActive: boolean; // Hiển thị trên trang chủ
+  uploadedAt: string;
+}
+
+export const mockCauThaiImages: CauThaiImage[] = [
+  {
+    id: 'cti-1',
+    thaiId: 'thai-an-nhon',
+    year: 2025,
+    name: 'Câu Thai Mùng 9 - An Nhơn',
+    imageUrl: '/assets/cauthai/an-nhon-mung9.png',
+    isActive: true,
+    uploadedAt: '2025-02-06T08:00:00',
+  },
+  {
+    id: 'cti-2',
+    thaiId: 'thai-nhon-phong',
+    year: 2025,
+    name: 'Câu Thai Mùng 9 - Nhơn Phong',
+    imageUrl: '/assets/cauthai/nhon-phong-mung9.png',
+    isActive: true,
+    uploadedAt: '2025-02-06T08:00:00',
+  },
+  {
+    id: 'cti-3',
+    thaiId: 'thai-hoai-nhon',
+    year: 2025,
+    name: 'Câu Thai Mùng 9 - Hoài Nhơn',
+    imageUrl: '/assets/cauthai/hoai-nhon-mung9.png',
+    isActive: false,
+    uploadedAt: '2025-02-06T08:00:00',
+  },
+  {
+    id: 'cti-4',
+    thaiId: 'thai-an-nhon',
+    year: 2024,
+    name: 'Câu Thai Tết 2024 - An Nhơn',
+    imageUrl: '/assets/cauthai/an-nhon-2024.png',
+    isActive: false,
+    uploadedAt: '2024-02-10T08:00:00',
+  },
+];

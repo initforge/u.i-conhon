@@ -38,7 +38,7 @@ const animalsAnNhon40 = [
     { order: 33, name: 'Nhện', alias: 'Thanh-Tuyền' },
     { order: 34, name: 'Nai', alias: 'Nguyên-Cát' },
     { order: 35, name: 'Dê', alias: 'Nhứt-Phẩm' },
-    { order: 36, name: 'Bà Vải', alias: 'An-Sĩ' },
+    { order: 36, name: 'Bà Vãi', alias: 'An-Sĩ' },
     { order: 37, name: 'Ông Trời', alias: 'Thiên-Quan' },
     { order: 38, name: 'Ông Địa', alias: 'Địa-Chủ' },
     { order: 39, name: 'Thần Tài', alias: 'Tài-Thần' },
@@ -79,16 +79,17 @@ const animalsHoaiNhon36 = [
     { order: 30, name: 'Cá Đỏ', alias: 'TỈNH LỢI' },
     { order: 31, name: 'Tôm', alias: 'TRƯỜNG THỌ' },
     { order: 32, name: 'Rắn', alias: 'VẠN KIM' },
-    { order: 33, name: 'Nhện', alias: 'THANH TIỀN' },
-    { order: 34, name: 'Nai', alias: 'NGUYÊN KIẾT' },
+    { order: 33, name: 'Nhện', alias: 'THANH TUYỀN' },
+    { order: 34, name: 'Nai', alias: 'NGUYÊN CÁT' },
     { order: 35, name: 'Dê', alias: 'NHỨT PHẨM' },
-    { order: 36, name: 'Bà Vải', alias: 'AN SỸ' },
+    { order: 36, name: 'Bà Vãi', alias: 'AN SĨ' },
 ];
 
 const AdminBaoCao: React.FC = () => {
     const [selectedThai, setSelectedThai] = useState('an-nhon');
     const [timeFilter, setTimeFilter] = useState('this-tet');
     const [selectedDate, setSelectedDate] = useState('');
+    const [selectedAnimal, setSelectedAnimal] = useState<null | { order: number; name: string; alias: string }>(null);
 
     const thaiTabs = [
         { id: 'an-nhon', name: 'An Nhơn', animals: 40 },
@@ -106,6 +107,47 @@ const AdminBaoCao: React.FC = () => {
             14: { count: 1, amount: 30000 },
         };
         return mockData[animalOrder] || { count: 0, amount: 0 };
+    };
+
+    // Mock customer details for each animal
+    const getMockCustomerDetails = (animalOrder: number) => {
+        const mockCustomers: Record<number, Array<{
+            id: string;
+            name: string;
+            phone: string;
+            bankAccount: string;
+            bankName: string;
+            amount: number;
+            date: string;
+            time: string;
+        }>> = {
+            1: [
+                { id: 'HD001', name: 'Nguyễn Văn A', phone: '0901234567', bankAccount: '1234567890', bankName: 'Vietcombank', amount: 30000, date: '25/01/2026', time: '10:30' },
+                { id: 'HD002', name: 'Trần Thị B', phone: '0912345678', bankAccount: '0987654321', bankName: 'BIDV', amount: 30000, date: '25/01/2026', time: '11:15' },
+                { id: 'HD003', name: 'Lê Văn C', phone: '0923456789', bankAccount: '1122334455', bankName: 'Techcombank', amount: 30000, date: '25/01/2026', time: '14:20' },
+                { id: 'HD004', name: 'Phạm Thị D', phone: '0934567890', bankAccount: '2233445566', bankName: 'ACB', amount: 30000, date: '26/01/2026', time: '09:00' },
+                { id: 'HD005', name: 'Hoàng Văn E', phone: '0945678901', bankAccount: '3344556677', bankName: 'MB Bank', amount: 30000, date: '26/01/2026', time: '16:45' },
+            ],
+            5: [
+                { id: 'HD006', name: 'Võ Thị F', phone: '0956789012', bankAccount: '4455667788', bankName: 'Vietinbank', amount: 30000, date: '25/01/2026', time: '12:00' },
+                { id: 'HD007', name: 'Đặng Văn G', phone: '0967890123', bankAccount: '5566778899', bankName: 'Sacombank', amount: 30000, date: '26/01/2026', time: '08:30' },
+                { id: 'HD008', name: 'Bùi Thị H', phone: '0978901234', bankAccount: '6677889900', bankName: 'VPBank', amount: 30000, date: '26/01/2026', time: '15:10' },
+            ],
+            6: [
+                { id: 'HD009', name: 'Ngô Văn I', phone: '0989012345', bankAccount: '7788990011', bankName: 'OCB', amount: 30000, date: '25/01/2026', time: '13:45' },
+                { id: 'HD010', name: 'Dương Thị K', phone: '0990123456', bankAccount: '8899001122', bankName: 'TPBank', amount: 30000, date: '25/01/2026', time: '17:20' },
+                { id: 'HD011', name: 'Lý Văn L', phone: '0811234567', bankAccount: '9900112233', bankName: 'HDBank', amount: 30000, date: '26/01/2026', time: '10:00' },
+                { id: 'HD012', name: 'Phan Thị M', phone: '0822345678', bankAccount: '0011223344', bankName: 'SHB', amount: 30000, date: '26/01/2026', time: '14:55' },
+            ],
+            12: [
+                { id: 'HD013', name: 'Trương Văn N', phone: '0833456789', bankAccount: '1122334455', bankName: 'Vietcombank', amount: 30000, date: '26/01/2026', time: '09:30' },
+                { id: 'HD014', name: 'Hồ Thị O', phone: '0844567890', bankAccount: '2233445566', bankName: 'BIDV', amount: 30000, date: '26/01/2026', time: '11:45' },
+            ],
+            14: [
+                { id: 'HD015', name: 'Mai Văn P', phone: '0855678901', bankAccount: '3344556677', bankName: 'Techcombank', amount: 30000, date: '26/01/2026', time: '16:00' },
+            ],
+        };
+        return mockCustomers[animalOrder] || [];
     };
 
     // Tính tổng cho mỗi hàng (An Nhơn / Nhơn Phong)
@@ -146,8 +188,9 @@ const AdminBaoCao: React.FC = () => {
                                         return (
                                             <td
                                                 key={animal.order}
-                                                className={`border border-gray-200 p-2 text-center align-top min-w-[80px] ${hasPurchase ? 'bg-green-50' : 'bg-white'
+                                                className={`border border-gray-200 p-2 text-center align-top min-w-[80px] ${hasPurchase ? 'bg-green-50 cursor-pointer hover:bg-green-100' : 'bg-white'
                                                     }`}
+                                                onClick={() => hasPurchase && setSelectedAnimal(animal)}
                                             >
                                                 <div className="flex flex-col items-center gap-0.5">
                                                     <span
@@ -166,6 +209,8 @@ const AdminBaoCao: React.FC = () => {
                                                 {hasPurchase && (
                                                     <div className="mt-1 text-xs font-bold text-green-600">
                                                         {purchaseData.count} lượt
+                                                        <br />
+                                                        <span className="text-red-600">{purchaseData.amount.toLocaleString('vi-VN')}đ</span>
                                                     </div>
                                                 )}
                                             </td>
@@ -212,9 +257,10 @@ const AdminBaoCao: React.FC = () => {
                                     return (
                                         <td
                                             key={animal.order}
-                                            className={`border border-gray-200 p-3 text-center align-top ${hasPurchase ? 'bg-green-50' : 'bg-white'
+                                            className={`border border-gray-200 p-3 text-center align-top ${hasPurchase ? 'bg-green-50 cursor-pointer hover:bg-green-100' : 'bg-white'
                                                 }`}
                                             style={{ width: '16.66%' }}
+                                            onClick={() => hasPurchase && setSelectedAnimal(animal)}
                                         >
                                             <div className="flex items-start gap-1">
                                                 <span
@@ -441,6 +487,91 @@ const AdminBaoCao: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Modal Chi tiết hóa đơn */}
+            {selectedAnimal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-xl font-bold">Chi tiết hóa đơn - {selectedAnimal.name}</h2>
+                                <p className="text-red-200 text-sm">"{selectedAnimal.alias}" - #{String(selectedAnimal.order).padStart(2, '0')}</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedAnimal(null)}
+                                className="text-white hover:bg-red-500 p-2 rounded-lg transition"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Statistics */}
+                        <div className="p-4 bg-gray-50 border-b border-gray-200 grid grid-cols-3 gap-4">
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-red-600">{getMockPurchaseData(selectedAnimal.order).count}</p>
+                                <p className="text-sm text-gray-600">Tổng lượt mua</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-green-600">{getMockPurchaseData(selectedAnimal.order).amount.toLocaleString('vi-VN')}đ</p>
+                                <p className="text-sm text-gray-600">Tổng doanh thu</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-blue-600">{getMockCustomerDetails(selectedAnimal.order).length}</p>
+                                <p className="text-sm text-gray-600">Số khách hàng</p>
+                            </div>
+                        </div>
+
+                        {/* Customer List */}
+                        <div className="p-4 overflow-y-auto max-h-[50vh]">
+                            <h3 className="font-bold text-gray-800 mb-4">Danh sách khách hàng mua (để trả thưởng):</h3>
+                            <div className="space-y-3">
+                                {getMockCustomerDetails(selectedAnimal.order).map((customer, idx) => (
+                                    <div key={customer.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">{customer.id}</span>
+                                                    <span className="text-gray-500 text-xs">{customer.date} - {customer.time}</span>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    <div>
+                                                        <p className="text-xs text-gray-500">Tên khách hàng</p>
+                                                        <p className="font-bold text-gray-800">{customer.name}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500">Số điện thoại</p>
+                                                        <p className="font-bold text-blue-600">{customer.phone}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500">Số tài khoản ({customer.bankName})</p>
+                                                        <p className="font-bold text-green-600">{customer.bankAccount}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right ml-4">
+                                                <p className="text-lg font-bold text-red-600">{customer.amount.toLocaleString('vi-VN')}đ</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end">
+                            <button
+                                onClick={() => setSelectedAnimal(null)}
+                                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-semibold"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminPageWrapper>
     );
 };

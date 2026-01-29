@@ -112,8 +112,21 @@ const HoaDonPage: React.FC = () => {
                     </Link>
                 </div>
 
+                {/* Reminder */}
+                <div className="mt-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+                    <p className="text-base text-red-800 text-center font-bold mb-2">
+                        ⚠️ NHẮC NHỞ QUAN TRỌNG
+                    </p>
+                    <p className="text-sm text-red-700 text-center">
+                        Quý khách vui lòng <strong>chụp lại hóa đơn</strong> để đối chiếu khi nhận thưởng.
+                    </p>
+                    <p className="text-sm text-red-700 text-center mt-2">
+                        Sau khi có kết quả xổ, gửi ảnh chuyển khoản và hóa đơn qua Zalo: <strong>0332697909</strong>
+                    </p>
+                </div>
+
                 {/* Info */}
-                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-yellow-800 text-center">
                         📌 Kết quả sẽ được công bố vào <strong>18h30</strong> hàng ngày
                     </p>

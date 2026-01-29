@@ -23,24 +23,24 @@ const generateAnimals = () => {
         { name: 'Hạc', alias: 'Trọng Tiên' },
         { name: 'Kỳ Lân', alias: 'Thiên Thân' },
         { name: 'Bướm', alias: 'Cấn Ngọc' },
-        { name: 'Hòn Đá', alias: 'Trân Châu' },
+        { name: 'Hòn Núi', alias: 'Trân Châu' },
         { name: 'Én', alias: 'Thượng Chiêu' },
-        { name: 'Cú', alias: 'Song Đồng' },
+        { name: 'Bồ Câu', alias: 'Song Đồng' },
         { name: 'Khỉ', alias: 'Tam Hòe' },
         { name: 'Ếch', alias: 'Hiệp Hải' },
         { name: 'Quạ', alias: 'Cửu Quan' },
         { name: 'Rồng Nằm', alias: 'Thái Bình' },
         { name: 'Rùa', alias: 'Hỏa Diệm' },
         { name: 'Gà', alias: 'Nhựt Thăng' },
-        { name: 'Lươn', alias: 'Địa Lương' },
+        { name: 'Lươn', alias: 'Địa Lươn' },
         { name: 'Cá Đỏ', alias: 'Tỉnh Lợi' },
         { name: 'Tôm', alias: 'Trường Thọ' },
         { name: 'Rắn', alias: 'Vạn Kim' },
-        { name: 'Nhện', alias: 'Thanh Tiền' },
-        { name: 'Nai', alias: 'Nguyên Kiết' },
+        { name: 'Nhện', alias: 'Thanh Tuyền' },
+        { name: 'Nai', alias: 'Nguyên Cát' },
         { name: 'Dê', alias: 'Nhứt Phẩm' },
-        { name: 'Yêu', alias: 'An Sỹ' },
-        { name: 'Ông Trời', alias: 'Thiên Quân' },
+        { name: 'Bà Vãi', alias: 'An Sĩ' },
+        { name: 'Ông Trời', alias: 'Thiên Quan' },
         { name: 'Ông Địa', alias: 'Địa Chủ' },
         { name: 'Thần Tài', alias: 'Tài Thần' },
         { name: 'Ông Táo', alias: 'Táo Quân' },
@@ -67,20 +67,39 @@ interface CartItem extends Animal {
     amount: number; // Số tiền người chơi muốn mua
 }
 
+const thaiOptions = [
+    { id: 'an-nhon', name: 'Thai An Nhơn', animals: 40, color: 'green' },
+    { id: 'nhon-phong', name: 'Thai Nhơn Phong', animals: 40, color: 'yellow' },
+    { id: 'hoai-nhon', name: 'Thai Hoài Nhơn', animals: 36, color: 'blue' },
+];
+
 const MuaConVatPage: React.FC = () => {
-    const [animals] = useState<Animal[]>(generateAnimals());
+    const [allAnimals] = useState<Animal[]>(generateAnimals());
+    const [selectedThai, setSelectedThai] = useState<string>(''); // Chưa chọn thai
     const [cart, setCart] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [hasLikedShared, setHasLikedShared] = useState(true); // Mặc định true cho demo
     const [inputAmounts, setInputAmounts] = useState<{ [key: string]: number }>({});
 
+    // Lọc danh sách con vật dựa theo Thai được chọn
+    const currentThaiOption = thaiOptions.find(t => t.id === selectedThai);
+    const animals = currentThaiOption
+        ? allAnimals.slice(0, currentThaiOption.animals)
+        : [];
+
     const PRICE_STEP = 10000; // 10,000đ mỗi bước
     const MIN_AMOUNT = 10000;
 
     const handleInputChange = (animalId: string, value: string) => {
+        // Cho phép nhập tự do, chỉ lọc số
         const numValue = parseInt(value.replace(/[^0-9]/g, '')) || 0;
-        // Round to nearest 10000
-        const roundedValue = Math.round(numValue / PRICE_STEP) * PRICE_STEP;
+        setInputAmounts(prev => ({ ...prev, [animalId]: numValue }));
+    };
+
+    const handleInputBlur = (animalId: string) => {
+        // Làm tròn về bội số 10,000 khi blur
+        const currentAmount = inputAmounts[animalId] || 0;
+        const roundedValue = Math.round(currentAmount / PRICE_STEP) * PRICE_STEP;
         setInputAmounts(prev => ({ ...prev, [animalId]: roundedValue }));
     };
 
@@ -159,6 +178,34 @@ const MuaConVatPage: React.FC = () => {
                         )}
                     </button>
                 </div>
+
+                {/* Thai Selection Tabs */}
+                <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
+                    <div className="max-w-7xl mx-auto">
+                        <p className="text-sm text-gray-600 mb-2 font-medium">Chọn Thai để xem danh sách con vật:</p>
+                        <div className="flex flex-wrap gap-2">
+                            {thaiOptions.map((thai) => (
+                                <button
+                                    key={thai.id}
+                                    onClick={() => setSelectedThai(thai.id)}
+                                    className={`flex-1 min-w-[100px] px-4 py-3 rounded-xl font-semibold text-sm transition-all border-2 ${selectedThai === thai.id
+                                        ? thai.color === 'green'
+                                            ? 'bg-green-100 border-green-500 text-green-800'
+                                            : thai.color === 'yellow'
+                                                ? 'bg-yellow-100 border-yellow-500 text-yellow-800'
+                                                : 'bg-blue-100 border-blue-500 text-blue-800'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                                        }`}
+                                >
+                                    <div className="flex flex-col items-center">
+                                        <span>{thai.name}</span>
+                                        <span className="text-xs opacity-70">({thai.animals} con)</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Like/Share Warning */}
@@ -182,97 +229,140 @@ const MuaConVatPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Animals Grid */}
+            {/* Animals Grid or Select Thai Message */}
             <div className="max-w-7xl mx-auto px-4 py-8">
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-4">
-                    {animals.map((animal) => {
-                        const currentAmount = inputAmounts[animal.id] || 0;
-                        return (
-                            <div
-                                key={animal.id}
-                                className={`relative bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${!hasLikedShared ? 'opacity-60' : ''
-                                    }`}
-                            >
-                                {/* Overlay if not liked/shared */}
-                                {!hasLikedShared && (
-                                    <div className="absolute inset-0 bg-gray-900/50 z-10 flex items-center justify-center p-2">
-                                        <p className="text-white text-xs text-center font-medium">
-                                            Vui lòng Like/Share
-                                        </p>
-                                    </div>
-                                )}
+                {!selectedThai ? (
+                    /* Message khi chưa chọn Thai */
+                    <div className="text-center py-12">
+                        <div className="inline-block p-6 bg-yellow-50 rounded-2xl border-2 border-yellow-200">
+                            <span className="text-4xl mb-4 block">👆</span>
+                            <h2 className="text-xl font-bold text-gray-800 mb-2">Vui lòng chọn Thai</h2>
+                            <p className="text-gray-600">
+                                Bạn cần chọn một Thai ở trên để xem và mua con vật
+                            </p>
+                            <div className="mt-4 text-sm text-gray-500">
+                                <p><strong>Thai An Nhơn / Nhơn Phong:</strong> 40 con vật</p>
+                                <p><strong>Thai Hoài Nhơn:</strong> 36 con vật</p>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    /* Danh sách con vật */
+                    <>
+                        {/* Thai Info Banner */}
+                        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-red-100 to-red-50 border border-red-200">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <span className="text-lg font-bold text-red-800">
+                                        {currentThaiOption?.name}
+                                    </span>
+                                    <span className="ml-2 text-red-600">
+                                        ({currentThaiOption?.animals} con vật)
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedThai('')}
+                                    className="text-sm text-red-600 hover:underline"
+                                >
+                                    Đổi Thai
+                                </button>
+                            </div>
+                        </div>
 
-                                {/* Animal Card */}
-                                <div className="p-3">
-                                    {/* Number Badge */}
-                                    <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                                        {animal.number}
-                                    </div>
-
-                                    {/* Animal Image */}
-                                    <div className="w-full h-16 md:h-20 flex items-center justify-center mb-2 mt-4 overflow-hidden rounded-lg">
-                                        <img
-                                            src={`/assets/conhon/${String(animal.number).padStart(2, '0')}.jpg`}
-                                            alt={animal.name}
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
-                                            }}
-                                        />
-                                    </div>
-
-                                    {/* Name */}
-                                    <h3 className="text-sm font-bold text-center text-gray-800 mb-0.5">
-                                        {animal.name}
-                                    </h3>
-                                    <p className="text-xs text-center text-gray-500 mb-2">
-                                        {animal.alias}
-                                    </p>
-
-                                    {/* Price Input - Cho phép người dùng tự nhập */}
-                                    <div className="flex items-center justify-center mb-2 space-x-1">
-                                        <button
-                                            onClick={() => handleDecrement(animal.id)}
-                                            disabled={!hasLikedShared || currentAmount < PRICE_STEP}
-                                            className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300 disabled:opacity-50"
-                                        >
-                                            −
-                                        </button>
-                                        <input
-                                            type="text"
-                                            value={currentAmount > 0 ? currentAmount.toLocaleString() : ''}
-                                            onChange={(e) => handleInputChange(animal.id, e.target.value)}
-                                            placeholder="0"
-                                            disabled={!hasLikedShared}
-                                            className="w-16 text-center text-xs font-semibold border border-gray-300 rounded px-1 py-1 focus:outline-none focus:border-red-500"
-                                        />
-                                        <button
-                                            onClick={() => handleIncrement(animal.id)}
-                                            disabled={!hasLikedShared}
-                                            className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300 disabled:opacity-50"
-                                        >
-                                            +
-                                        </button>
-                                    </div>
-                                    <p className="text-[10px] text-center text-gray-400 mb-1">Bước: 10,000đ</p>
-
-                                    {/* Add Button */}
-                                    <button
-                                        onClick={() => handleAddToCart(animal)}
-                                        disabled={!hasLikedShared || currentAmount < MIN_AMOUNT}
-                                        className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors ${hasLikedShared && currentAmount >= MIN_AMOUNT
-                                            ? 'bg-red-600 text-white hover:bg-red-700'
-                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-4">
+                            {animals.map((animal) => {
+                                const currentAmount = inputAmounts[animal.id] || 0;
+                                return (
+                                    <div
+                                        key={animal.id}
+                                        className={`relative bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${!hasLikedShared ? 'opacity-60' : ''
                                             }`}
                                     >
-                                        ➕ Thêm
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                                        {/* Overlay if not liked/shared */}
+                                        {!hasLikedShared && (
+                                            <div className="absolute inset-0 bg-gray-900/50 z-10 flex items-center justify-center p-2">
+                                                <p className="text-white text-xs text-center font-medium">
+                                                    Vui lòng Like/Share
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* Animal Card */}
+                                        <div className="p-3">
+                                            {/* Number Badge */}
+                                            <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                                                {animal.number}
+                                            </div>
+
+                                            {/* Animal Image */}
+                                            <div className="w-full h-16 md:h-20 flex items-center justify-center mb-2 mt-4 overflow-hidden rounded-lg">
+                                                <img
+                                                    src={`/assets/conhon/${String(animal.number).padStart(2, '0')}.jpg`}
+                                                    alt={animal.name}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.style.display = 'none';
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Name */}
+                                            <h3 className="text-sm font-bold text-center text-gray-800 mb-0.5">
+                                                {animal.name}
+                                            </h3>
+                                            <p className="text-xs text-center text-gray-500 mb-2">
+                                                {animal.alias}
+                                            </p>
+
+                                            {/* Price Input - Cho phép người dùng tự nhập */}
+                                            <div className="flex items-center justify-center mb-2 space-x-2">
+                                                <button
+                                                    onClick={() => handleDecrement(animal.id)}
+                                                    disabled={!hasLikedShared || currentAmount < PRICE_STEP}
+                                                    className="w-8 h-8 bg-gray-200 rounded-lg text-gray-700 font-bold text-lg hover:bg-gray-300 disabled:opacity-50 flex items-center justify-center"
+                                                >
+                                                    −
+                                                </button>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    pattern="[0-9]*"
+                                                    value={currentAmount > 0 ? currentAmount.toLocaleString('vi-VN') : ''}
+                                                    onChange={(e) => handleInputChange(animal.id, e.target.value)}
+                                                    onBlur={() => handleInputBlur(animal.id)}
+                                                    placeholder="Nhập tiền"
+                                                    disabled={!hasLikedShared}
+                                                    className="w-20 text-center text-sm font-semibold border-2 border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                />
+                                                <button
+                                                    onClick={() => handleIncrement(animal.id)}
+                                                    disabled={!hasLikedShared}
+                                                    className="w-8 h-8 bg-gray-200 rounded-lg text-gray-700 font-bold text-lg hover:bg-gray-300 disabled:opacity-50 flex items-center justify-center"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                            <p className="text-[10px] text-center text-gray-400 mb-1">Bước: 10,000đ</p>
+
+                                            {/* Add Button */}
+                                            <button
+                                                onClick={() => handleAddToCart(animal)}
+                                                disabled={!hasLikedShared || currentAmount < MIN_AMOUNT}
+                                                className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors ${hasLikedShared && currentAmount >= MIN_AMOUNT
+                                                    ? 'bg-red-600 text-white hover:bg-red-700'
+                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                    }`}
+                                            >
+                                                ➕ Thêm
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Cart Drawer */}
@@ -289,3 +379,4 @@ const MuaConVatPage: React.FC = () => {
 };
 
 export default MuaConVatPage;
+

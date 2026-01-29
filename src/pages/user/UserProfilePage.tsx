@@ -32,7 +32,7 @@ const UserProfilePage: React.FC = () => {
         <div className="max-w-4xl mx-auto">
             {/* Page Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Thông tin cá nhân</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Thông tin khách hàng</h1>
                 <p className="text-gray-600">Quản lý thông tin tài khoản và ngân hàng của bạn</p>
             </div>
 
