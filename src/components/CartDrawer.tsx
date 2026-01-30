@@ -121,7 +121,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemov
                                                     {/* Amount with +/- */}
                                                     <div className="flex items-center space-x-1">
                                                         <button
-                                                            onClick={() => onUpdateAmount(item.id, item.amount - PRICE_STEP)}
+                                                            onClick={() => onUpdateAmount(`${item.id}-${item.thaiId}`, item.amount - PRICE_STEP)}
                                                             className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300"
                                                         >
                                                             −
@@ -130,14 +130,14 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemov
                                                             {item.amount.toLocaleString()}đ
                                                         </span>
                                                         <button
-                                                            onClick={() => onUpdateAmount(item.id, item.amount + PRICE_STEP)}
+                                                            onClick={() => onUpdateAmount(`${item.id}-${item.thaiId}`, item.amount + PRICE_STEP)}
                                                             className="w-6 h-6 bg-gray-200 rounded text-gray-700 font-bold text-sm hover:bg-gray-300"
                                                         >
                                                             +
                                                         </button>
                                                     </div>
                                                     <button
-                                                        onClick={() => onRemove(item.id)}
+                                                        onClick={() => onRemove(`${item.id}-${item.thaiId}`)}
                                                         className="p-1 text-gray-400 hover:text-red-600"
                                                     >
                                                         🗑️

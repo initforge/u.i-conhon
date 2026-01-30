@@ -72,10 +72,50 @@ const mockPosts: Post[] = [
 
 const AdminCMS: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>(mockPosts);
-    const [activeTab, setActiveTab] = useState<'video' | 'binh-luan'>('video');
+    const [activeTab, setActiveTab] = useState<'video' | 'binh-luan' | 'assets-thai'>('video');
     const [selectedPost, setSelectedPost] = useState<string | null>(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [commentToDelete, setCommentToDelete] = useState<{ postId: string; commentId: string } | null>(null);
+    const [selectedThai, setSelectedThai] = useState<'an-nhon' | 'nhon-phong' | 'hoai-nhon'>('an-nhon');
+
+    // Mock data assets cho mỗi Thai
+    const [thaiAssets] = useState({
+        'an-nhon': {
+            name: 'Thai An Nhơn',
+            currentCauThai: {
+                session: 'CHIỀU mùng 9',
+                date: '06-02-2025',
+                lines: ['Trinh Nương nức tiếng trăm miền', 'Tượng binh xuất trận đảo điên quân thù', 'Tùng Sơn nắng quyện mây trời', 'Dấu chân Bà Triệu rạng ngời sử xanh'],
+                closingTime: '16:30'
+            },
+            banner: '/assets/banner-an-nhon.jpg',
+            animalCount: 40
+        },
+        'nhon-phong': {
+            name: 'Thai Nhơn Phong',
+            currentCauThai: {
+                session: 'CHIỀU mùng 9',
+                date: '06-02-2025',
+                lines: ['Xuân về hoa nở đầy vườn', 'Con ong chăm chỉ bay vòng hút mật', 'Bốn mùa không nghỉ không ngơi', 'Ấm no làng xóm vui tươi tháng năm'],
+                closingTime: '16:30'
+            },
+            banner: '/assets/banner-nhon-phong.jpg',
+            animalCount: 40
+        },
+        'hoai-nhon': {
+            name: 'Thai Hoài Nhơn',
+            currentCauThai: {
+                session: 'CHIỀU mùng 9',
+                date: '06-02-2025',
+                lines: ['Rồng bay phượng múa trời xanh', 'Vua Hùng dựng nước đất lành muôn phương', 'Lạc Long Quân với Âu Cơ', 'Trăm con về biển về rừng chia ly'],
+                closingTime: '18:30'
+            },
+            banner: '/assets/banner-hoai-nhon.jpg',
+            animalCount: 36
+        }
+    });
+
+    const currentAsset = thaiAssets[selectedThai];
 
     // Xóa bình luận
     const handleDeleteComment = (postId: string, commentId: string) => {
@@ -190,6 +230,15 @@ const AdminCMS: React.FC = () => {
                                 }`}
                         >
                             💬 Tất cả bình luận ({totalComments})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('assets-thai')}
+                            className={`flex-1 px-6 py-4 font-semibold transition-colors ${activeTab === 'assets-thai'
+                                ? 'text-red-600 border-b-2 border-red-600 bg-red-50'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
+                            🏷️ Assets Thai (3)
                         </button>
                     </div>
                 </div>
@@ -316,7 +365,7 @@ const AdminCMS: React.FC = () => {
                                     </div>
                                 ))}
                         </div>
-                    ) : (
+                    ) : activeTab === 'binh-luan' ? (
                         // All Comments Tab
                         <div className="space-y-3">
                             <div className="flex items-center justify-between mb-4">
@@ -386,7 +435,122 @@ const AdminCMS: React.FC = () => {
                                 ))
                             )}
                         </div>
-                    )}
+                    ) : activeTab === 'assets-thai' ? (
+                        // Assets Thai Tab
+                        <div className="space-y-6">
+                            {/* Thai Selector */}
+                            <div className="flex space-x-2 mb-6">
+                                {(['an-nhon', 'nhon-phong', 'hoai-nhon'] as const).map(thaiKey => (
+                                    <button
+                                        key={thaiKey}
+                                        onClick={() => setSelectedThai(thaiKey)}
+                                        className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all ${selectedThai === thaiKey
+                                            ? 'bg-red-600 text-white shadow-lg'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        {thaiAssets[thaiKey].name}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Current Thai Info */}
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border border-red-100">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-bold text-red-800">{currentAsset.name}</h3>
+                                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                                        {currentAsset.animalCount} con vật
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-gray-500">Đóng tịch:</p>
+                                        <p className="font-bold text-lg">{currentAsset.currentCauThai.closingTime}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Banner:</p>
+                                        <p className="font-medium text-blue-600">{currentAsset.banner}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Câu Thai Form */}
+                            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                                <h4 className="text-lg font-bold text-gray-800 mb-4">📜 Câu Thai Hiện Tại</h4>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Phiên</label>
+                                            <input
+                                                type="text"
+                                                value={currentAsset.currentCauThai.session}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                readOnly
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Ngày</label>
+                                            <input
+                                                type="text"
+                                                value={currentAsset.currentCauThai.date}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">4 Câu Thơ</label>
+                                        <div className="space-y-2">
+                                            {currentAsset.currentCauThai.lines.map((line, idx) => (
+                                                <input
+                                                    key={idx}
+                                                    type="text"
+                                                    value={line}
+                                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                    readOnly
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex space-x-3 pt-4">
+                                        <button className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+                                            ✏️ Chỉnh sửa
+                                        </button>
+                                        <button className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">
+                                            📋 Xem lịch sử
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Assets List */}
+                            <div className="bg-gray-50 rounded-xl p-4">
+                                <h4 className="font-bold text-gray-700 mb-3">📦 Danh sách Assets</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div className="bg-white rounded-lg p-3 text-center border">
+                                        <span className="text-2xl">🎬</span>
+                                        <p className="text-sm font-medium mt-1">Banner</p>
+                                        <p className="text-xs text-gray-500">1 file</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center border">
+                                        <span className="text-2xl">📜</span>
+                                        <p className="text-sm font-medium mt-1">Câu Thai</p>
+                                        <p className="text-xs text-gray-500">40 entries</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center border">
+                                        <span className="text-2xl">🐾</span>
+                                        <p className="text-sm font-medium mt-1">Con Vật</p>
+                                        <p className="text-xs text-gray-500">{currentAsset.animalCount} files</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center border">
+                                        <span className="text-2xl">⏰</span>
+                                        <p className="text-sm font-medium mt-1">Lịch Trình</p>
+                                        <p className="text-xs text-gray-500">2-3 phiên/ngày</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
             </div>
 

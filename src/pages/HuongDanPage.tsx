@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -6,6 +6,11 @@ const HuongDanPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
   const [activeTab, setActiveTab] = useState<'intro' | 'rules'>('intro');
+
+  // Scroll to top khi vào trang
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -64,7 +69,7 @@ const HuongDanPage: React.FC = () => {
                   <div className="space-y-4 text-gray-700 leading-relaxed">
                     <p>
                       <strong>Cổ Nhơn</strong> là trò chơi dân gian độc đáo của thị xã Hoài Nhơn và An Nhơn, thường tổ chức vào dịp Tết Nguyên đán.
-                      Người chơi suy luận từ bốn câu thơ lục bát (câu thai) để đoán đáp án.
+                      Người chơi suy luận từ 4 câu thơ lục bát (câu thai) để đoán đáp án.
                       <strong>Thai Hoài Nhơn có 36 con vật</strong>, trong khi <strong>Thai An Nhơn và Nhơn Phong có 40 con vật</strong>.
                       Hộp gỗ chứa đáp án được treo trên cây nêu cao hơn 5m, tạo không khí hồi hộp và thú vị.
                     </p>
@@ -109,11 +114,47 @@ const HuongDanPage: React.FC = () => {
                         <p className="text-gray-700 mb-4">
                           Để có thể mua con vật, bạn cần hoàn thành các nhiệm vụ bắt buộc:
                         </p>
-                        <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li>Theo dõi trang Cổ Nhơn</li>
-                          <li>Tham gia nhóm An Nhơn</li>
-                          <li>Kết bạn Cậu Ba Họ Nguyễn</li>
-                          <li>Đăng ký YouTube Cậu 3 Họ Nguyễn</li>
+                        <ul className="space-y-3 text-gray-700 mb-4">
+                          <li>
+                            <a
+                              href="https://www.facebook.com/profile.php?id=100064448272306"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              📘 Theo dõi Fanpage Cổ Nhơn An Nhơn Bình Định
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://www.facebook.com/groups/conhonannhon"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              👥 Tham gia nhóm Cổ Nhơn An Nhơn Bình Định
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://zalo.me/0332697909"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              💬 Kết bạn Cậu Ba Họ Nguyễn (Zalo)
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://www.youtube.com/@cau3honguyen"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-red-600 hover:text-red-800 hover:underline"
+                            >
+                              ▶️ Đăng ký YouTube Cậu 3 Họ Nguyễn
+                            </a>
+                          </li>
                         </ul>
                         <p className="text-sm text-gray-600 italic">
                           Chỉ khi hoàn thành tất cả nhiệm vụ, bạn mới có thể mua con vật.
@@ -132,9 +173,9 @@ const HuongDanPage: React.FC = () => {
                           Chọn một trong 3 Thai để tham gia:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li><strong>Thai An Nhơn:</strong> Khung giờ 11h, 17h (Tết có thêm 21h)</li>
-                          <li><strong>Thai Nhơn Phong:</strong> Khung giờ 11h, 17h (không có khung giờ tối)</li>
-                          <li><strong>Thai Hoài Nhơn:</strong> Khung giờ 13h, 19h</li>
+                          <li><strong>Thai An Nhơn:</strong> Đóng tịch 10:30, 16:30 (Tết thêm 20:30)</li>
+                          <li><strong>Thai Nhơn Phong:</strong> Đóng tịch 10:30, 16:30 (Tết thêm 20:30)</li>
+                          <li><strong>Thai Hoài Nhơn:</strong> Đóng tịch 12:30, 18:30 (không có tối)</li>
                         </ul>
                       </div>
                     </div>
@@ -186,8 +227,8 @@ const HuongDanPage: React.FC = () => {
               <div className="space-y-8">
                 {/* Golden Frame Section */}
                 <div className="relative p-8">
-                  {/* Outer golden border */}
-                  <div className="absolute inset-0 border-2 border-yellow-500 rounded-lg"></div>
+                  {/* Outer decorative border */}
+                  <div className="absolute inset-0 border-2 border-red-200 rounded-lg"></div>
 
                   {/* Corner decorations */}
                   <div className="absolute top-0 left-0 w-24 h-24" style={{
@@ -218,8 +259,8 @@ const HuongDanPage: React.FC = () => {
                     transform: 'scale(-1)',
                   }}></div>
 
-                  {/* Inner content with golden background */}
-                  <div className="relative bg-gradient-to-br from-yellow-100 via-yellow-50 to-amber-100 rounded-lg p-8 mx-8 my-8">
+                  {/* Inner content with soft red background */}
+                  <div className="relative bg-gradient-to-br from-red-50 via-white to-orange-50 rounded-lg p-8 mx-8 my-8">
                     <h2 className="section-title text-tet-red-800 mb-8 text-3xl text-center">
                       Luật chơi và cách tham gia
                     </h2>
@@ -231,7 +272,7 @@ const HuongDanPage: React.FC = () => {
                           Câu thai (đề đố):
                         </h3>
                         <p className="leading-relaxed">
-                          Câu thai gồm bốn câu thơ lục bát, được sáng tác dựa trên các chủ đề như lịch sử, văn hóa, danh lam thắng cảnh, con người, hoặc thiên nhiên.
+                          Câu thai gồm 4 câu thơ lục bát, được sáng tác dựa trên các chủ đề như lịch sử, văn hóa, danh lam thắng cảnh, con người, hoặc thiên nhiên.
                           Nội dung câu thơ chứa các manh mối để người chơi suy luận và tìm ra con vật chính xác.
                         </p>
                       </div>

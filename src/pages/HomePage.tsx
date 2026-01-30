@@ -7,6 +7,63 @@ const HomePage: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(getCurrentYear());
   const [selectedGroup, setSelectedGroup] = useState('tất-cả');
   const [selectedThai, setSelectedThai] = useState('an-nhon');
+  const [currentCauThaiIndex, setCurrentCauThaiIndex] = useState(0);
+
+  // Mock data câu thai - sắp xếp mới nhất trước
+  const cauThaiData = [
+    {
+      id: 1,
+      session: 'CHIỀU mùng 9 TẾT ẤT TỴ 2025',
+      date: '06-02-2025',
+      lines: [
+        'Trinh Nương nức tiếng trăm miền',
+        'Tượng binh xuất trận đảo điên quân thù',
+        'Tùng Sơn nắng quyện mây trời',
+        'Dấu chân Bà Triệu rạng ngời sử xanh'
+      ],
+      result: 'Voi (13)'
+    },
+    {
+      id: 2,
+      session: 'SÁNG mùng 9 TẾT ẤT TỴ 2025',
+      date: '06-02-2025',
+      lines: [
+        'Xuân về hoa nở đầy vườn',
+        'Con ong chăm chỉ bay vòng hút mật',
+        'Bốn mùa không nghỉ không ngơi',
+        'Ấm no làng xóm vui tươi tháng năm'
+      ],
+      result: 'Ong (16)'
+    },
+    {
+      id: 3,
+      session: 'CHIỀU mùng 8 TẾT ẤT TỴ 2025',
+      date: '05-02-2025',
+      lines: [
+        'Rồng bay phượng múa trời xanh',
+        'Vua Hùng dựng nước đất lành muôn phương',
+        'Lạc Long Quân với Âu Cơ',
+        'Trăm con về biển về rừng chia ly'
+      ],
+      result: 'Rồng Bay (10)'
+    },
+    {
+      id: 4,
+      session: 'SÁNG mùng 8 TẾT ẤT TỴ 2025',
+      date: '05-02-2025',
+      lines: [
+        'Trăng tròn soi sáng đêm trường',
+        'Thỏ ngọc giã thuốc mười phương vọng về',
+        'Nhân gian nhàn hạ êm đềm',
+        'Cầu cho mưa thuận gió hòa tốt tươi'
+      ],
+      result: 'Thỏ (8)'
+    }
+  ];
+
+  const currentCauThai = cauThaiData[currentCauThaiIndex];
+  const canGoPrev = currentCauThaiIndex > 0;
+  const canGoNext = currentCauThaiIndex < cauThaiData.length - 1;
 
   // Animal groups from HTML
   const animalGroups = [
@@ -694,9 +751,35 @@ const HomePage: React.FC = () => {
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 items-center">
-              {/* Left: Background Image with Text */}
+              {/* Left: Background Image with Text + Navigation Buttons */}
               <div className="lg:col-span-2 relative text-center">
                 <div className="relative mx-auto" style={{ width: '100%', maxWidth: '600px' }}>
+                  {/* Navigation Buttons */}
+                  <button
+                    onClick={() => setCurrentCauThaiIndex(prev => prev - 1)}
+                    disabled={!canGoPrev}
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${canGoPrev
+                        ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
+                        : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
+                      }`}
+                    style={{ left: '-15px' }}
+                    title="Câu thai mới hơn"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => setCurrentCauThaiIndex(prev => prev + 1)}
+                    disabled={!canGoNext}
+                    className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${canGoNext
+                        ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
+                        : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
+                      }`}
+                    style={{ right: '-15px' }}
+                    title="Câu thai cũ hơn"
+                  >
+                    ›
+                  </button>
+
                   <img
                     src="/assets/decorations/bg-cau-thai-co-nhon.png"
                     alt="Câu thai"
@@ -705,17 +788,38 @@ const HomePage: React.FC = () => {
                   <div className="absolute inset-0 flex items-center justify-center px-4 md:px-8">
                     <div className="text-center w-full">
                       <h6 className="uppercase text-font mb-1 text-sm md:text-base" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif", fontWeight: 400 }}>
-                        CHIỀU mùng 9 TẾT ẤT TỴ 2025
+                        {currentCauThai.session}
                       </h6>
-                      <p className="text-base md:text-xl mb-2" style={{ color: '#fff', fontFamily: "'Nunito', sans-serif" }}>06-02-2025</p>
+                      <p className="text-base md:text-xl mb-2" style={{ color: '#fff', fontFamily: "'Nunito', sans-serif" }}>{currentCauThai.date}</p>
                       <p className="text-sm md:text-xl leading-tight" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif" }}>
-                        Trinh Nương nức tiếng trăm miền<br />
-                        Tượng binh xuất trận đảo điên quân thù<br />
-                        Tùng Sơn nắng quyện mây trời<br />
-                        Dấu chân Bà Triệu rạng ngời sử xanh
+                        {currentCauThai.lines.map((line, idx) => (
+                          <React.Fragment key={idx}>
+                            {line}
+                            {idx < currentCauThai.lines.length - 1 && <br />}
+                          </React.Fragment>
+                        ))}
                       </p>
+                      {/* Hiển thị kết quả cho câu thai cũ */}
+                      {currentCauThaiIndex > 0 && (
+                        <p className="mt-2 text-sm font-bold" style={{ color: '#fef08a' }}>
+                          ✅ Kết quả: {currentCauThai.result}
+                        </p>
+                      )}
                     </div>
                   </div>
+                </div>
+                {/* Indicator dots */}
+                <div className="flex justify-center gap-2 mt-4">
+                  {cauThaiData.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentCauThaiIndex(idx)}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentCauThaiIndex
+                          ? 'bg-red-600 scale-125'
+                          : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                    />
+                  ))}
                 </div>
               </div>
 

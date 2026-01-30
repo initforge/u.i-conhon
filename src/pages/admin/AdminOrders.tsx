@@ -47,9 +47,15 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) =
               <div className="font-medium" style={{ color: '#3d3428' }}>{thai?.name || 'N/A'}</div>
             </div>
             <div>
-              <span className="text-gray-500">Ngày đặt:</span>
+              <span className="text-gray-500">Thời gian mua:</span>
               <div className="font-medium" style={{ color: '#3d3428' }}>
-                {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+                {new Date(order.createdAt).toLocaleString('vi-VN', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
               </div>
             </div>
             <div>

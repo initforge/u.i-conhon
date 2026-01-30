@@ -63,11 +63,14 @@ export const mockThais: Thai[] = [
     id: 'thai-an-nhon',
     name: 'Thai An Nhơn',
     slug: 'an-nhon',
-    times: ['10:30', '16:30'],
+    times: ['10:30', '16:30'],  // Legacy - giờ đóng tịch
     timeSlots: [
+      // Sáng: đóng tịch 10:30, xổ 11:00
       { startTime: '07:00', endTime: '10:30' },
+      // Chiều: đóng tịch 16:30, xổ 17:00
       { startTime: '12:00', endTime: '16:30' },
     ],
+    // Tết: đóng tịch 20:30, xổ 21:00
     tetTimeSlot: { startTime: '18:00', endTime: '20:30' },
     isTetMode: false,
     description: 'Khu vực An Nhơn - Bình Định',
@@ -77,11 +80,14 @@ export const mockThais: Thai[] = [
     id: 'thai-nhon-phong',
     name: 'Thai Nhơn Phong',
     slug: 'nhon-phong',
-    times: ['10:30', '16:30'],
+    times: ['10:30', '16:30'],  // Legacy - giờ đóng tịch
     timeSlots: [
+      // Sáng: đóng tịch 10:30, xổ 11:00
       { startTime: '07:00', endTime: '10:30' },
+      // Chiều: đóng tịch 16:30, xổ 17:00
       { startTime: '12:00', endTime: '16:30' },
     ],
+    // Tết: đóng tịch 20:30, xổ 21:00
     tetTimeSlot: { startTime: '18:00', endTime: '20:30' },
     isTetMode: false,
     description: 'Khu vực Nhơn Phong',
@@ -91,11 +97,14 @@ export const mockThais: Thai[] = [
     id: 'thai-hoai-nhon',
     name: 'Thai Hoài Nhơn',
     slug: 'hoai-nhon',
-    times: ['12:30', '18:30'],
+    times: ['12:30', '18:30'],  // Legacy - giờ đóng tịch
     timeSlots: [
+      // Sáng: đóng tịch 12:30, xổ 13:00
       { startTime: '09:00', endTime: '12:30' },
+      // Chiều: đóng tịch 18:30, xổ 19:00
       { startTime: '14:00', endTime: '18:30' },
     ],
+    // ❌ KHÔNG CÓ BUỔI TỐI cho Hoài Nhơn
     isTetMode: false,
     description: 'Khu vực Hoài Nhơn',
     isOpen: true,

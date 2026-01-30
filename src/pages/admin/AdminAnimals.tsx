@@ -56,6 +56,21 @@ type AnimalWithPurchase = ReturnType<typeof createAnNhonAnimals>[0];
 const AdminAnimals: React.FC = () => {
   const [selectedThai, setSelectedThai] = useState('an-nhon');
 
+  // Hạn mức tổng cho mỗi Thai
+  const [thaiLimits, setThaiLimits] = useState({
+    'an-nhon': 300000,
+    'nhon-phong': 500000,
+    'hoai-nhon': 200000,
+  });
+
+  // Modal cấm con vật
+  const [banModal, setBanModal] = useState<{
+    isOpen: boolean;
+    animalId: string | null;
+    animalName: string;
+    reason: string;
+  }>({ isOpen: false, animalId: null, animalName: '', reason: '' });
+
   // Animals state for each Thai
   const [animalsAnNhon, setAnimalsAnNhon] = useState(createAnNhonAnimals());
   const [animalsNhonPhong, setAnimalsNhonPhong] = useState(createAnNhonAnimals());
@@ -105,6 +120,31 @@ const AdminAnimals: React.FC = () => {
       updateAnimal(id, { isBanned: false, banReason: undefined });
     } else {
       updateAnimal(id, { isBanned: true, banReason: reason || 'Không có lý do' });
+    }
+  };
+
+  // Áp dụng hạn mức Thai cho tất cả con vật
+  const applyThaiLimitToAll = () => {
+    const limit = thaiLimits[selectedThai as keyof typeof thaiLimits];
+    const updatedAnimals = animals.map(a => ({ ...a, purchaseLimit: limit }));
+    setCurrentAnimals(updatedAnimals);
+  };
+
+  // Mở modal cấm
+  const openBanModal = (animal: typeof animals[0]) => {
+    setBanModal({
+      isOpen: true,
+      animalId: animal.id,
+      animalName: animal.name,
+      reason: ''
+    });
+  };
+
+  // Xác nhận cấm
+  const confirmBan = () => {
+    if (banModal.animalId) {
+      toggleBan(banModal.animalId, banModal.reason || 'Không có lý do');
+      setBanModal({ isOpen: false, animalId: null, animalName: '', reason: '' });
     }
   };
 
@@ -174,6 +214,55 @@ const AdminAnimals: React.FC = () => {
         </div>
       </div>
 
+      {/* Hạn mức Thai tổng */}
+      <div
+        className="p-4 rounded-xl mb-6"
+        style={{ backgroundColor: '#f0f9ff', border: '1px solid #bfdbfe' }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">💰</span>
+            <div>
+              <p className="text-sm font-medium text-blue-700">Hạn mức tổng cho {thaiOptions.find(t => t.id === selectedThai)?.name}</p>
+              <p className="text-xs text-blue-500">Áp dụng cho tất cả {animals.length} con vật</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={thaiLimits[selectedThai as keyof typeof thaiLimits]}
+              onChange={(e) => setThaiLimits({
+                ...thaiLimits,
+                [selectedThai]: Number(e.target.value)
+              })}
+              className="w-32 px-3 py-2 text-right font-bold border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500"
+              step="50000"
+            />
+            <span className="text-blue-700 font-medium">đ</span>
+            <button
+              onClick={applyThaiLimitToAll}
+              className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              ✅ Áp dụng tất cả
+            </button>
+          </div>
+        </div>
+        <div className="flex gap-2 mt-3">
+          {[100000, 200000, 300000, 500000].map(amount => (
+            <button
+              key={amount}
+              onClick={() => setThaiLimits({ ...thaiLimits, [selectedThai]: amount })}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${thaiLimits[selectedThai as keyof typeof thaiLimits] === amount
+                ? 'bg-blue-600 text-white'
+                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                }`}
+            >
+              {(amount / 1000)}k
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Animal Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {animals.map((animal) => {
@@ -184,10 +273,10 @@ const AdminAnimals: React.FC = () => {
           return (
             <div
               key={animal.id}
-              className={`rounded-xl p-4 transition-all ${animal.isBanned ? 'opacity-60 ring-2 ring-red-300' : ''}`}
+              className={`rounded-xl p-4 transition-all ${animal.isBanned ? 'ring-2 ring-red-500' : ''}`}
               style={{
                 backgroundColor: animal.isBanned ? '#fef2f2' : 'white',
-                border: animal.isBanned ? '1px solid #f0c0c0' : '1px solid #e8e4df'
+                border: animal.isBanned ? '2px solid #ef4444' : '1px solid #e8e4df'
               }}
             >
               {/* Header */}
@@ -280,10 +369,7 @@ const AdminAnimals: React.FC = () => {
                   if (animal.isBanned) {
                     toggleBan(animal.id);
                   } else {
-                    const reason = prompt('Nhập lý do cấm con này:');
-                    if (reason !== null) {
-                      toggleBan(animal.id, reason || 'Không có lý do');
-                    }
+                    openBanModal(animal);
                   }
                 }}
                 className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${animal.isBanned
@@ -294,15 +380,71 @@ const AdminAnimals: React.FC = () => {
                 {animal.isBanned ? '✅ Bỏ cấm' : '🚫 Cấm con này'}
               </button>
 
-              {animal.isBanned && animal.banReason && (
-                <p className="text-xs italic text-red-600 bg-red-50 p-2 rounded mt-2">
-                  🚫 Lý do: {animal.banReason}
-                </p>
+              {/* Banner cấm nổi bật */}
+              {animal.isBanned && (
+                <div className="mt-3 p-3 bg-red-500 text-white rounded-lg">
+                  <div className="flex items-center gap-2 font-bold text-sm">
+                    🚫 CON NÀY ĐANG BỊ CẤM
+                  </div>
+                  {animal.banReason && (
+                    <p className="text-xs mt-1 opacity-90">
+                      Lý do: {animal.banReason}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Modal cấm con vật */}
+      {banModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-red-500 text-white p-5">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                🚫 Cấm con vật
+              </h3>
+              <p className="text-red-100 text-sm mt-1">
+                Bạn đang cấm: <strong>{banModal.animalName}</strong>
+              </p>
+            </div>
+
+            {/* Body */}
+            <div className="p-5">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nhập lý do cấm con này:
+              </label>
+              <textarea
+                value={banModal.reason}
+                onChange={(e) => setBanModal({ ...banModal, reason: e.target.value })}
+                placeholder="VD: Con này đã có nhiều người mua..."
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-red-400 resize-none"
+                rows={3}
+                autoFocus
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 p-5 bg-gray-50">
+              <button
+                onClick={() => setBanModal({ isOpen: false, animalId: null, animalName: '', reason: '' })}
+                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition-colors"
+              >
+                ❌ Hủy
+              </button>
+              <button
+                onClick={confirmBan}
+                className="flex-1 px-4 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors"
+              >
+                🚫 Xác nhận cấm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminPageWrapper>
   );
 };

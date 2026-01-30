@@ -23,6 +23,8 @@ interface Animal {
 
 interface CartItem extends Animal {
     amount: number; // Số tiền người chơi muốn mua
+    thaiId: string;
+    thaiName: string;
 }
 
 const thaiOptions = [
@@ -76,32 +78,39 @@ const MuaConVatPage: React.FC = () => {
     const handleAddToCart = (animal: Animal) => {
         const amount = inputAmounts[animal.id] || 0;
         if (amount < MIN_AMOUNT) return;
+        if (!currentThaiOption) return; // Cần chọn Thai trước
 
-        const existingItem = cart.find(item => item.id === animal.id);
+        const thaiId = `thai-${selectedThai}`;
+        const thaiName = currentThaiOption.name;
+
+        // Unique key = animalId + thaiId để hỗ trợ mua nhiều Thai
+        const cartItemKey = `${animal.id}-${thaiId}`;
+        const existingItem = cart.find(item => `${item.id}-${item.thaiId}` === cartItemKey);
+
         if (existingItem) {
             setCart(cart.map(item =>
-                item.id === animal.id
+                `${item.id}-${item.thaiId}` === cartItemKey
                     ? { ...item, amount: item.amount + amount }
                     : item
             ));
         } else {
-            setCart([...cart, { ...animal, amount }]);
+            setCart([...cart, { ...animal, amount, thaiId, thaiName }]);
         }
         // Reset input after adding
         setInputAmounts(prev => ({ ...prev, [animal.id]: 0 }));
         setIsCartOpen(true);
     };
 
-    const handleRemoveFromCart = (animalId: string) => {
-        setCart(cart.filter(item => item.id !== animalId));
+    const handleRemoveFromCart = (cartItemKey: string) => {
+        setCart(cart.filter(item => `${item.id}-${item.thaiId}` !== cartItemKey));
     };
 
-    const handleUpdateCartAmount = (animalId: string, newAmount: number) => {
+    const handleUpdateCartAmount = (cartItemKey: string, newAmount: number) => {
         if (newAmount <= 0) {
-            handleRemoveFromCart(animalId);
+            handleRemoveFromCart(cartItemKey);
         } else {
             setCart(cart.map(item =>
-                item.id === animalId
+                `${item.id}-${item.thaiId}` === cartItemKey
                     ? { ...item, amount: newAmount }
                     : item
             ));

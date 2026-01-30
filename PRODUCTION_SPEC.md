@@ -937,8 +937,62 @@ networks:
 
 ---
 
+## 📝 CHANGELOG - PHASE 2 (30/01/2026)
+
+### Thời gian đóng tịch (mockData.ts, HuongDanPage.tsx)
+- **Thai An Nhơn & Nhơn Phong**: Đóng tịch 10:30, 16:30 (Tết thêm 20:30)
+- **Thai Hoài Nhơn**: Đóng tịch 12:30, 18:30 (**không có tối**)
+- Thời gian xổ: 30 phút sau đóng tịch (11:00, 17:00, 21:00)
+
+### Số câu thai
+- Đổi từ chữ "bốn" → số "4" trong HuongDanPage.tsx
+
+### Giỏ hàng (MuaConVatPage.tsx, CartDrawer.tsx)
+- Thêm `thaiId` và `thaiName` vào CartItem
+- Hiển thị nhóm theo Thai trong giỏ hàng
+- Hỗ trợ mua nhiều Thai cùng lúc với unique key (animalId + thaiId)
+
+### Chi tiết đơn hàng (AdminOrders.tsx)
+- Hiển thị thời gian mua chi tiết (ngày + giờ:phút)
+
+### Navigation câu thai (HomePage.tsx)
+- Thêm mock data 4 câu thai cũ
+- Nút trái/phải để xem câu thai cũ hơn
+- Indicator dots để nhảy trực tiếp
+- Hiển thị kết quả cho câu thai đã xổ
+
+### Hình ảnh con vật mobile
+- Sử dụng `object-contain` và `aspect-square` để hiển thị đầy đủ
+
+### Xóa highlight vàng tab Luật chơi (HuongDanPage.tsx)
+- `border-yellow-500` → `border-red-200`
+- Gradient `yellow-100/yellow-50/amber-100` → `red-50/white/orange-50`
+
+### CMS Assets Thai mới (AdminCMS.tsx)
+- Tab **Assets Thai** với selector 3 Thai
+- Form quản lý câu thai riêng cho mỗi Thai
+- Dashboard assets: Banner, Câu Thai, Con Vật, Lịch Trình
+- Mock data câu thai theo từng Thai
+
+---
+
+## 📊 THỐNG KÊ DỰ ÁN (30/01/2026)
+
+| Thành phần | Số lượng |
+|------------|----------|
+| **Pages (User)** | 24 files |
+| **Pages (Admin)** | 14 files |
+| **Components** | 17 files |
+| **Contexts** | 4 files |
+| **Layouts** | 3 files |
+| **Utils** | 1 file |
+| **Mock Data** | 1 file |
+| **Total Lines** | ~15,000+ |
+
+---
+
 ## 📞 LIÊN HỆ & HỖ TRỢ
 
 **Tài liệu này được tạo tự động bởi Antigravity AI**
 
-*Cập nhật lần cuối: 29/01/2026*
+*Cập nhật lần cuối: 30/01/2026 21:06*

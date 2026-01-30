@@ -175,6 +175,30 @@ const AdminUsers: React.FC = () => {
 
                                 return (
                                     <div className="space-y-4">
+                                        {/* Thông tin tài khoản ngân hàng - Hiển thị đầu tiên */}
+                                        {user.bankAccount && (
+                                            <div className="p-4 rounded-lg" style={{ backgroundColor: '#f0f9ff', border: '1px solid #bfdbfe' }}>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-lg">💳</span>
+                                                    <p className="text-sm font-semibold text-blue-700">Tài khoản ngân hàng</p>
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-xs text-gray-500">Ngân hàng:</span>
+                                                        <span className="text-sm font-medium text-gray-800">{user.bankAccount.bankName}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-xs text-gray-500">Số TK:</span>
+                                                        <span className="text-sm font-bold text-blue-700">{user.bankAccount.accountNumber}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-xs text-gray-500">Chủ TK:</span>
+                                                        <span className="text-sm font-medium text-gray-800">{user.bankAccount.accountHolder}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="grid grid-cols-2 gap-3 p-4 rounded-lg" style={{ backgroundColor: '#faf8f5' }}>
                                             <div><p className="text-xs" style={{ color: '#9a8c7a' }}>Zalo</p><p className="text-sm font-medium">{user.zaloName}</p></div>
                                             <div><p className="text-xs" style={{ color: '#9a8c7a' }}>SĐT</p><p className="text-sm font-medium">{user.phone}</p></div>

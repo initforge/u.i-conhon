@@ -5,14 +5,23 @@ const BottomNavBar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleScrollToSection = (sectionId: string, path: string) => {
+  const handleScrollToSection = (sectionId: string) => {
     if (location.pathname === '/') {
+      // Đang ở homepage - scroll ngay
       const section = document.getElementById(sectionId);
       if (section) {
         section.scrollIntoView({ behavior: 'smooth' });
       }
     } else {
-      navigate(path);
+      // Đang ở trang khác - navigate về homepage với hash, sau đó scroll
+      navigate('/');
+      // Đợi DOM render xong rồi scroll
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   };
 
@@ -55,7 +64,8 @@ const BottomNavBar: React.FC = () => {
     {
       icon: '/assets/nav-icons/hotro.svg',
       label: 'HỖ TRỢ',
-      link: '/user/ho-tro'
+      link: 'https://zalo.me/0332697909',
+      isExternal: true
     },
   ];
 
@@ -137,11 +147,26 @@ const BottomNavBar: React.FC = () => {
             return (
               <button
                 key={index}
-                onClick={() => handleScrollToSection(item.sectionId!, item.link)}
+                onClick={() => handleScrollToSection(item.sectionId!)}
                 className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105 active:scale-95"
               >
                 {content}
               </button>
+            );
+          }
+
+          // External link (like Zalo)
+          if ((item as any).isExternal) {
+            return (
+              <a
+                key={index}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105 active:scale-95 focus:outline-none"
+              >
+                {content}
+              </a>
             );
           }
 
