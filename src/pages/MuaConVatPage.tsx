@@ -1,56 +1,14 @@
 import React, { useState } from 'react';
 import CartDrawer from '../components/CartDrawer';
+import { ANIMALS_AN_NHON } from '../constants/animalData';
 
-// Mock data for 40 animals - Đúng thứ tự từ Cá Trắng (1) đến Ông Táo (40)
+// Generate animals từ central data
 const generateAnimals = () => {
-    const animalData = [
-        { name: 'Cá Trắng', alias: 'Chiếm Khôi' },
-        { name: 'Ốc', alias: 'Bản Quế' },
-        { name: 'Ngỗng', alias: 'Vinh Sanh' },
-        { name: 'Công', alias: 'Phùng Xuân' },
-        { name: 'Trùn', alias: 'Chí Cao' },
-        { name: 'Cọp', alias: 'Khôn Sơn' },
-        { name: 'Heo', alias: 'Chánh Thuận' },
-        { name: 'Thỏ', alias: 'Nguyệt Bửu' },
-        { name: 'Trâu', alias: 'Hớn Vân' },
-        { name: 'Rồng Bay', alias: 'Giang Từ' },
-        { name: 'Chó', alias: 'Phước Tôn' },
-        { name: 'Ngựa', alias: 'Quang Minh' },
-        { name: 'Voi', alias: 'Hữu Tài' },
-        { name: 'Mèo', alias: 'Chỉ Đắc' },
-        { name: 'Chuột', alias: 'Tất Khắc' },
-        { name: 'Ong', alias: 'Mậu Lâm' },
-        { name: 'Hạc', alias: 'Trọng Tiên' },
-        { name: 'Kỳ Lân', alias: 'Thiên Thân' },
-        { name: 'Bướm', alias: 'Cấn Ngọc' },
-        { name: 'Hòn Núi', alias: 'Trân Châu' },
-        { name: 'Én', alias: 'Thượng Chiêu' },
-        { name: 'Bồ Câu', alias: 'Song Đồng' },
-        { name: 'Khỉ', alias: 'Tam Hòe' },
-        { name: 'Ếch', alias: 'Hiệp Hải' },
-        { name: 'Quạ', alias: 'Cửu Quan' },
-        { name: 'Rồng Nằm', alias: 'Thái Bình' },
-        { name: 'Rùa', alias: 'Hỏa Diệm' },
-        { name: 'Gà', alias: 'Nhựt Thăng' },
-        { name: 'Lươn', alias: 'Địa Lươn' },
-        { name: 'Cá Đỏ', alias: 'Tỉnh Lợi' },
-        { name: 'Tôm', alias: 'Trường Thọ' },
-        { name: 'Rắn', alias: 'Vạn Kim' },
-        { name: 'Nhện', alias: 'Thanh Tuyền' },
-        { name: 'Nai', alias: 'Nguyên Cát' },
-        { name: 'Dê', alias: 'Nhứt Phẩm' },
-        { name: 'Bà Vãi', alias: 'An Sĩ' },
-        { name: 'Ông Trời', alias: 'Thiên Quan' },
-        { name: 'Ông Địa', alias: 'Địa Chủ' },
-        { name: 'Thần Tài', alias: 'Tài Thần' },
-        { name: 'Ông Táo', alias: 'Táo Quân' },
-    ];
-
-    return animalData.map((animal, index) => ({
-        id: `animal-${index + 1}`,
+    return ANIMALS_AN_NHON.map((animal) => ({
+        id: `animal-${animal.order}`,
         name: animal.name,
         alias: animal.alias,
-        number: index + 1,
+        number: animal.order,
         liked: false
     }));
 };

@@ -68,6 +68,7 @@ const AdminKetQua: React.FC = () => {
   const [selectedThai, setSelectedThai] = useState('an-nhon');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [ketQuas, setKetQuas] = useState(mockKetQuas);
+  const [editingKetQua, setEditingKetQua] = useState<string | null>(null); // ID của kết quả đang sửa
   const [formData, setFormData] = useState({
     thaiId: mockThais[0]?.id || '',
     date: new Date().toISOString().split('T')[0],
@@ -86,15 +87,47 @@ const AdminKetQua: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newKetQua = { id: `kq-${Date.now()}`, ...formData };
-    setKetQuas([...ketQuas, newKetQua]);
+
+    if (editingKetQua) {
+      // Update existing
+      setKetQuas(ketQuas.map(kq =>
+        kq.id === editingKetQua
+          ? { ...kq, ...formData }
+          : kq
+      ));
+      setEditingKetQua(null);
+      alert('Đã cập nhật kết quả!');
+    } else {
+      // Add new
+      const newKetQua = { id: `kq-${Date.now()}`, ...formData };
+      setKetQuas([...ketQuas, newKetQua]);
+      alert('Đã thêm kết quả!');
+    }
+
     setFormData({
       thaiId: mockThais[0]?.id || '',
       date: new Date().toISOString().split('T')[0],
       winningAnimalIds: [],
       imageUrl: '',
     });
-    alert('Đã thêm kết quả!');
+  };
+
+  // Edit kết quả
+  const startEditKetQua = (kq: typeof ketQuas[0]) => {
+    setEditingKetQua(kq.id);
+    setFormData({
+      thaiId: kq.thaiId,
+      date: kq.date,
+      winningAnimalIds: kq.winningAnimalIds,
+      imageUrl: kq.imageUrl || '',
+    });
+  };
+
+  // Delete kết quả
+  const deleteKetQua = (id: string) => {
+    if (confirm('Bạn có chắc muốn xóa kết quả này?')) {
+      setKetQuas(ketQuas.filter(kq => kq.id !== id));
+    }
   };
 
   const toggleAnimal = (animalId: string) => {
@@ -292,9 +325,28 @@ const AdminKetQua: React.FC = () => {
               </div>
             </div>
 
-            <AdminButton variant="primary" type="submit" className="w-full">
-              💾 Lưu kết quả
-            </AdminButton>
+            <div className="flex gap-2">
+              <AdminButton variant="primary" type="submit" className="flex-1">
+                {editingKetQua ? '💾 Cập nhật' : '💾 Lưu kết quả'}
+              </AdminButton>
+              {editingKetQua && (
+                <AdminButton
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => {
+                    setEditingKetQua(null);
+                    setFormData({
+                      thaiId: mockThais[0]?.id || '',
+                      date: new Date().toISOString().split('T')[0],
+                      winningAnimalIds: [],
+                      imageUrl: '',
+                    });
+                  }}
+                >
+                  ❌ Hủy
+                </AdminButton>
+              )}
+            </div>
           </form>
         </AdminCard>
 
@@ -330,8 +382,24 @@ const AdminKetQua: React.FC = () => {
                           const thai = mockThais.find(t => t.id === kq.thaiId);
                           return (
                             <div key={kq.id} className="ml-4 p-2 rounded-lg mb-2" style={{ backgroundColor: '#faf8f5' }}>
-                              <div className="text-xs font-medium mb-2" style={{ color: '#9a8c7a' }}>
-                                🏛️ {thai?.name}
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-xs font-medium" style={{ color: '#9a8c7a' }}>
+                                  🏛️ {thai?.name}
+                                </div>
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => startEditKetQua(kq)}
+                                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                                  >
+                                    ✏️ Sửa
+                                  </button>
+                                  <button
+                                    onClick={() => deleteKetQua(kq.id)}
+                                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+                                  >
+                                    🗑️ Xóa
+                                  </button>
+                                </div>
                               </div>
                               <div className="flex flex-wrap gap-1">
                                 {kq.winningAnimalIds.map(animalId => {
@@ -514,7 +582,7 @@ const AdminKetQua: React.FC = () => {
                         <span className="font-bold">{totalDraws} lần</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Số con unique:</span>
+                        <span className="text-gray-600">Số con đã xổ:</span>
                         <span className="font-bold">{uniqueAnimals.size}/40 con</span>
                       </div>
                       <div className="flex justify-between">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ANIMALS_AN_NHON } from '../../constants/animalData';
 
 const mockThais = [
   { id: 'thai-an-nhon', name: 'Thai An Nhơn' },
@@ -6,14 +7,26 @@ const mockThais = [
   { id: 'thai-hoai-nhon', name: 'Thai Hoài Nhơn' },
 ];
 
+// Helper để lấy thông tin con vật từ central data
+const getAnimalInfo = (name: string) => {
+  const animal = ANIMALS_AN_NHON.find(a => a.name === name);
+  return animal ? { order: animal.order, alias: animal.alias } : { order: 0, alias: '' };
+};
+
 const AdminDashboard: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedThai, setSelectedThai] = useState('all');
+  const [selectedSession, setSelectedSession] = useState('all'); // Sáng/Chiều/Tối
 
-  // Mock data - varies by thai
+  // Mock data - varies by thai and session
   const getStats = () => {
-    const multiplier = selectedThai === 'thai-1' ? 0.4 : selectedThai === 'thai-2' ? 0.3 : selectedThai === 'thai-3' ? 0.3 : 1;
+    let multiplier = selectedThai === 'thai-1' ? 0.4 : selectedThai === 'thai-2' ? 0.3 : selectedThai === 'thai-3' ? 0.3 : 1;
+    // Session multiplier
+    if (selectedSession === 'sang') multiplier *= 0.35;
+    else if (selectedSession === 'chieu') multiplier *= 0.45;
+    else if (selectedSession === 'toi') multiplier *= 0.2;
+
     return {
       todayRevenue: Math.round(15600000 * multiplier),
       totalOrders: Math.round(52 * multiplier),
@@ -22,20 +35,21 @@ const AdminDashboard: React.FC = () => {
   };
   const stats = getStats();
 
+  // Mock data sử dụng tên con vật từ central data
   const topBought = [
-    { rank: 1, name: 'Rồng Bay', emoji: '🐉', count: 156, amount: 4680000 },
-    { rank: 2, name: 'Cọp', emoji: '🐅', count: 134, amount: 4020000 },
-    { rank: 3, name: 'Ngựa', emoji: '🐴', count: 98, amount: 2940000 },
-    { rank: 4, name: 'Mèo', emoji: '🐱', count: 87, amount: 2610000 },
-    { rank: 5, name: 'Rắn', emoji: '🐍', count: 76, amount: 2280000 },
+    { rank: 1, name: 'Rồng Bay', ...getAnimalInfo('Rồng Bay'), count: 156, amount: 4680000 },
+    { rank: 2, name: 'Cọp', ...getAnimalInfo('Cọp'), count: 134, amount: 4020000 },
+    { rank: 3, name: 'Ngựa', ...getAnimalInfo('Ngựa'), count: 98, amount: 2940000 },
+    { rank: 4, name: 'Mèo', ...getAnimalInfo('Mèo'), count: 87, amount: 2610000 },
+    { rank: 5, name: 'Rắn', ...getAnimalInfo('Rắn'), count: 76, amount: 2280000 },
   ];
 
   const leastBought = [
-    { rank: 1, name: 'Tôm', emoji: '🦐', count: 3, amount: 90000 },
-    { rank: 2, name: 'Hòn Núi', emoji: '🪨', count: 5, amount: 150000 },
-    { rank: 3, name: 'Bướm', emoji: '🦋', count: 7, amount: 210000 },
-    { rank: 4, name: 'Ong', emoji: '🐝', count: 9, amount: 270000 },
-    { rank: 5, name: 'Cú', emoji: '🦉', count: 11, amount: 330000 },
+    { rank: 1, name: 'Tôm', ...getAnimalInfo('Tôm'), count: 3, amount: 90000 },
+    { rank: 2, name: 'Hòn Núi', ...getAnimalInfo('Hòn Núi'), count: 5, amount: 150000 },
+    { rank: 3, name: 'Bướm', ...getAnimalInfo('Bướm'), count: 7, amount: 210000 },
+    { rank: 4, name: 'Ong', ...getAnimalInfo('Ong'), count: 9, amount: 270000 },
+    { rank: 5, name: 'Bà Vãi', ...getAnimalInfo('Bà Vãi'), count: 11, amount: 330000 },
   ];
 
   return (
@@ -104,6 +118,46 @@ const AdminDashboard: React.FC = () => {
             </button>
           ))}
         </div>
+
+        {/* Session Filter */}
+        <div className="flex gap-2 p-1 bg-purple-50 rounded-xl">
+          <button
+            onClick={() => setSelectedSession('all')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'all'
+              ? 'bg-white shadow-md text-purple-700'
+              : 'text-purple-600 hover:bg-purple-100'
+              }`}
+          >
+            Tất cả buổi
+          </button>
+          <button
+            onClick={() => setSelectedSession('sang')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'sang'
+              ? 'bg-white shadow-md text-purple-700'
+              : 'text-purple-600 hover:bg-purple-100'
+              }`}
+          >
+            ☀️ Sáng
+          </button>
+          <button
+            onClick={() => setSelectedSession('chieu')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'chieu'
+              ? 'bg-white shadow-md text-purple-700'
+              : 'text-purple-600 hover:bg-purple-100'
+              }`}
+          >
+            🌤️ Chiều
+          </button>
+          <button
+            onClick={() => setSelectedSession('toi')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
+              ? 'bg-white shadow-md text-purple-700'
+              : 'text-purple-600 hover:bg-purple-100'
+              }`}
+          >
+            🌙 Tối
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -161,7 +215,11 @@ const AdminDashboard: React.FC = () => {
                   }`}>
                   {animal.rank}
                 </span>
-                <span className="text-2xl">{animal.emoji}</span>
+                <img
+                  src={`/assets/conhon/${String(animal.order).padStart(2, '0')}.jpg`}
+                  alt={animal.name}
+                  className="w-10 h-10 rounded-lg object-cover"
+                />
                 <span className="flex-1 font-medium text-gray-800">{animal.name}</span>
                 <div className="text-right">
                   <span className="font-bold text-green-600 block">{animal.count} lượt</span>
@@ -187,7 +245,11 @@ const AdminDashboard: React.FC = () => {
                 <span className="w-8 h-8 rounded-full flex items-center justify-center font-bold bg-red-200 text-red-700">
                   {animal.rank}
                 </span>
-                <span className="text-2xl">{animal.emoji}</span>
+                <img
+                  src={`/assets/conhon/${String(animal.order).padStart(2, '0')}.jpg`}
+                  alt={animal.name}
+                  className="w-10 h-10 rounded-lg object-cover"
+                />
                 <span className="flex-1 font-medium text-gray-800">{animal.name}</span>
                 <div className="text-right">
                   <span className="font-bold text-red-600 block">{animal.count} lượt</span>

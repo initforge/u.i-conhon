@@ -1,89 +1,10 @@
 import React, { useState } from 'react';
 import AdminPageWrapper from '../../components/AdminPageWrapper';
+import { ANIMALS_AN_NHON, ANIMALS_HOAI_NHON } from '../../constants/animalData';
 
-// Data bộ phận cơ thể cho An Nhơn / Nhơn Phong (40 con - theo đồ hình nhơn)
-const animalsAnNhon40 = [
-    { order: 1, name: 'Cá Trắng', alias: 'Chiếm-Khởi' },
-    { order: 2, name: 'Ốc', alias: 'Bản-Quế' },
-    { order: 3, name: 'Ngỗng', alias: 'Vinh-Sanh' },
-    { order: 4, name: 'Công', alias: 'Phùng-Xuân' },
-    { order: 5, name: 'Trùn', alias: 'Chí-Cao' },
-    { order: 6, name: 'Cọp', alias: 'Khôn-Sơn' },
-    { order: 7, name: 'Heo', alias: 'Chánh-Thuận' },
-    { order: 8, name: 'Thỏ', alias: 'Nguyệt-Bửu' },
-    { order: 9, name: 'Trâu', alias: 'Hớn-Vân' },
-    { order: 10, name: 'Rồng Bay', alias: 'Giang-Tứ' },
-    { order: 11, name: 'Chó', alias: 'Phước-Tôn' },
-    { order: 12, name: 'Ngựa', alias: 'Quang-Minh' },
-    { order: 13, name: 'Voi', alias: 'Hữu-Tài' },
-    { order: 14, name: 'Mèo', alias: 'Chỉ-Đắc' },
-    { order: 15, name: 'Chuột', alias: 'Tất-Khắc' },
-    { order: 16, name: 'Ong', alias: 'Mậu-Lâm' },
-    { order: 17, name: 'Hạc', alias: 'Trọng-Tiên' },
-    { order: 18, name: 'Kỳ Lân', alias: 'Thiên-Thần' },
-    { order: 19, name: 'Bướm', alias: 'Cấn-Ngọc' },
-    { order: 20, name: 'Hòn Núi', alias: 'Trân-Châu' },
-    { order: 21, name: 'Én', alias: 'Thượng-Chiêu' },
-    { order: 22, name: 'Bồ Câu', alias: 'Song-Đồng' },
-    { order: 23, name: 'Khỉ', alias: 'Tam-Quẻ' },
-    { order: 24, name: 'Ếch', alias: 'Hiệp-Hải' },
-    { order: 25, name: 'Qua', alias: 'Cửu-Quan' },
-    { order: 26, name: 'Rồng Nằm', alias: 'Thái-Bình' },
-    { order: 27, name: 'Rùa', alias: 'Hỏa-Diệm' },
-    { order: 28, name: 'Gà', alias: 'Nhựt-Thăng' },
-    { order: 29, name: 'Lươn', alias: 'Địa-Lương' },
-    { order: 30, name: 'Cá Đỏ', alias: 'Tỉnh-Lợi' },
-    { order: 31, name: 'Tôm', alias: 'Trường-Thọ' },
-    { order: 32, name: 'Rắn', alias: 'Vạn-Kim' },
-    { order: 33, name: 'Nhện', alias: 'Thanh-Tuyền' },
-    { order: 34, name: 'Nai', alias: 'Nguyên-Cát' },
-    { order: 35, name: 'Dê', alias: 'Nhứt-Phẩm' },
-    { order: 36, name: 'Bà Vãi', alias: 'An-Sĩ' },
-    { order: 37, name: 'Ông Trời', alias: 'Thiên-Quan' },
-    { order: 38, name: 'Ông Địa', alias: 'Địa-Chủ' },
-    { order: 39, name: 'Thần Tài', alias: 'Tài-Thần' },
-    { order: 40, name: 'Ông Táo', alias: 'Táo-Quân' },
-];
-
-// Data cho Hoài Nhơn (36 con - theo Hội vui xuân Giáp Ngọ)
-const animalsHoaiNhon36 = [
-    { order: 1, name: 'Cá Trắng', alias: 'CHIẾM KHỞI' },
-    { order: 2, name: 'Ốc', alias: 'BẢN QUẾ' },
-    { order: 3, name: 'Ngỗng', alias: 'VINH SANH' },
-    { order: 4, name: 'Công', alias: 'PHÙNG XUÂN' },
-    { order: 5, name: 'Trùn', alias: 'CHÍ CAO' },
-    { order: 6, name: 'Cọp', alias: 'KHÔN SƠN' },
-    { order: 7, name: 'Heo', alias: 'CHÁNH THUẬN' },
-    { order: 8, name: 'Thỏ', alias: 'NGUYỆT BỬU' },
-    { order: 9, name: 'Trâu', alias: 'HỚN VÂN' },
-    { order: 10, name: 'Rồng Bay', alias: 'GIANG TỨ' },
-    { order: 11, name: 'Chó', alias: 'PHƯỚC TÔN' },
-    { order: 12, name: 'Ngựa', alias: 'QUANG MINH' },
-    { order: 13, name: 'Voi', alias: 'HỮU TÀI' },
-    { order: 14, name: 'Mèo', alias: 'CHỈ ĐẮC' },
-    { order: 15, name: 'Chuột', alias: 'TẤT KHẮC' },
-    { order: 16, name: 'Ong', alias: 'MẬU LÂM' },
-    { order: 17, name: 'Hạc', alias: 'TRỌNG TIÊN' },
-    { order: 18, name: 'Kỳ Lân', alias: 'THIÊN THẦN' },
-    { order: 19, name: 'Bướm', alias: 'CẤN NGỌC' },
-    { order: 20, name: 'Hòn Núi', alias: 'TRÂN CHÂU' },
-    { order: 21, name: 'Én', alias: 'THƯỢNG CHIÊU' },
-    { order: 22, name: 'Bồ Câu', alias: 'SONG ĐỒNG' },
-    { order: 23, name: 'Khỉ', alias: 'TAM HÒE' },
-    { order: 24, name: 'Ếch', alias: 'HIỆP HẢI' },
-    { order: 25, name: 'Qua', alias: 'CỬU QUAN' },
-    { order: 26, name: 'Rồng Nằm', alias: 'THÁI BÌNH' },
-    { order: 27, name: 'Rùa', alias: 'HỎA DIỆM' },
-    { order: 28, name: 'Gà', alias: 'NHỰT THĂNG' },
-    { order: 29, name: 'Lươn', alias: 'ĐỊA LƯƠNG' },
-    { order: 30, name: 'Cá Đỏ', alias: 'TỈNH LỢI' },
-    { order: 31, name: 'Tôm', alias: 'TRƯỜNG THỌ' },
-    { order: 32, name: 'Rắn', alias: 'VẠN KIM' },
-    { order: 33, name: 'Nhện', alias: 'THANH TUYỀN' },
-    { order: 34, name: 'Nai', alias: 'NGUYÊN CÁT' },
-    { order: 35, name: 'Dê', alias: 'NHỨT PHẨM' },
-    { order: 36, name: 'Bà Vãi', alias: 'AN SĨ' },
-];
+// Sử dụng dữ liệu từ central file
+const animalsAnNhon40 = ANIMALS_AN_NHON;
+const animalsHoaiNhon36 = ANIMALS_HOAI_NHON;
 
 const AdminBaoCao: React.FC = () => {
     const [selectedThai, setSelectedThai] = useState('an-nhon');
@@ -255,50 +176,59 @@ const AdminBaoCao: React.FC = () => {
         }
 
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full border-collapse">
-                    <tbody>
-                        {rows.map((row, rowIndex) => (
-                            <tr key={rowIndex} className="border-b border-gray-200 last:border-b-0">
-                                {row.map((animal) => {
-                                    const purchaseData = getMockPurchaseData(animal.order);
-                                    const hasPurchase = purchaseData.count > 0;
-                                    return (
-                                        <td
-                                            key={animal.order}
-                                            className={`border border-gray-200 p-3 text-center align-top ${hasPurchase ? 'bg-green-50 cursor-pointer hover:bg-green-100' : 'bg-white'
-                                                }`}
-                                            style={{ width: '16.66%' }}
-                                            onClick={() => hasPurchase && setSelectedAnimal(animal)}
-                                        >
-                                            <div className="flex items-start gap-1">
-                                                <span
-                                                    className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold border-2"
-                                                    style={{ borderColor: '#1e3a8a', color: '#1e3a8a' }}
-                                                >
-                                                    {String(animal.order).padStart(2, '0')}
-                                                </span>
-                                                <div className="flex-1 text-left">
-                                                    <div className="font-bold text-sm" style={{ color: '#1e3a8a' }}>
-                                                        {animal.alias}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        (Con {animal.name})
+            <div className="relative">
+                {/* Mobile scroll indicator */}
+                <div className="md:hidden flex items-center justify-center gap-2 text-xs text-gray-500 mb-2 py-2 bg-blue-50 rounded-lg">
+                    <span>←</span>
+                    <span>Vuốt ngang để xem thêm</span>
+                    <span>→</span>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+                    <table className="border-collapse" style={{ minWidth: '700px' }}>
+                        <tbody>
+                            {rows.map((row, rowIndex) => (
+                                <tr key={rowIndex} className="border-b border-gray-200 last:border-b-0">
+                                    {row.map((animal) => {
+                                        const purchaseData = getMockPurchaseData(animal.order);
+                                        const hasPurchase = purchaseData.count > 0;
+                                        return (
+                                            <td
+                                                key={animal.order}
+                                                className={`border border-gray-200 p-3 text-center align-top ${hasPurchase ? 'bg-green-50 cursor-pointer hover:bg-green-100' : 'bg-white'
+                                                    }`}
+                                                style={{ width: '16.66%' }}
+                                                onClick={() => hasPurchase && setSelectedAnimal(animal)}
+                                            >
+                                                <div className="flex items-start gap-1">
+                                                    <span
+                                                        className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold border-2"
+                                                        style={{ borderColor: '#1e3a8a', color: '#1e3a8a' }}
+                                                    >
+                                                        {String(animal.order).padStart(2, '0')}
+                                                    </span>
+                                                    <div className="flex-1 text-left">
+                                                        <div className="font-bold text-sm" style={{ color: '#1e3a8a' }}>
+                                                            {animal.alias}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500">
+                                                            (Con {animal.name})
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            {hasPurchase && (
-                                                <div className="mt-1 text-xs font-bold text-green-600 text-right">
-                                                    {purchaseData.count} lượt - {purchaseData.amount.toLocaleString('vi-VN')}đ
-                                                </div>
-                                            )}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                                {hasPurchase && (
+                                                    <div className="mt-1 text-xs font-bold text-green-600 text-right">
+                                                        {purchaseData.count} lượt - {purchaseData.amount.toLocaleString('vi-VN')}đ
+                                                    </div>
+                                                )}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     };

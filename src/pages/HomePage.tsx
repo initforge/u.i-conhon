@@ -210,49 +210,104 @@ const HomePage: React.FC = () => {
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* Left: Main Content */}
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 md:p-8 border border-red-100 shadow-lg">
-                <h3 className="text-2xl font-bold text-tet-red-700 mb-4">
-                  Cổ Nhơn - Trò chơi dân gian độc đáo ở Bình Định
-                </h3>
+              <div className="space-y-6">
+                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 md:p-8 border border-red-100 shadow-lg">
+                  <h3 className="text-2xl font-bold text-tet-red-700 mb-4">
+                    Cổ Nhơn - Trò chơi dân gian độc đáo ở Bình Định
+                  </h3>
 
-                <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
-                  <p>
-                    Cổ Nhơn là một trò chơi trong dịp tết âm lịch của người dân H.Hoài Nhơn và Thị Xã An Nhơn (Bình Định),
-                    bắt đầu vào khoảng 25 tháng chạp âm lịch kéo dài đến khoảng chiều mùng 5 tết.
-                  </p>
+                  <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
+                    <p>
+                      Cổ Nhơn là một trò chơi trong dịp tết âm lịch của người dân Thị Xã Hoài Nhơn và Thị Xã An Nhơn (Bình Định),
+                      bắt đầu vào khoảng 25 tháng chạp âm lịch kéo dài đến khoảng chiều mùng 5 tết.
+                    </p>
 
-                  <p>
-                    Đến nay chưa có một tài liệu chính thống nào nói rõ nguồn gốc xuất xứ của Cổ Nhơn, chỉ biết nó đã có từ rất lâu đời,
-                    được nhiều thế hệ truyền nhau. Giờ đây, Cổ Nhơn gần như đã trở thành một "món ăn" ngày tết cổ truyền đặc sắc,
-                    hấp dẫn, khó có thể thiếu của người dân ở mảnh đất Hoài Nhơn và An Nhơn. 😊
-                  </p>
+                    <p>
+                      Đến nay chưa có một tài liệu chính thống nào nói rõ nguồn gốc xuất xứ của Cổ Nhơn, chỉ biết nó đã có từ rất lâu đời,
+                      được nhiều thế hệ truyền nhau. Giờ đây, Cổ Nhơn gần như đã trở thành một "món ăn" ngày tết cổ truyền đặc sắc,
+                      hấp dẫn, khó có thể thiếu của người dân ở mảnh đất Hoài Nhơn và An Nhơn. 😊
+                    </p>
 
-                  <div className="bg-white rounded-lg p-4 border-l-4 border-tet-red-500">
-                    <h4 className="font-bold text-tet-red-700 mb-2">🎊 Háo hức chờ... Cổ Nhơn</h4>
+                    <div className="bg-white rounded-lg p-4 border-l-4 border-tet-red-500">
+                      <h4 className="font-bold text-tet-red-700 mb-2">🎊 Háo hức chờ... Cổ Nhơn</h4>
+                      <p className="text-sm">
+                        Về Hoài Nhơn và An Nhơn chừng 25 tết trở đi, mọi người không chỉ bắt đầu tất bật dọn dẹp, trang hoàng nhà cửa
+                        mà còn nôn nao một tâm trạng khác. Thanh niên lập nghiệp ở tỉnh xa về quê đón tết, sau phần tay bắt mặt mừng
+                        bà con hàng xóm là những cái vỗ vai "chuẩn bị Cổ Nhơn nào…". Ai cũng háo hức chờ đợi Cổ Nhơn như chờ đợi hội làng dịp tết.
+                      </p>
+                    </div>
+
+                    <p>
+                      Người chơi Cổ Nhơn không phân biệt tầng lớp, tuổi tác, trình độ học vấn... Hình ảnh một cậu bé hăng say lý giải
+                      suy đoán của mình và một cụ ông đeo kính ngồi chiêm nghiệm, cân nhắc lựa chọn ấy đã trở nên rất quen thuộc ở nơi đây.
+                      Mọi người lắng nghe, tranh luận và ghi nhận ý kiến lẫn nhau để giải đáp được trò chơi.
+                    </p>
+
+                    <p className="italic text-gray-600 text-sm">
+                      Nói về lý do Cổ Nhơn thu hút đông đảo người chơi trong dịp tết, nhà nghiên cứu Lộc Xuyên Đặng Quý Địch cho biết:
+                      "Giới doanh nhân thì muốn thử vận may đầu năm mới, giới trí thức thì muốn thử khả năng bàn luận, suy đoán của mình,
+                      trẻ em thì xem đây là một trò chơi đông vui trong dịp đầu xuân".
+                    </p>
+
                     <p className="text-sm">
-                      Về Hoài Nhơn và An Nhơn chừng 25 tết trở đi, mọi người không chỉ bắt đầu tất bật dọn dẹp, trang hoàng nhà cửa
-                      mà còn nôn nao một tâm trạng khác. Thanh niên lập nghiệp ở tỉnh xa về quê đón tết, sau phần tay bắt mặt mừng
-                      bà con hàng xóm là những cái vỗ vai "chuẩn bị Cổ Nhơn nào…". Ai cũng háo hức chờ đợi Cổ Nhơn như chờ đợi hội làng dịp tết.
+                      Không chỉ tại những điểm chơi Cổ Nhơn mà khi đến nhà chúc tết, đi chơi, họp lớp, thậm chí ngồi vào bàn nhậu cũng bàn luận,
+                      hỏi nhau í ơi về Cổ Nhơn. "Có Cổ Nhơn ngày tết rạo rực hẳn lên, không có buồn lắm mà mình cũng chẳng biết làm gì, đi đâu",
+                      anh Nguyễn Ngọc Tuân 37 tuổi ở An Nhơn, bày tỏ.
                     </p>
                   </div>
+                </div>
 
-                  <p>
-                    Người chơi Cổ Nhơn không phân biệt tầng lớp, tuổi tác, trình độ học vấn... Hình ảnh một cậu bé hăng say lý giải
-                    suy đoán của mình và một cụ ông đeo kính ngồi chiêm nghiệm, cân nhắc lựa chọn ấy đã trở nên rất quen thuộc ở nơi đây.
-                    Mọi người lắng nghe, tranh luận và ghi nhận ý kiến lẫn nhau để giải đáp được trò chơi.
-                  </p>
-
-                  <p className="italic text-gray-600 text-sm">
-                    Nói về lý do Cổ Nhơn thu hút đông đảo người chơi trong dịp tết, nhà nghiên cứu Lộc Xuyên Đặng Quý Địch cho biết:
-                    "Giới doanh nhân thì muốn thử vận may đầu năm mới, giới trí thức thì muốn thử khả năng bàn luận, suy đoán của mình,
-                    trẻ em thì xem đây là một trò chơi đông vui trong dịp đầu xuân".
-                  </p>
-
-                  <p className="text-sm">
-                    Không chỉ tại những điểm chơi Cổ Nhơn mà khi đến nhà chúc tết, đi chơi, họp lớp, thậm chí ngồi vào bàn nhậu cũng bàn luận,
-                    hỏi nhau í ơi về Cổ Nhơn. "Có Cổ Nhơn ngày tết rạo rực hẳn lên, không có buồn lắm mà mình cũng chẳng biết làm gì, đi đâu",
-                    anh Nguyễn Ngọc Tuân 31 tuổi ở An Nhơn, bày tỏ.
-                  </p>
+                {/* Newspaper Links */}
+                <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
+                  <h4 className="text-lg font-bold text-yellow-800 mb-4 flex items-center">
+                    <span className="text-2xl mr-2">📰</span> Bài báo tham khảo
+                  </h4>
+                  <div className="space-y-3">
+                    <a href="https://baogialai.com.vn/an-nhon-vui-tro-co-nhon-ngay-xuan-post430263.amp" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
+                          <span>📄</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">An Nhơn vui trò Cổ Nhơn ngày xuân</p>
+                          <p className="text-xs text-gray-500">Báo Gia Lai</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a href="https://amp.vtcnews.vn/tro-choi-dan-gian-co-nhon-mien-ky-uc-kho-quen-cua-nguoi-binh-dinh-xa-xu-ar736410.html" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-200 transition-colors">
+                          <span>📺</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Trò chơi dân gian Cổ Nhơn - Miền ký ức khó quên</p>
+                          <p className="text-xs text-gray-500">VTC News</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a href="https://thanhnien.vn/co-nhon-tro-choi-dan-gian-doc-dao-o-binh-dinh-18538143.htm" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
+                          <span>📰</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Cổ Nhơn - Trò chơi dân gian độc đáo ở Bình Định</p>
+                          <p className="text-xs text-gray-500">Thanh Niên</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a href="https://nld.com.vn/van-hoa-choi-co-nhon-tro-choi-dan-gian-cua-nguoi-binh-dinh-196240212203658004.htm" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-orange-200 transition-colors">
+                          <span>📋</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Chơi Cổ Nhơn - Trò chơi dân gian của người Bình Định</p>
+                          <p className="text-xs text-gray-500">Người Lao Động</p>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </div>
 
@@ -269,13 +324,11 @@ const HomePage: React.FC = () => {
                       tao nhã trong dịp tết cho mọi tầng lớp người dân.
                     </p>
                     <p>
-                      Trò chơi này có một ban tổ chức, gọi là Hội xổ Cổ Nhơn. Hội này chịu trách nhiệm ra đề, thu tịch và sẽ chung tiền
-                      cho những người giải đáp chính xác. Tỷ lệ chiến thắng 1 đồng nhận 25 đồng ở huyện Hoài Nhơn, còn ở An Nhơn thì
-                      tỉ lệ chiến thắng 1 đồng nhận 29 đồng. 😊
+                      cho những người giải đáp chính xác.
                     </p>
                     <p>
                       Tính đến nay, Cổ Nhơn Hoài Nhơn và An Nhơn tỉnh Bình Định đã truyền qua nhiều đời hội chủ,
-                      nhưng chỉ khoảng 10 năm trở lại đây mới thật sự phát triển rộng rãi, lan tỏa đến từng ngóc ngách ở thôn quê.
+                      nhưng chỉ khoảng 20 năm trở lại đây mới thật sự phát triển rộng rãi, lan tỏa đến từng ngóc ngách ở thôn quê.
                     </p>
                   </div>
                 </div>
@@ -357,26 +410,6 @@ const HomePage: React.FC = () => {
                     là những cảm xúc rất hay trong ngày tết. Chính sức hút của trò chơi này đã trở thành một nét văn hóa mà bất kỳ du khách nào
                     cũng phải tò mò và thích thú khi ghé đến Hoài Nhơn và An Nhơn những ngày tết.
                   </p>
-                </div>
-
-                {/* Newspaper Links - Only Báo Gia Lai */}
-                <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
-                  <h4 className="text-lg font-bold text-yellow-800 mb-4 flex items-center">
-                    <span className="text-2xl mr-2">📰</span> Bài báo tham khảo
-                  </h4>
-                  <div className="space-y-3">
-                    <a href="https://baogialai.com.vn/viewer.aspx?macm=18&macmp=18&mabb=300641" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
-                          <span>📄</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Cổ Nhơn - Trò chơi dân gian Hoài Nhơn Bình Định</p>
-                          <p className="text-xs text-gray-500">Báo Gia Lai</p>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>

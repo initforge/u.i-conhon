@@ -158,13 +158,13 @@ const Footer: React.FC = () => {
               <h3 className="footer-title mb-4" style={{ color: '#333333' }}>Mạng xã hội</h3>
               <div className="flex flex-col space-y-2">
                 <a
-                  href="https://www.facebook.com/profile.php?id=100063753948498"
+                  href="https://www.facebook.com/profile.php?id=100064448272306"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-red-200 hover:text-white transition flex items-center space-x-2"
                 >
                   <img src="/assets/icons/ico_facebook.svg" alt="Facebook" className="w-5 h-5" />
-                  <span className="text-sm">Trang Cổ Nhơn An Nhơn Bình Định</span>
+                  <span className="text-sm">Fanpage Cổ Nhơn An Nhơn Bình Định</span>
                 </a>
                 <a
                   href="https://www.facebook.com/groups/1579571855393409"

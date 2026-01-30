@@ -26,7 +26,7 @@ interface Post {
 const mockPosts: Post[] = [
     {
         id: '1',
-        author: 'Cổ Nhơn An Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🎯',
         time: '2 giờ trước',
         content: '🎉 Chúc mừng các bạn đã trúng thưởng hôm nay! Kết quả: Con Rồng 🐉',
@@ -42,7 +42,7 @@ const mockPosts: Post[] = [
     },
     {
         id: '2',
-        author: 'Cổ Nhơn An Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '📺',
         time: '5 giờ trước',
         content: '📝 Hướng dẫn cách chơi Cổ Nhơn cho người mới bắt đầu! Xem ngay video bên dưới nhé các bạn.',
@@ -57,7 +57,7 @@ const mockPosts: Post[] = [
     },
     {
         id: '3',
-        author: 'Cổ Nhơn An Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🎯',
         time: '1 ngày trước',
         content: '🔥 THÔNG BÁO: Tết Ất Tỵ 2025 - Chương trình khuyến mãi đặc biệt!\n\nTỉ lệ thưởng 1 chung 30\nChí Cao (Con Trùn) chung 70\n\nChơi ngay hôm nay!',

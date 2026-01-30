@@ -39,6 +39,10 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) =
               <div className="font-medium" style={{ color: '#3d3428' }}>{user?.zaloName || 'N/A'}</div>
             </div>
             <div>
+              <span className="text-gray-500">Số điện thoại:</span>
+              <div className="font-medium text-blue-600">{user?.phone || 'N/A'}</div>
+            </div>
+            <div>
               <span className="text-gray-500">Thai:</span>
               <div className="font-medium" style={{ color: '#3d3428' }}>{thai?.name || 'N/A'}</div>
             </div>
@@ -65,6 +69,27 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) =
               </div>
             </div>
           </div>
+
+          {/* Thông tin tài khoản */}
+          {user?.bankAccount && (
+            <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: '#f0f9ff' }}>
+              <div className="text-xs font-medium text-blue-700 mb-2">💳 Tài khoản ngân hàng</div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-500">Ngân hàng:</span>
+                  <span className="ml-1 font-medium text-gray-700">{user.bankAccount.bankName}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">STK:</span>
+                  <span className="ml-1 font-medium text-gray-700">{user.bankAccount.accountNumber}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Chủ TK:</span>
+                  <span className="ml-1 font-medium text-gray-700">{user.bankAccount.accountHolder}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Items List - Cart Style */}
@@ -135,6 +160,7 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) =
 const AdminOrders: React.FC = () => {
   const [selectedThai, setSelectedThai] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedSession, setSelectedSession] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<typeof mockOrders[0] | null>(null);
 
   // Only show paid and completed orders
@@ -147,6 +173,13 @@ const AdminOrders: React.FC = () => {
     if (selectedDate) {
       const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
       if (orderDate !== selectedDate) return false;
+    }
+    // Lọc theo buổi
+    if (selectedSession !== 'all') {
+      const hour = new Date(order.createdAt).getHours();
+      if (selectedSession === 'sang' && (hour < 7 || hour >= 12)) return false;
+      if (selectedSession === 'chieu' && (hour < 12 || hour >= 18)) return false;
+      if (selectedSession === 'toi' && (hour < 18 || hour >= 22)) return false;
     }
     return true;
   });
@@ -210,6 +243,51 @@ const AdminOrders: React.FC = () => {
                 {filteredOrders.length} đơn
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Session Filter */}
+        <div className="mt-4">
+          <label className="block text-xs font-medium mb-2" style={{ color: '#9a8c7a' }}>
+            Lọc theo buổi
+          </label>
+          <div className="flex flex-wrap gap-2 p-1 bg-purple-50 rounded-xl">
+            <button
+              onClick={() => setSelectedSession('all')}
+              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'all'
+                ? 'bg-white shadow-md text-purple-700'
+                : 'text-purple-600 hover:bg-purple-100'
+                }`}
+            >
+              Tất cả
+            </button>
+            <button
+              onClick={() => setSelectedSession('sang')}
+              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'sang'
+                ? 'bg-white shadow-md text-purple-700'
+                : 'text-purple-600 hover:bg-purple-100'
+                }`}
+            >
+              ☀️ Sáng
+            </button>
+            <button
+              onClick={() => setSelectedSession('chieu')}
+              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'chieu'
+                ? 'bg-white shadow-md text-purple-700'
+                : 'text-purple-600 hover:bg-purple-100'
+                }`}
+            >
+              🌤️ Chiều
+            </button>
+            <button
+              onClick={() => setSelectedSession('toi')}
+              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
+                ? 'bg-white shadow-md text-purple-700'
+                : 'text-purple-600 hover:bg-purple-100'
+                }`}
+            >
+              🌙 Tối
+            </button>
           </div>
         </div>
       </AdminCard>

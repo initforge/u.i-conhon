@@ -91,10 +91,10 @@ export const mockThais: Thai[] = [
     id: 'thai-hoai-nhon',
     name: 'Thai Hoài Nhơn',
     slug: 'hoai-nhon',
-    times: ['13:00', '19:00'],
+    times: ['12:30', '18:30'],
     timeSlots: [
-      { startTime: '10:00', endTime: '13:00' },
-      { startTime: '15:00', endTime: '19:00' },
+      { startTime: '09:00', endTime: '12:30' },
+      { startTime: '14:00', endTime: '18:30' },
     ],
     isTetMode: false,
     description: 'Khu vực Hoài Nhơn',
