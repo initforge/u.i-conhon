@@ -320,6 +320,17 @@ const HomePage: React.FC = () => {
                     <span className="text-2xl mr-2">📰</span> Bài báo tham khảo
                   </h4>
                   <div className="space-y-3">
+                    <a href="https://baogialai.com.vn/xo-co-nhon-net-van-hoa-dan-gian-doc-dao-moi-dip-tet-den-post338363.html" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
+                          <span>🏆</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800 group-hover:text-tet-red-700 transition-colors text-sm">Xổ Cổ Nhơn - Nét văn hóa dân gian độc đáo mỗi dịp Tết đến</p>
+                          <p className="text-xs text-gray-500">Báo Gia Lai ⭐</p>
+                        </div>
+                      </div>
+                    </a>
                     <a href="https://baogialai.com.vn/an-nhon-vui-tro-co-nhon-ngay-xuan-post430263.amp" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white rounded-lg border border-yellow-100 hover:border-yellow-300 transition-colors group">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-yellow-200 transition-colors">
@@ -380,9 +391,7 @@ const HomePage: React.FC = () => {
                       Khi về Việt Nam, cụ thể là ở Hoài Nhơn và An Nhơn Bình Định, Cổ Nhơn đã phát triển, biến hóa thành một trò chơi
                       tao nhã trong dịp tết cho mọi tầng lớp người dân.
                     </p>
-                    <p>
-                      cho những người giải đáp chính xác.
-                    </p>
+
                     <p>
                       Tính đến nay, Cổ Nhơn Hoài Nhơn và An Nhơn tỉnh Bình Định đã truyền qua nhiều đời hội chủ,
                       nhưng chỉ khoảng 20 năm trở lại đây mới thật sự phát triển rộng rãi, lan tỏa đến từng ngóc ngách ở thôn quê.
@@ -759,8 +768,8 @@ const HomePage: React.FC = () => {
                     onClick={() => setCurrentCauThaiIndex(prev => prev - 1)}
                     disabled={!canGoPrev}
                     className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${canGoPrev
-                        ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
-                        : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
+                      ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
+                      : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
                       }`}
                     style={{ left: '-15px' }}
                     title="Câu thai mới hơn"
@@ -771,8 +780,8 @@ const HomePage: React.FC = () => {
                     onClick={() => setCurrentCauThaiIndex(prev => prev + 1)}
                     disabled={!canGoNext}
                     className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${canGoNext
-                        ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
-                        : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
+                      ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
+                      : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
                       }`}
                     style={{ right: '-15px' }}
                     title="Câu thai cũ hơn"
@@ -815,8 +824,8 @@ const HomePage: React.FC = () => {
                       key={idx}
                       onClick={() => setCurrentCauThaiIndex(idx)}
                       className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentCauThaiIndex
-                          ? 'bg-red-600 scale-125'
-                          : 'bg-gray-300 hover:bg-gray-400'
+                        ? 'bg-red-600 scale-125'
+                        : 'bg-gray-300 hover:bg-gray-400'
                         }`}
                     />
                   ))}

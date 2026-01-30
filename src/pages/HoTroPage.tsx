@@ -10,7 +10,7 @@ const HoTroPage: React.FC = () => {
     ];
 
     const faqs = [
-        { q: 'Làm sao để chơi Cổ Nhơn?', a: 'Chọn Thai → Đăng ký → Like/Share bài viết → Chọn con vật → Thanh toán → Chờ kết quả' },
+        { q: 'Làm sao để chơi Cổ Nhơn?', a: 'Đăng ký → Like/Share bài viết → Chọn Thai → Chọn con vật → Thanh toán → Chờ kết quả' },
         { q: 'Khi nào công bố kết quả?', a: 'Thai An Nhơn: 11h, 17h (Tết có thêm 21h). Thai Nhơn Phong: 11h, 17h. Thai Hoài Nhơn: 13h, 19h' },
         { q: 'Tiền thưởng được chuyển khi nào?', a: 'Tiền thưởng sẽ được chuyển vào tài khoản ngân hàng của bạn trong vòng 1-2 giờ sau khi xổ.' },
         { q: 'Tỉ lệ thưởng là bao nhiêu?', a: 'Tỉ lệ thưởng 1 chung 30. Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70. Ví dụ: Mua 30.000đ trúng 900.000đ.' },
@@ -39,12 +39,12 @@ const HoTroPage: React.FC = () => {
                                 href={info.action}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors"
+                                className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors h-full"
                             >
-                                <span className="text-2xl">{info.icon}</span>
-                                <div>
+                                <span className="text-2xl flex-shrink-0 mt-1">{info.icon}</span>
+                                <div className="min-w-0 flex-1">
                                     <p className="text-sm text-gray-500">{info.label}</p>
-                                    <p className="font-semibold text-gray-800">{info.value}</p>
+                                    <p className={`font-semibold text-gray-800 break-all ${info.label === 'Email' ? 'text-xs' : 'text-sm'}`}>{info.value}</p>
                                 </div>
                             </a>
                         ))}
