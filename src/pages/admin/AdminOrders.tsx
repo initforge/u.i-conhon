@@ -285,15 +285,18 @@ const AdminOrders: React.FC = () => {
             >
               🌤️ Chiều
             </button>
-            <button
-              onClick={() => setSelectedSession('toi')}
-              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
-                ? 'bg-white shadow-md text-purple-700'
-                : 'text-purple-600 hover:bg-purple-100'
-                }`}
-            >
-              🌙 Tối
-            </button>
+            {/* Hoài Nhơn không có buổi tối */}
+            {selectedThai !== 'thai-hoai-nhon' && (
+              <button
+                onClick={() => setSelectedSession('toi')}
+                className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
+                  ? 'bg-white shadow-md text-purple-700'
+                  : 'text-purple-600 hover:bg-purple-100'
+                  }`}
+              >
+                🌙 Tối
+              </button>
+            )}
           </div>
         </div>
       </AdminCard>

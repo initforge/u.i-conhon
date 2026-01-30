@@ -61,9 +61,12 @@ const HomePage: React.FC = () => {
     }
   ];
 
-  const currentCauThai = cauThaiData[currentCauThaiIndex];
+  // Filter câu thai theo năm
+  const selectedCauThaiYear = selectedYear;
+  const filteredCauThaiData = cauThaiData.filter(cau => cau.date.includes(selectedCauThaiYear.toString()));
+  const currentCauThai = filteredCauThaiData[currentCauThaiIndex] || null;
   const canGoPrev = currentCauThaiIndex > 0;
-  const canGoNext = currentCauThaiIndex < cauThaiData.length - 1;
+  const canGoNext = currentCauThaiIndex < filteredCauThaiData.length - 1;
 
   // Animal groups from HTML
   const animalGroups = [
@@ -665,31 +668,19 @@ const HomePage: React.FC = () => {
                         <line x1="82%" y1="55%" x2="88%" y2="60%" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
                       </svg>
                     </div>
-                    <ul className="flex justify-center space-x-4 relative z-10">
-                      {getAvailableYears(4).map((year) => {
-                        const isSelected = selectedYear === year;
-                        const currentYear = getCurrentYear();
-                        const isDisabled = year === currentYear;
-                        return (
-                          <li key={year}>
-                            <button
-                              onClick={() => !isDisabled && setSelectedYear(year)}
-                              className={`px-4 py-2 font-semibold transition rounded`}
-                              style={{
-                                fontFamily: "'Nunito', sans-serif",
-                                ...(isSelected
-                                  ? { backgroundColor: 'white', color: '#B20801', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }
-                                  : isDisabled
-                                    ? { backgroundColor: 'rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.6)', cursor: 'not-allowed' }
-                                    : { backgroundColor: 'white', color: '#B20801' })
-                              }}
-                            >
-                              {year}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                    <div className="flex justify-center items-center gap-3 relative z-10">
+                      <span className="text-white font-medium">📅 Năm:</span>
+                      <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(Number(e.target.value))}
+                        className="px-4 py-2 bg-white text-red-700 rounded-lg font-bold cursor-pointer hover:bg-gray-100 transition-colors shadow-md"
+                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                      >
+                        {getAvailableYears(4).map((year) => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* Results Table */}
@@ -734,6 +725,25 @@ const HomePage: React.FC = () => {
               <h2 className="section-title text-2xl md:text-3xl" style={{ fontWeight: 400, color: '#b2012f' }}>
                 CÂU THAI MỚI NHẤT
               </h2>
+            </div>
+
+            {/* Year Selector */}
+            <div className="flex justify-center mb-4">
+              <div className="inline-flex items-center bg-white rounded-lg shadow-md px-4 py-2">
+                <span className="text-gray-600 font-medium mr-3">📅 Năm:</span>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => {
+                    setSelectedYear(Number(e.target.value));
+                    setCurrentCauThaiIndex(0); // Reset index khi đổi năm
+                  }}
+                  className="px-4 py-2 bg-red-700 text-white rounded-lg font-bold cursor-pointer hover:bg-red-800 transition-colors"
+                >
+                  {getAvailableYears().map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Thai Tabs for Cau Thai */}
@@ -795,31 +805,38 @@ const HomePage: React.FC = () => {
                     className="w-full h-auto object-contain"
                   />
                   <div className="absolute inset-0 flex items-center justify-center px-4 md:px-8">
-                    <div className="text-center w-full">
-                      <h6 className="uppercase text-font mb-1 text-sm md:text-base" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif", fontWeight: 400 }}>
-                        {currentCauThai.session}
-                      </h6>
-                      <p className="text-base md:text-xl mb-2" style={{ color: '#fff', fontFamily: "'Nunito', sans-serif" }}>{currentCauThai.date}</p>
-                      <p className="text-sm md:text-xl leading-tight" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif" }}>
-                        {currentCauThai.lines.map((line, idx) => (
-                          <React.Fragment key={idx}>
-                            {line}
-                            {idx < currentCauThai.lines.length - 1 && <br />}
-                          </React.Fragment>
-                        ))}
-                      </p>
-                      {/* Hiển thị kết quả cho câu thai cũ */}
-                      {currentCauThaiIndex > 0 && (
-                        <p className="mt-2 text-sm font-bold" style={{ color: '#fef08a' }}>
-                          ✅ Kết quả: {currentCauThai.result}
+                    {currentCauThai ? (
+                      <div className="text-center w-full">
+                        <h6 className="uppercase text-font mb-1 text-sm md:text-base" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif", fontWeight: 400 }}>
+                          {currentCauThai.session}
+                        </h6>
+                        <p className="text-base md:text-xl mb-2" style={{ color: '#fff', fontFamily: "'Nunito', sans-serif" }}>{currentCauThai.date}</p>
+                        <p className="text-sm md:text-xl leading-tight" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif" }}>
+                          {currentCauThai.lines.map((line, idx) => (
+                            <React.Fragment key={idx}>
+                              {line}
+                              {idx < currentCauThai.lines.length - 1 && <br />}
+                            </React.Fragment>
+                          ))}
                         </p>
-                      )}
-                    </div>
+                        {/* Hiển thị kết quả cho câu thai cũ */}
+                        {currentCauThaiIndex > 0 && (
+                          <p className="mt-2 text-sm font-bold" style={{ color: '#fef08a' }}>
+                            ✅ Kết quả: {currentCauThai.result}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center w-full">
+                        <p className="text-yellow-300 text-lg font-medium mb-2">📭 Chưa có câu thai</p>
+                        <p className="text-white/80 text-sm">Năm {selectedYear} chưa có dữ liệu câu thai</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Indicator dots */}
                 <div className="flex justify-center gap-2 mt-4">
-                  {cauThaiData.map((_, idx) => (
+                  {filteredCauThaiData.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentCauThaiIndex(idx)}

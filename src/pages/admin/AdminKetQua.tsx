@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockThais, mockKetQuas, mockAnimals } from '../../mock-data/mockData';
+import { mockThais, mockKetQuas, mockAnimals, getAnimalsByThai } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getAvailableYears } from '../../utils/yearUtils';
 
@@ -74,6 +74,7 @@ const AdminKetQua: React.FC = () => {
     date: new Date().toISOString().split('T')[0],
     winningAnimalIds: [] as string[],
     imageUrl: '',
+    isOff: false, // Ngày nghỉ không xổ
   });
 
   const thaiTabs = [
@@ -109,6 +110,7 @@ const AdminKetQua: React.FC = () => {
       date: new Date().toISOString().split('T')[0],
       winningAnimalIds: [],
       imageUrl: '',
+      isOff: false,
     });
   };
 
@@ -120,6 +122,7 @@ const AdminKetQua: React.FC = () => {
       date: kq.date,
       winningAnimalIds: kq.winningAnimalIds,
       imageUrl: kq.imageUrl || '',
+      isOff: kq.isOff || false,
     });
   };
 
@@ -189,7 +192,13 @@ const AdminKetQua: React.FC = () => {
       new Date(kq.date).getFullYear() === selectedYear
     );
 
-    return animalGroups.map(group => {
+    // Hoài Nhơn chỉ có 36 con, loại bỏ nhóm Tứ thần linh (37-40)
+    const isHoaiNhon = selectedThai === 'hoai-nhon';
+    const filteredGroups = isHoaiNhon
+      ? animalGroups.filter(g => !g.orders.some(order => order > 36))
+      : animalGroups;
+
+    return filteredGroups.map(group => {
       let count = 0;
       const animalCounts: Record<number, number> = {};
 
@@ -291,43 +300,74 @@ const AdminKetQua: React.FC = () => {
               </div>
             </div>
 
-            <div>
+            {/* Checkbox Nghỉ */}
+            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: formData.isOff ? '#fef2f2' : '#faf8f5', border: '1px solid #e8e4df' }}>
+              <input
+                type="checkbox"
+                id="isOff"
+                checked={formData.isOff}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  isOff: e.target.checked,
+                  winningAnimalIds: e.target.checked ? [] : formData.winningAnimalIds
+                })}
+                className="w-5 h-5 rounded"
+                style={{ accentColor: '#dc2626' }}
+              />
+              <label htmlFor="isOff" className="text-sm font-medium cursor-pointer" style={{ color: formData.isOff ? '#dc2626' : '#6b5c4c' }}>
+                🚫 Ngày nghỉ - Không xổ
+              </label>
+              {formData.isOff && (
+                <span className="ml-auto text-xs px-2 py-1 rounded" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
+                  NGHỈ
+                </span>
+              )}
+            </div>
+
+            <div style={{ opacity: formData.isOff ? 0.5 : 1, pointerEvents: formData.isOff ? 'none' : 'auto' }}>
               <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>
-                Chọn con vật trúng ({formData.winningAnimalIds.length} đã chọn)
+                Chọn con vật trúng ({formData.winningAnimalIds.length} đã chọn) {formData.isOff && '(Bỏ qua)'}
               </label>
               <div
                 className="max-h-48 overflow-y-auto rounded-lg p-3"
                 style={{ backgroundColor: '#faf8f5', border: '1px solid #e8e4df' }}
               >
                 <div className="grid grid-cols-4 gap-2">
-                  {mockAnimals.map((animal) => {
-                    const isSelected = formData.winningAnimalIds.includes(animal.id);
-                    const bodyInfo = bodyPartMapping[animal.order];
-                    return (
-                      <button
-                        key={animal.id}
-                        type="button"
-                        onClick={() => toggleAnimal(animal.id)}
-                        className="p-2 rounded-lg text-center transition-all"
-                        style={{
-                          backgroundColor: isSelected ? '#a5673f' : 'white',
-                          color: isSelected ? 'white' : '#6b5c4c',
-                          border: '1px solid #e8e4df'
-                        }}
-                        title={bodyInfo ? `${bodyInfo.column} - ${bodyInfo.bodyPart}` : ''}
-                      >
-                        <div className="text-sm font-medium">{animal.order}</div>
-                        <div className="text-xs truncate">{animal.name}</div>
-                      </button>
-                    );
-                  })}
+                  {/* Lấy danh sách con vật theo Thai được chọn */}
+                  {(() => {
+                    // Extract base thaiId từ formData.thaiId (vd: 'thai-hoai-nhon-trua' -> 'thai-hoai-nhon')
+                    const baseThaiId = formData.thaiId.replace(/-sang|-chieu|-toi|-trua$/, '');
+                    const animals = getAnimalsByThai(baseThaiId);
+                    return animals.map((animal) => {
+                      const isSelected = formData.winningAnimalIds.includes(animal.id);
+                      const bodyInfo = bodyPartMapping[animal.order];
+                      return (
+                        <button
+                          key={animal.id}
+                          type="button"
+                          onClick={() => toggleAnimal(animal.id)}
+                          className="p-2 rounded-lg text-center transition-all"
+                          style={{
+                            backgroundColor: isSelected ? '#a5673f' : 'white',
+                            color: isSelected ? 'white' : '#6b5c4c',
+                            border: '1px solid #e8e4df'
+                          }}
+                          title={bodyInfo ? `${bodyInfo.column} - ${bodyInfo.bodyPart}` : ''}
+                        >
+                          <div className="text-sm font-medium">{animal.order}</div>
+                          <div className="text-xs truncate">{animal.name}</div>
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </div>
+            {/* End wrapper for disabled when isOff */}
 
             <div className="flex gap-2">
               <AdminButton variant="primary" type="submit" className="flex-1">
-                {editingKetQua ? '💾 Cập nhật' : '💾 Lưu kết quả'}
+                {editingKetQua ? '💾 Cập nhật' : (formData.isOff ? '🚫 Lưu ngày nghỉ' : '💾 Lưu kết quả')}
               </AdminButton>
               {editingKetQua && (
                 <AdminButton
@@ -340,6 +380,7 @@ const AdminKetQua: React.FC = () => {
                       date: new Date().toISOString().split('T')[0],
                       winningAnimalIds: [],
                       imageUrl: '',
+                      isOff: false,
                     });
                   }}
                 >
@@ -438,19 +479,18 @@ const AdminKetQua: React.FC = () => {
           <span>📅</span>
           <span>Chọn năm để xem thống kê NHÓM</span>
         </h3>
-        <div className="flex flex-wrap gap-2 mb-6">
-          {availableYears.map(year => (
-            <button
-              key={year}
-              onClick={() => setSelectedYear(selectedYear === year ? null : year)}
-              className={`px-6 py-3 rounded-lg font-semibold text-sm transition-all ${selectedYear === year
-                ? 'bg-amber-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-            >
-              Năm {year}
-            </button>
-          ))}
+        <div className="flex items-center gap-4 mb-6">
+          <span className="text-gray-600 font-medium">Năm:</span>
+          <select
+            value={selectedYear || ''}
+            onChange={(e) => setSelectedYear(e.target.value ? Number(e.target.value) : null)}
+            className="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold cursor-pointer hover:bg-amber-700 transition-colors"
+          >
+            <option value="">-- Chọn năm --</option>
+            {availableYears.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
         </div>
 
         {/* Group Statistics */}

@@ -99,21 +99,16 @@ const AdminCauThai: React.FC = () => {
       <div className="mb-6 space-y-4">
         {/* Year Selector */}
         <div className="flex items-center gap-4">
-          <span className="font-medium text-gray-600">Năm:</span>
-          <div className="flex gap-2">
+          <span className="font-medium text-gray-600">📅 Năm:</span>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold cursor-pointer hover:bg-amber-700 transition-colors"
+          >
             {availableYears.map(year => (
-              <button
-                key={year}
-                onClick={() => setSelectedYear(year)}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedYear === year
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-              >
-                {year}
-              </button>
+              <option key={year} value={year}>{year}</option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Thai Tabs */}

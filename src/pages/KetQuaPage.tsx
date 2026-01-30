@@ -95,19 +95,17 @@ const KetQuaPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">KẾT QUẢ ĐÃ XỔ</h2>
 
           {/* Year Selection */}
-          <div className="flex space-x-4 mb-4">
-            {years.map((year) => (
-              <button
-                key={year}
-                onClick={() => setSelectedYear(year)}
-                className={`px-4 py-2 font-semibold rounded-lg transition ${selectedYear === year
-                  ? 'bg-tet-red-800 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-              >
-                {year}
-              </button>
-            ))}
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-gray-600 font-medium">📅 Năm:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="px-4 py-2 bg-tet-red-800 text-white rounded-lg font-bold cursor-pointer hover:bg-tet-red-900 transition-colors"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
           </div>
 
           {/* Thai Filter */}

@@ -1,6 +1,6 @@
 # 📋 ĐẶC TẢ KỸ THUẬT & TÍNH NĂNG CHI TIẾT
 ## Dự án: Cổ Nhơn Webapp (conhon-webapp)
-### Phiên bản: 1.0.0 | Cập nhật: 29/01/2026
+### Phiên bản: 1.0.0 | Cập nhật: 30/01/2026 22:45
 
 ---
 
@@ -179,12 +179,12 @@ interface TimeSlot {
 ```
 **Records**: Cố định **3 khu vực** (An Nhơn, Nhơn Phong, Hoài Nhơn)
 
-### 3. Animal (Con vật - 40 con)
+### 3. Animal (Con vật)
 ```typescript
 interface Animal {
   id: string;
   name: string;                     // VD: "Cá Trắng"
-  order: number;                    // 1-40
+  order: number;                    // 1-40 (An Nhơn/Nhơn Phong) hoặc 1-36 (Hoài Nhơn)
   price: number;                    // Giá mỗi con
   limit: number;                    // Hạn mức tối đa
   remainingLimit: number;           // Hạn mức còn lại
@@ -195,7 +195,10 @@ interface Animal {
   imagePlaceholder: string;         // Đường dẫn ảnh
 }
 ```
-**Records**: Cố định **40 con vật** × 3 Thai = **120 records**
+**Số lượng con vật theo Thai**:
+- **Thai An Nhơn**: 40 con vật (order 1-40)
+- **Thai Nhơn Phong**: 40 con vật (order 1-40)
+- **Thai Hoài Nhơn**: **36 con vật** (order 1-36, KHÔNG CÓ nhóm Tứ thần linh 37-40)
 
 ### 4. Order (Đơn hàng)
 ```typescript
@@ -285,7 +288,282 @@ interface KetQua {
 
 ---
 
-## 🔥 TÍNH NĂNG CHI TIẾT
+## �️ DATABASE SCHEMA TỐI ƯU
+
+> **Nguyên tắc thiết kế**: Giảm số bảng, tối ưu truy vấn, tiết kiệm tài nguyên VPS
+
+### 📊 Tổng quan Bảng (6 bảng chính)
+
+| Bảng | Records/tháng | Mô tả | Quan hệ |
+|------|---------------|-------|---------|
+| `thais` | 3 (cố định) | Khu vực/Thai | Master |
+| `animals` | 116 (cố định) | Con vật | FK → thais |
+| `users` | ~15,000 | Người dùng | Master |
+| `orders` | ~30,000 | Đơn hàng | FK → users, thais |
+| `ket_quas` | ~180 | Kết quả xổ | FK → thais |
+| `cau_thais` | ~90 | Câu thai ngày | FK → thais |
+
+### 🔗 ERD Diagram
+
+```mermaid
+erDiagram
+    THAIS ||--o{ ANIMALS : "has"
+    THAIS ||--o{ ORDERS : "receives"
+    THAIS ||--o{ KET_QUAS : "produces"
+    THAIS ||--o{ CAU_THAIS : "publishes"
+    USERS ||--o{ ORDERS : "places"
+    
+    THAIS {
+        string id PK "thai-an-nhon"
+        string name "Thai An Nhơn"
+        string slug "an-nhon"
+        int animal_count "40 hoặc 36"
+        json time_slots "Khung giờ"
+        json tet_time_slot "Nullable"
+        bool is_tet_mode
+        bool is_open "Kill-switch"
+    }
+    
+    ANIMALS {
+        string id PK "thai-an-nhon-animal-1"
+        string thai_id FK
+        int order_num "1-40"
+        string name "Cá Trắng"
+        int price "VND"
+        bigint limit_amount
+        bigint remaining_limit
+        bool is_enabled
+    }
+    
+    USERS {
+        string id PK "UUID"
+        string phone UK "0901234567"
+        string display_name
+        json bank_info "Nullable"
+        json completed_tasks "Array"
+        timestamp created_at
+        timestamp last_login
+    }
+    
+    ORDERS {
+        string id PK "UUID"
+        string user_id FK
+        string thai_id FK
+        string session "sang|chieu|toi"
+        json items "CartItem[]"
+        bigint total
+        string status "pending|paid|completed"
+        string cau_thai "Nullable"
+        timestamp created_at
+    }
+    
+    KET_QUAS {
+        string id PK "UUID"
+        string thai_id FK
+        string session "sang|chieu|toi"
+        date result_date
+        json winning_orders "Array[1-3]"
+        string image_url "Nullable"
+    }
+    
+    CAU_THAIS {
+        string id PK "UUID"
+        string thai_id FK
+        string session
+        date publish_date
+        text content
+        string image_url "Nullable"
+    }
+```
+
+### 📝 SQL Schema (PostgreSQL)
+
+```sql
+-- ============================================
+-- BẢNG THAIS (3 records cố định)
+-- ============================================
+CREATE TABLE thais (
+    id VARCHAR(50) PRIMARY KEY,           -- 'thai-an-nhon'
+    name VARCHAR(100) NOT NULL,           -- 'Thai An Nhơn'
+    slug VARCHAR(50) NOT NULL UNIQUE,     -- 'an-nhon'
+    animal_count SMALLINT NOT NULL,       -- 40 hoặc 36
+    time_slots JSONB NOT NULL DEFAULT '[]',
+    tet_time_slot JSONB,
+    is_tet_mode BOOLEAN DEFAULT FALSE,
+    is_open BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Seed data
+INSERT INTO thais (id, name, slug, animal_count, time_slots) VALUES
+('thai-an-nhon', 'Thai An Nhơn', 'an-nhon', 40, 
+  '[{"session":"sang","start":"07:00","end":"10:30"},{"session":"chieu","start":"13:00","end":"16:30"}]'),
+('thai-nhon-phong', 'Thai Nhơn Phong', 'nhon-phong', 40,
+  '[{"session":"sang","start":"07:00","end":"10:30"},{"session":"chieu","start":"13:00","end":"16:30"}]'),
+('thai-hoai-nhon', 'Thai Hoài Nhơn', 'hoai-nhon', 36,
+  '[{"session":"trua","start":"09:00","end":"12:30"},{"session":"chieu","start":"14:00","end":"18:30"}]');
+
+-- ============================================
+-- BẢNG ANIMALS (116 records cố định)
+-- ============================================
+CREATE TABLE animals (
+    id VARCHAR(100) PRIMARY KEY,          -- 'thai-an-nhon-animal-1'
+    thai_id VARCHAR(50) REFERENCES thais(id),
+    order_num SMALLINT NOT NULL,          -- 1-40
+    name VARCHAR(50) NOT NULL,            -- 'Cá Trắng'
+    price INTEGER DEFAULT 10000,
+    limit_amount BIGINT DEFAULT 5000000,
+    remaining_limit BIGINT DEFAULT 5000000,
+    is_enabled BOOLEAN DEFAULT TRUE,
+    UNIQUE(thai_id, order_num)
+);
+
+-- Index cho query phổ biến
+CREATE INDEX idx_animals_thai ON animals(thai_id);
+
+-- ============================================
+-- BẢNG USERS
+-- ============================================
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone VARCHAR(15) UNIQUE NOT NULL,
+    display_name VARCHAR(100),
+    bank_info JSONB,                      -- {"bank":"VCB","account":"123...","holder":"Nguyen Van A"}
+    completed_tasks JSONB DEFAULT '[]',
+    created_at TIMESTAMP DEFAULT NOW(),
+    last_login TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_phone ON users(phone);
+
+-- ============================================
+-- BẢNG ORDERS (Bảng lớn nhất)
+-- ============================================
+CREATE TABLE orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id),
+    thai_id VARCHAR(50) REFERENCES thais(id),
+    session VARCHAR(10) NOT NULL,         -- 'sang', 'chieu', 'toi'
+    items JSONB NOT NULL,                 -- [{"animal_id":"...","qty":1,"price":10000}]
+    total BIGINT NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending', -- 'pending','paid','completed','cancelled'
+    cau_thai TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    paid_at TIMESTAMP,
+    completed_at TIMESTAMP
+);
+
+-- Indexes cho query phổ biến
+CREATE INDEX idx_orders_user ON orders(user_id);
+CREATE INDEX idx_orders_thai_date ON orders(thai_id, created_at DESC);
+CREATE INDEX idx_orders_status ON orders(status) WHERE status != 'completed';
+
+-- ============================================
+-- BẢNG KET_QUAS
+-- ============================================
+CREATE TABLE ket_quas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    thai_id VARCHAR(50) REFERENCES thais(id),
+    session VARCHAR(10) NOT NULL,
+    result_date DATE NOT NULL,
+    winning_orders JSONB NOT NULL,        -- [1, 15, 28] - order numbers trúng
+    image_url TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(thai_id, session, result_date)
+);
+
+CREATE INDEX idx_ketquas_date ON ket_quas(result_date DESC);
+
+-- ============================================
+-- BẢNG CAU_THAIS
+-- ============================================
+CREATE TABLE cau_thais (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    thai_id VARCHAR(50) REFERENCES thais(id),
+    session VARCHAR(10) NOT NULL,
+    publish_date DATE NOT NULL,
+    content TEXT NOT NULL,
+    image_url TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(thai_id, session, publish_date)
+);
+
+CREATE INDEX idx_cauthai_date ON cau_thais(publish_date DESC);
+```
+
+### ⚡ Tối Ưu Backend Queries
+
+#### 1. Lấy danh sách con vật theo Thai
+```sql
+-- O(1) với index, trả về 40 hoặc 36 records
+SELECT * FROM animals 
+WHERE thai_id = 'thai-hoai-nhon' 
+ORDER BY order_num;
+```
+
+#### 2. Lấy kết quả hôm nay
+```sql
+-- Single query, không cần JOIN
+SELECT * FROM ket_quas 
+WHERE result_date = CURRENT_DATE 
+ORDER BY thai_id, session;
+```
+
+#### 3. Thống kê orders theo ngày
+```sql
+-- Aggregate query
+SELECT 
+    thai_id,
+    session,
+    COUNT(*) as order_count,
+    SUM(total) as total_revenue
+FROM orders 
+WHERE created_at::date = CURRENT_DATE
+GROUP BY thai_id, session;
+```
+
+#### 4. con vật trúng nhiều nhất (năm)
+```sql
+SELECT 
+    a.name,
+    a.order_num,
+    COUNT(*) as win_count
+FROM ket_quas k
+CROSS JOIN LATERAL jsonb_array_elements_text(k.winning_orders) as wo(order_num)
+JOIN animals a ON a.order_num = wo.order_num::int AND a.thai_id = k.thai_id
+WHERE EXTRACT(YEAR FROM k.result_date) = 2026
+GROUP BY a.name, a.order_num
+ORDER BY win_count DESC
+LIMIT 10;
+```
+
+### 📈 Ước Tính Dung Lượng
+
+| Bảng | Records/năm | Avg Size | Tổng/năm |
+|------|-------------|----------|----------|
+| thais | 3 | 1KB | ~3KB |
+| animals | 116 | 0.5KB | ~58KB |
+| users | 180,000 | 0.5KB | ~90MB |
+| orders | 360,000 | 1KB | ~360MB |
+| ket_quas | 2,190 | 0.5KB | ~1MB |
+| cau_thais | 1,095 | 1KB | ~1MB |
+| **TỔNG** | | | **~452MB/năm** |
+
+> 💡 **VPS Recommendation**: 1GB RAM + 10GB SSD đủ cho 5 năm data
+
+### 🔄 Backup Strategy
+
+```bash
+# Daily backup (chạy lúc 2:00 AM)
+pg_dump -Fc conhon_db > /backups/conhon_$(date +%Y%m%d).dump
+
+# Retention: 7 ngày
+find /backups -name "*.dump" -mtime +7 -delete
+```
+
+---
+
+## �🔥 TÍNH NĂNG CHI TIẾT
 
 ### 1. Hệ thống Countdown & Game Cycles
 - **3 phiên/ngày** cho mỗi Thai (sáng, chiều, Tết)
@@ -976,6 +1254,90 @@ networks:
 
 ---
 
+## 📝 CHANGELOG - PHASE 2.5 (30/01/2026)
+
+### Year Selector → Dropdown (Tất cả pages)
+**Thay đổi**: Chọn năm từ buttons → dropdown nhất quán toàn ứng dụng
+
+| File | Chức năng |
+|------|-----------|
+| `HomePage.tsx` | Dropdown trong phần Kết Quả + Câu Thai |
+| `KetQuaPage.tsx` | Dropdown chọn năm xem kết quả |
+| `AdminCauThai.tsx` | Dropdown chọn năm quản lý ảnh câu thai |
+| `AdminKetQua.tsx` | Dropdown trong thống kê nhóm |
+
+### Câu Thai Year Filter (HomePage.tsx)
+```typescript
+// Filter câu thai theo năm
+const selectedCauThaiYear = selectedYear;
+const filteredCauThaiData = cauThaiData.filter(cau => cau.date.includes(selectedCauThaiYear.toString()));
+const currentCauThai = filteredCauThaiData[currentCauThaiIndex] || null;
+```
+- Chọn năm trước → Lướt xem câu thai trong năm đó
+- Empty state khi năm không có dữ liệu
+- Indicator dots cập nhật theo dữ liệu đã lọc
+
+### Thai Hoài Nhơn - Không có buổi tối (Critical Fix)
+**Quy tắc**: Hoài Nhơn chỉ có 2 khung giờ (Trưa 13:00, Chiều 19:00), **KHÔNG có buổi Tối**
+
+| File | Sửa đổi |
+|------|---------|
+| `mockData.ts` | `timeSlots: [12:30, 18:30]` - Không có tetTimeSlot |
+| `AdminDashboard.tsx` | Ẩn nút "🌙 Tối" khi `selectedThai === 'thai-hoai-nhon'` |
+| `AdminOrders.tsx` | Ẩn nút "🌙 Tối" khi `selectedThai === 'thai-hoai-nhon'` |
+| `KetQuaPage.tsx` | Bảng kết quả: Hoài Nhơn chỉ có cột Trưa + Chiều |
+| `HuongDanPage.tsx` | Ghi chú: "Thai Hoài Nhơn: Đóng tịch 12:30, 18:30 (không có tối)" |
+
+### Admin CMS Refactor (AdminCMS.tsx)
+- **Thai Selector**: Dropdown chọn Thai (An Nhơn | Nhơn Phong | Hoài Nhơn)
+- **Video Upload**: Form "➕ UP VIDEO MỚI" với title, URL, description
+- **Tab Bình luận**: Thêm dropdown Thai + dropdown Lọc (Tất cả/Đang hoạt động/Đã cấm)
+- Videos được filter theo Thai đã chọn
+
+### Hỗ Trợ Page Fix (HoTroPage.tsx)
+- **FAQ Order**: Đăng ký → Like/Share → Chọn Thai → Chọn con vật → Thanh toán → Chờ kết quả
+- **Liên hệ UI**: Email hiển thị đầy đủ (break-all), cards uniform height
+
+### Database Schema Notes (Cho Backend)
+
+```typescript
+// Thai entity constraint
+interface Thai {
+  // ... existing fields
+  hasTetMode: boolean;  // An Nhơn, Nhơn Phong = true. Hoài Nhơn = false
+}
+
+// Session filter logic
+const getAvailableSessions = (thaiId: string) => {
+  if (thaiId === 'thai-hoai-nhon') {
+    return ['trua', 'chieu'];  // Hoài Nhơn: 13:00, 19:00
+  }
+  return ['sang', 'chieu', 'toi'];  // Others: 11:00, 17:00, 21:00
+};
+
+// Video Post with Thai association
+interface Post {
+  // ... existing fields
+  thaiId: 'thai-an-nhon' | 'thai-nhon-phong' | 'thai-hoai-nhon';
+}
+
+// Year-based CauThai filtering
+interface CauThai {
+  // ... existing fields
+  date: string;  // Format: "DD-MM-YYYY" for filtering by year
+}
+```
+
+### API Endpoints (Đề xuất)
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| `GET` | `/api/cau-thai?year=2025&thaiId=thai-an-nhon` | Lấy câu thai theo năm + Thai |
+| `GET` | `/api/ket-qua?year=2025` | Lấy kết quả theo năm |
+| `POST` | `/api/posts` | Tạo video post mới (body: title, videoUrl, content, thaiId) |
+| `GET` | `/api/posts?thaiId=thai-an-nhon&type=video` | Lấy videos theo Thai |
+| `GET` | `/api/comments?thaiId=thai-an-nhon` | Lấy comments theo Thai |
+
 ## 📊 THỐNG KÊ DỰ ÁN (30/01/2026)
 
 | Thành phần | Số lượng |
@@ -995,4 +1357,4 @@ networks:
 
 **Tài liệu này được tạo tự động bởi Antigravity AI**
 
-*Cập nhật lần cuối: 30/01/2026 21:06*
+*Cập nhật lần cuối: 30/01/2026 23:08*

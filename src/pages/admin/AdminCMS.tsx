@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ThaiIcon } from '../../components/icons/ThaiIcons';
 
 interface Comment {
     id: string;
@@ -28,7 +29,7 @@ const mockPosts: Post[] = [
     // Thai An Nhơn
     {
         id: '1',
-        author: 'Cổ Nhơn An Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🎯',
         time: '2 giờ trước',
         content: '🎉 Chúc mừng các bạn đã trúng thưởng hôm nay! Kết quả: Con Rồng 🐉',
@@ -44,7 +45,7 @@ const mockPosts: Post[] = [
     },
     {
         id: '2',
-        author: 'Cổ Nhơn An Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '📺',
         time: '5 giờ trước',
         content: '📝 Hướng dẫn cách chơi Cổ Nhơn cho người mới!',
@@ -60,7 +61,7 @@ const mockPosts: Post[] = [
     // Thai Nhơn Phong
     {
         id: '3',
-        author: 'Cổ Nhơn Nhơn Phong',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🏆',
         time: '3 giờ trước',
         content: '🔥 Kết quả chiều nay - Thai Nhơn Phong: Con Hổ 🐅',
@@ -77,7 +78,7 @@ const mockPosts: Post[] = [
     // Thai Hoài Nhơn
     {
         id: '4',
-        author: 'Cổ Nhơn Hoài Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🎲',
         time: '4 giờ trước',
         content: '📣 Thai Hoài Nhơn - Kết quả buổi chiều: Con Rắn 🐍',
@@ -190,7 +191,9 @@ const AdminCMS: React.FC = () => {
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
                                     }`}
                             >
-                                <div className="text-2xl mb-2">{config.icon}</div>
+                                <div className="mb-2 flex justify-center">
+                                    <ThaiIcon thaiId={thaiId} size={40} />
+                                </div>
                                 <p className={`font-bold ${isSelected ? `text-${config.color}-700` : 'text-gray-800'}`}>
                                     {config.name}
                                 </p>
@@ -540,29 +543,31 @@ const AdminCMS: React.FC = () => {
             </div>
 
             {/* Delete Confirmation Modal */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ Xác nhận xóa</h3>
-                        <p className="text-gray-600 mb-6">Bạn có chắc chắn muốn xóa bình luận này? Hành động này không thể hoàn tác.</p>
-                        <div className="flex space-x-3">
-                            <button
-                                onClick={() => setShowDeleteModal(false)}
-                                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                onClick={confirmDeleteComment}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
-                            >
-                                🗑️ Xóa bình luận
-                            </button>
+            {
+                showDeleteModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ Xác nhận xóa</h3>
+                            <p className="text-gray-600 mb-6">Bạn có chắc chắn muốn xóa bình luận này? Hành động này không thể hoàn tác.</p>
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    onClick={confirmDeleteComment}
+                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                                >
+                                    🗑️ Xóa bình luận
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

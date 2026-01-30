@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ThaiIcon } from '../components/icons/ThaiIcons';
 
 interface Comment {
     id: string;
@@ -27,7 +28,7 @@ const mockPosts: Post[] = [
     // Thai An Nhơn
     {
         id: '1',
-        author: 'Cổ Nhơn An Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🎯',
         time: '2 giờ trước',
         content: '🎉 Chúc mừng các bạn đã trúng thưởng hôm nay! Kết quả: Con Rồng 🐉',
@@ -43,7 +44,7 @@ const mockPosts: Post[] = [
     },
     {
         id: '2',
-        author: 'Cổ Nhơn An Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '📺',
         time: '5 giờ trước',
         content: '📝 Hướng dẫn cách chơi Cổ Nhơn cho người mới!',
@@ -59,7 +60,7 @@ const mockPosts: Post[] = [
     // Thai Nhơn Phong
     {
         id: '3',
-        author: 'Cổ Nhơn Nhơn Phong',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🏆',
         time: '3 giờ trước',
         content: '🔥 Kết quả chiều nay - Thai Nhơn Phong: Con Hổ 🐅',
@@ -75,7 +76,7 @@ const mockPosts: Post[] = [
     // Thai Hoài Nhơn
     {
         id: '4',
-        author: 'Cổ Nhơn Hoài Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '🎲',
         time: '4 giờ trước',
         content: '📣 Thai Hoài Nhơn - Kết quả buổi chiều: Con Rắn 🐍',
@@ -90,7 +91,7 @@ const mockPosts: Post[] = [
     },
     {
         id: '5',
-        author: 'Cổ Nhơn Hoài Nhơn',
+        author: 'Cổ Nhơn An Nhơn Bình Định',
         avatar: '📢',
         time: '1 ngày trước',
         content: '🎊 Thông báo lịch xổ Thai Hoài Nhơn dịp Tết!',
@@ -127,7 +128,10 @@ const CongDongPage: React.FC = () => {
             <div className={`${config.bgColor} rounded-2xl border-2 ${config.borderColor} overflow-hidden`}>
                 {/* Header */}
                 <div className={`${config.headerBg} text-white p-4 text-center`}>
-                    <h3 className="font-bold text-lg">{config.icon} {config.name}</h3>
+                    <div className="flex items-center justify-center gap-2">
+                        <ThaiIcon thaiId={thaiId} size={28} />
+                        <h3 className="font-bold text-lg">{config.name}</h3>
+                    </div>
                     <p className="text-sm opacity-90">{thaiPosts.length} bài viết</p>
                 </div>
 

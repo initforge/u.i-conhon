@@ -111,7 +111,9 @@ export const mockThais: Thai[] = [
   },
 ];
 
-// Mock data: Animals (40 con vật)
+// Mock data: Animals
+// - An Nhơn & Nhơn Phong: 40 con vật (order 1-40)
+// - Hoài Nhơn: 36 con vật (order 1-36, KHÔNG CÓ nhóm Tứ thần linh)
 export interface Animal {
   id: string;
   name: string;
@@ -126,26 +128,58 @@ export interface Animal {
   imagePlaceholder: string;
 }
 
-const animalNames = [
+// Danh sách 40 con vật (An Nhơn / Nhơn Phong)
+const animalNames40 = [
   'Cá Trắng', 'Ốc', 'Ngỗng', 'Công', 'Trùn', 'Cọp', 'Heo', 'Thỏ', 'Trâu', 'Rồng Bay',
   'Chó', 'Ngựa', 'Voi', 'Mèo', 'Chuột', 'Ong', 'Hạc', 'Kỳ Lân', 'Bướm', 'Hòn Núi',
   'Én', 'Bồ Câu', 'Khỉ', 'Ếch', 'Quạ', 'Rồng Nằm', 'Rùa', 'Gà', 'Lươn', 'Cá Đỏ',
   'Tôm', 'Rắn', 'Nhện', 'Nai', 'Dê', 'Bà Vãi', 'Ông Trời', 'Ông Địa', 'Thần Tài', 'Ông Táo'
 ];
 
-export const mockAnimals: Animal[] = animalNames.map((name, index) => ({
-  id: `animal-${index + 1}`,
-  name,
-  order: index + 1,
-  price: Math.floor(Math.random() * 50000) + 10000, // 10k-60k
-  limit: Math.floor(Math.random() * 5000000) + 1000000, // 1M-6M
-  remainingLimit: Math.floor(Math.random() * 4000000) + 500000, // 500k-4.5M
-  isEnabled: index < 38, // 2 con bị disabled
-  isBanned: index === 38 || index === 39, // 2 con cuối bị cấm
-  banReason: index === 38 || index === 39 ? 'Đã hết hạn mức' : undefined,
-  thaiId: ['thai-an-nhon', 'thai-nhon-phong', 'thai-hoai-nhon'][index % 3],
-  imagePlaceholder: `/assets/conhon/${index + 1}-placeholder.png`,
-}));
+// Danh sách 36 con vật (Hoài Nhơn - không có nhóm Tứ thần linh 37-40)
+const animalNames36 = animalNames40.slice(0, 36);
+
+// Helper function để tạo danh sách con vật cho 1 Thai
+const createAnimalsForThai = (thaiId: string, animalNames: string[]): Animal[] => {
+  return animalNames.map((name, index) => ({
+    id: `${thaiId}-animal-${index + 1}`,
+    name,
+    order: index + 1,
+    price: Math.floor(Math.random() * 50000) + 10000, // 10k-60k
+    limit: Math.floor(Math.random() * 5000000) + 1000000, // 1M-6M
+    remainingLimit: Math.floor(Math.random() * 4000000) + 500000, // 500k-4.5M
+    isEnabled: true,
+    isBanned: false,
+    banReason: undefined,
+    thaiId,
+    imagePlaceholder: `/assets/conhon/${index + 1}-placeholder.png`,
+  }));
+};
+
+// Danh sách con vật cho từng Thai
+export const anNhonAnimals = createAnimalsForThai('thai-an-nhon', animalNames40);
+export const nhonPhongAnimals = createAnimalsForThai('thai-nhon-phong', animalNames40);
+export const hoaiNhonAnimals = createAnimalsForThai('thai-hoai-nhon', animalNames36);
+
+// Export tổng hợp tất cả con vật (dùng cho compatibility với code cũ)
+export const mockAnimals: Animal[] = [...anNhonAnimals, ...nhonPhongAnimals, ...hoaiNhonAnimals];
+
+// Helper function để lấy con vật theo Thai
+export const getAnimalsByThai = (thaiId: string): Animal[] => {
+  switch (thaiId) {
+    case 'thai-an-nhon':
+    case 'an-nhon':
+      return anNhonAnimals;
+    case 'thai-nhon-phong':
+    case 'nhon-phong':
+      return nhonPhongAnimals;
+    case 'thai-hoai-nhon':
+    case 'hoai-nhon':
+      return hoaiNhonAnimals;
+    default:
+      return anNhonAnimals; // fallback
+  }
+};
 
 // Mock data: Social Tasks
 export interface SocialTask {
@@ -320,6 +354,7 @@ export interface KetQua {
   winningAnimalIds: string[];
   date: string;
   imageUrl?: string;
+  isOff?: boolean; // Ngày nghỉ không xổ
 }
 
 export const mockKetQuas: KetQua[] = [
