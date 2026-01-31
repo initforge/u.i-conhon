@@ -948,8 +948,8 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Animal Grid - Filter by selected group - responsive: 4 cols mobile, 5 cols desktop */}
-            <div className="grid grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
+            {/* Animal Grid - Filter by selected group - responsive: 2 cols mobile, 4 cols tablet, 5 cols desktop */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
               {animalData
                 .filter((animal) => {
                   if (selectedGroup === 'tất-cả') return true;
