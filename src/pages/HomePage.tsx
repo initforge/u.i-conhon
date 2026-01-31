@@ -963,7 +963,7 @@ const HomePage: React.FC = () => {
                         <p className="text-sm md:text-base font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{animal.order}. {animal.name}</p>
                       </div>
                       {/* Alias prominently displayed */}
-                      <h4 className="text-sm md:text-lg font-bold mt-6 md:mt-8" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>
+                      <h4 className="text-sm md:text-lg font-bold mt-6 md:mt-8" style={{ color: '#2563EB', fontFamily: "'Nunito', sans-serif" }}>
                         {animal.alias}
                       </h4>
                       {/* Animal Image */}
