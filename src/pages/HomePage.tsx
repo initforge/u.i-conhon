@@ -448,11 +448,11 @@ const HomePage: React.FC = () => {
                   </h4>
                   <div className="space-y-3 text-gray-700 leading-relaxed text-sm">
                     <p>
-                      Mỗi đề của trò chơi này là 4 câu thơ lục bát (còn gọi là câu thai). Người chơi dựa vào ý nghĩa của những câu thai đó mà luận ra đáp án.
+                      Mỗi đề của trò chơi này là 2 hoặc 4 câu thơ lục bát (còn gọi là câu thai). Người chơi dựa vào ý nghĩa của những câu thai đó mà luận ra đáp án.
                       Đây chính là phần sôi nổi nhất.
                     </p>
                     <p>
-                      Nội dung của 4 câu thai thường về danh lam, thắng cảnh, các chiến thắng lịch sử, câu chuyện văn học, cuộc sống đời thường,...
+                      Nội dung của câu thai thường về danh lam, thắng cảnh, các chiến thắng lịch sử, câu chuyện văn học, cuộc sống đời thường,...
                       Đáp án cũng bám vào những ý đó, tuy nhiên không phải ai cũng là người chiến thắng.
                     </p>
                     <p className="italic">
@@ -967,11 +967,11 @@ const HomePage: React.FC = () => {
                         {animal.alias}
                       </h4>
                       {/* Animal Image */}
-                      <div className="rounded-lg h-24 md:h-48 flex items-center justify-center mb-1 md:mb-2 mt-2 md:mt-4 overflow-hidden">
+                      <div className="w-full aspect-square flex items-center justify-center mb-1 md:mb-2 mt-2 md:mt-4 overflow-hidden rounded-lg bg-gray-50">
                         <img
                           src={`/assets/conhon/${String(animal.order).padStart(2, '0')}.jpg`}
                           alt={animal.name}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-full object-contain rounded-lg"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';

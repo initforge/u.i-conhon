@@ -204,7 +204,7 @@ export const mockSocialTasks: SocialTask[] = [
     id: 'task-2',
     name: 'Đăng ký YouTube Cậu Ba Họ Nguyễn',
     type: 'subscribe',
-    url: 'https://youtube.com/@caubahonguyen',
+    url: 'https://youtube.com/@caubahonguyenxunau3140?si=HvJ9wVQsKVIu1BR8',
     isCompleted: false,
     required: true,
   },

@@ -185,7 +185,7 @@ const Footer: React.FC = () => {
                   <span className="text-sm">Cậu Ba Họ Nguyễn</span>
                 </a>
                 <a
-                  href="https://www.youtube.com/@caubahonguyenxunau3140"
+                  href="https://youtube.com/@caubahonguyenxunau3140?si=HvJ9wVQsKVIu1BR8"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-red-200 hover:text-white transition flex items-center space-x-2"

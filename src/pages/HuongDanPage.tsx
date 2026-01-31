@@ -69,7 +69,7 @@ const HuongDanPage: React.FC = () => {
                   <div className="space-y-4 text-gray-700 leading-relaxed">
                     <p>
                       <strong>Cổ Nhơn</strong> là trò chơi dân gian độc đáo của thị xã Hoài Nhơn và An Nhơn, thường tổ chức vào dịp Tết Nguyên đán.
-                      Người chơi suy luận từ 4 câu thơ lục bát (câu thai) để đoán đáp án.
+                      Người chơi suy luận từ 2 hoặc 4 câu thơ lục bát (câu thai) để đoán đáp án.
                       <strong>Thai Hoài Nhơn có 36 con vật</strong>, trong khi <strong>Thai An Nhơn và Nhơn Phong có 40 con vật</strong>.
                       Hộp gỗ chứa đáp án được treo trên cây nêu cao hơn 5m, tạo không khí hồi hộp và thú vị.
                     </p>

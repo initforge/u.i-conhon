@@ -96,7 +96,7 @@ const SocialTasksPage: React.FC = () => {
                                             onClick={() => {
                                                 const urls: { [key: string]: string } = {
                                                     'facebook-follow': 'https://facebook.com',
-                                                    'youtube-subscribe': 'https://youtube.com',
+                                                    'youtube-subscribe': 'https://youtube.com/@caubahonguyenxunau3140?si=HvJ9wVQsKVIu1BR8',
                                                     'facebook-like': 'https://facebook.com',
                                                     'facebook-share': 'https://facebook.com',
                                                 };

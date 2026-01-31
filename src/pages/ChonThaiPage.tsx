@@ -20,12 +20,12 @@ const ChonThaiPage: React.FC = () => {
         {
             id: 'nhon-phong',
             name: 'Thai Nhơn Phong',
-            description: 'Xổ lúc 11h và 17h hàng ngày',
+            description: 'Xổ lúc 11h và 17h. Từ mùng 1 có thêm 21h',
             color: 'from-yellow-500 to-yellow-700',
             icon: '🟡',
             bgColor: 'bg-yellow-50',
             borderColor: 'border-yellow-500',
-            times: ['11h', '17h'],
+            times: ['11h', '17h', '21h (từ mùng 1)'],
         },
         {
             id: 'hoai-nhon',
@@ -115,8 +115,12 @@ const ChonThaiPage: React.FC = () => {
                     <ul className="text-gray-600 text-sm space-y-1 text-left max-w-md mx-auto">
                         <li>• Tỉ lệ thưởng chung: <strong>1 chung 30</strong></li>
                         <li>• Riêng Thai Hoài Nhơn: Chí Cao (Con Trùn) <strong>chung 70</strong></li>
-                        <li>• Đóng tịch lúc <strong>17h</strong> mỗi ngày</li>
-                        <li>• Mỗi đơn hàng thuộc 1 Thai, bạn có thể mua nhiều Thai</li>
+                        <li>• <strong>Thời gian đóng tịch:</strong></li>
+                        <li className="ml-4">- Thai An Nhơn: Sáng 10h30 - Chiều 16h30</li>
+                        <li className="ml-4">- Thai Nhơn Phong: Sáng 10h30 - Chiều 16h30</li>
+                        <li className="ml-4">- Thai Hoài Nhơn: Sáng 12h30 - Chiều 18h30</li>
+                        <li className="ml-4 text-red-600">- Từ mùng 1 Tết: Tối 20h30 (An Nhơn, Nhơn Phong)</li>
+                        <li>• Mỗi đơn hàng, khách hàng có thể mua 3 Thai</li>
                     </ul>
                 </div>
             </div>

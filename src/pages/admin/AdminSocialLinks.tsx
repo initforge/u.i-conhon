@@ -23,7 +23,7 @@ const AdminSocialLinks: React.FC = () => {
             id: '2',
             platform: 'youtube',
             type: 'subscribe',
-            url: 'https://youtube.com/@caubahoNguyen',
+            url: 'https://youtube.com/@caubahonguyenxunau3140?si=HvJ9wVQsKVIu1BR8',
             description: 'Kênh YouTube Cậu Ba Họ Nguyễn',
             isActive: true,
         },
@@ -201,8 +201,8 @@ const AdminSocialLinks: React.FC = () => {
                                         <button
                                             onClick={() => handleToggleActive(link.id)}
                                             className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${link.isActive
-                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 }`}
                                         >
                                             {link.isActive ? '✓ Kích hoạt' : '✕ Tắt'}

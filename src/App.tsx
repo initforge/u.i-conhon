@@ -6,6 +6,7 @@ import { SystemConfigProvider } from './contexts/SystemConfigContext'
 import MainLayout from './layouts/MainLayout'
 import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
+import ScrollToTop from './components/ScrollToTop'
 
 // Public pages
 import HomePage from './pages/HomePage'
@@ -40,6 +41,7 @@ function App() {
         <CartProvider>
           <SocialTaskProvider>
             <Router>
+              <ScrollToTop />
               <Routes>
                 {/* Public routes with MainLayout */}
                 <Route path="/" element={<MainLayout />}>
