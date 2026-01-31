@@ -1,6 +1,6 @@
 # CỔ NHƠN - ĐẶC TẢ HỆ THỐNG
 
-> **Phiên bản**: 2.0 | **Cập nhật**: 31/01/2026  
+> **Phiên bản**: 2.1 | **Cập nhật**: 31/01/2026  
 > **Mục đích**: Đặc tả chi tiết toàn bộ hệ thống cho việc triển khai backend-database
 
 ---
@@ -15,6 +15,7 @@
 6. [Quy tắc nghiệp vụ](#6-quy-tắc-nghiệp-vụ)
 7. [Database Schema](#7-database-schema)
 8. [API Endpoints](#8-api-endpoints)
+9. [Testing & Deployment](#9-testing--deployment)
 
 ---
 
@@ -64,6 +65,34 @@ TỐI:    20:00 - 20:30 (An Nhơn, Nhơn Phong - chỉ Tết)
 - **Database queries**: < 100ms
 - **Concurrent orders**: 100-200/phiên
 - **Uptime**: 99.9% trong 15 ngày mùa vụ
+
+### 2.4 Traffic Assumptions (Production Notes)
+
+> **Lưu ý cho Backend**: Phần này làm rõ mô hình traffic để thiết kế API/caching hợp lý.
+
+#### Countdown & Time Sync
+- **Server chỉ trả về `server_time` và `close_time`** trong response.
+- **Client tự tính countdown** dựa trên thời gian đã sync, KHÔNG gọi API mỗi giây.
+- Nên có endpoint `/api/time` hoặc header `X-Server-Time` để client sync offset nếu cần.
+
+#### Polling Strategy cho trạng thái hạn mức
+- Trạng thái "còn/hết hạn mức" nên lấy qua **snapshot endpoint nhẹ** (poll 10-15s hoặc SSE).
+- **KHÔNG poll 1-2s** vì với 500 users × 1 req/2s = 250 req/s chỉ riêng việc check hạn mức.
+- Snapshot endpoint chỉ trả `{ animal_order, remaining }[]` — payload gọn.
+
+#### Cache Policy cho Read Endpoints
+| Endpoint | Cache | Lý do |
+|----------|-------|-------|
+| `GET /api/thais/:id/animals` | `Cache-Control: max-age=3600, ETag` | List con vật ít thay đổi |
+| `GET /api/results` | `Cache-Control: max-age=60, ETag` | Kết quả xổ chỉ cập nhật sau giờ xổ |
+| `GET /api/thais/:id/sessions/:session/snapshot` | `Cache-Control: max-age=10` | Snapshot hạn mức poll 10-15s |
+
+#### Request Multiplier Estimates (Peak 30 phút)
+```
+500 users × ~10 actions/user = ~5,000 requests/30 phút
+(reload trang, đổi filter, thêm giỏ hàng, checkout...)
+→ ~3 requests/second sustained, bursts ~10/s
+```
 
 ---
 
@@ -134,7 +163,7 @@ TỐI:    20:00 - 20:30 (An Nhơn, Nhơn Phong - chỉ Tết)
 | 2 | Hoàn thành nhiệm vụ MXH (follow Fanpage, join Group, add Zalo, sub YouTube) |
 | 3 | Chọn Thai: An Nhơn / Nhơn Phong / Hoài Nhơn |
 | 4 | Chọn con vật, thêm vào giỏ, thanh toán |
-| 5 | Gửi ảnh chuyển khoản + hóa đơn qua Zalo |
+| 5 | Thanh toán qua link PayOS |
 
 **Tab 2: Luật chơi**
 - **Câu thai**: 2 hoặc 4 câu thơ lục bát
@@ -204,6 +233,19 @@ Mỗi card Thai hiển thị:
 - Tổng tiền
 - Nút "Thanh toán"
 
+#### Backend Notes (Production)
+
+> **API "nóng" & caching strategy cho trang này:**
+
+| API | Tần suất gọi | Caching | Ghi chú |
+|-----|-------------|---------|---------|
+| `GET /api/thais/:id/animals` | 1 lần/load | **Cache 1 giờ + ETag** | Danh sách 40 con ít thay đổi |
+| `GET /api/thais/:id/sessions/:session/snapshot` | Poll 10-15s | **Cache-Control: max-age=10** | Chỉ trả `remaining[]`, payload < 1KB |
+| **Countdown** | — | **Client-side only** | Không gọi API mỗi giây |
+
+- **Khi user đổi filter/nhóm**: Chỉ filter client-side từ data đã cache, KHÔNG gọi API lại.
+- **Snapshot endpoint**: Trả về `[{animal_order, remaining}]` để client merge với danh sách animals đã cache.
+
 ---
 
 ### 4.6 Trang Thanh toán (`/thanh-toan`)
@@ -212,17 +254,24 @@ Mỗi card Thai hiển thị:
 - Danh sách con vật đã chọn (STT, tên, số lượng, thành tiền)
 - Tổng tiền
 
-#### Thông tin chuyển khoản
-- Ngân hàng: Vietcombank
-- STK: 1234567890
-- Chủ TK: NGUYEN VAN A
-- Nội dung CK: `<SĐT> <Thai> <Session>`
-- QR Code chuyển khoản
+#### Luồng thanh toán PayOS
 
-#### Xác nhận
-- Nút "Xác nhận đã chuyển khoản"
-- → Tạo đơn hàng status=pending
-- → Chuyển đến trang Hóa đơn
+```
+1. Client gửi POST /api/orders (items, total)
+2. Server:
+   a. Validate + lock hạn mức (atomic)
+   b. Tạo order status=pending
+   c. Gọi PayOS API tạo payment link
+   d. Trả về { order_id, payment_url, expires_at }
+3. Client redirect đến payment_url
+4. User thanh toán trên PayOS
+5. PayOS gọi webhook → Server xác nhận → status=paid
+```
+
+#### Hiển thị
+- QR Code / Link thanh toán từ PayOS
+- Thời gian hết hạn thanh toán (`expires_at`)
+- Trạng thái: Chờ thanh toán / Đã thanh toán / Hết hạn
 
 ---
 
@@ -234,10 +283,10 @@ Mỗi card Thai hiển thị:
 - Thai + Session
 - Danh sách con vật
 - Tổng tiền
-- Trạng thái: Chờ xác nhận / Đã xác nhận / Đã hủy
+- Trạng thái: Chờ thanh toán / Đã thanh toán / Đã hủy / Hết hạn
 
-#### Hướng dẫn
-- Gửi ảnh CK + hóa đơn qua Zalo: 0332697909
+#### Liên hệ hỗ trợ
+- Hotline/Zalo: 0332697909
 
 ---
 
@@ -264,7 +313,7 @@ Mỗi card Thai hiển thị:
 
 #### Bộ lọc
 - Theo Thai
-- Theo trạng thái (Tất cả / Chờ xác nhận / Đã xác nhận)
+- Theo trạng thái (Tất cả / Chờ thanh toán / Đã thanh toán)
 - Theo ngày
 
 #### Danh sách đơn hàng
@@ -285,7 +334,7 @@ Mỗi card Thai hiển thị:
 | Metric | Mô tả |
 |--------|-------|
 | Đơn hàng hôm nay | Số đơn + tổng tiền |
-| Đơn chờ xác nhận | Số đơn pending |
+| Đơn chờ thanh toán | Số đơn pending |
 | Người dùng | Tổng số + mới hôm nay |
 | Thai đang mở | 0/3, 1/3, 2/3, 3/3 |
 
@@ -392,7 +441,7 @@ Mỗi card hiển thị:
 - Thai (All / An Nhơn / Nhơn Phong / Hoài Nhơn)
 - Session (All / Sáng / Chiều / Tối)
 - Ngày (Date picker)
-- Trạng thái (All / Pending / Paid / Done / Cancel)
+- Trạng thái (All / Pending / Paid / Done / Expired / Cancel)
 
 #### Bảng đơn hàng
 | Cột | Mô tả |
@@ -403,13 +452,13 @@ Mỗi card hiển thị:
 | Session | Sáng |
 | Chi tiết | Số con + tổng tiền |
 | Trạng thái | Badge màu |
-| Hành động | Xác nhận / Hủy / Chi tiết |
+| Hành động | Chi tiết / Hủy |
 
 #### Modal chi tiết đơn
 - Thông tin khách hàng
 - Danh sách con vật (STT, tên, số lượng, đơn giá, thành tiền)
 - Tổng tiền
-- Ảnh chuyển khoản (nếu có)
+- Thông tin thanh toán PayOS (nếu có)
 - Lịch sử trạng thái
 
 ---
@@ -465,9 +514,9 @@ Mỗi card hiển thị:
    - Con vật không bị cấm?
    - Hạn mức con vật còn đủ?
    - User đã hoàn thành nhiệm vụ MXH?
-4. Tạo đơn hàng status=pending
-5. User chuyển khoản
-6. Admin xác nhận → status=paid
+4. Tạo đơn hàng status=pending + payment link
+5. User thanh toán qua PayOS
+6. Webhook xác nhận → status=paid
 7. Sau khi xổ:
    - Nếu trúng → Admin liên hệ trả thưởng → status=done
    - Nếu không trúng → status=done
@@ -490,14 +539,39 @@ Nếu daily_records.is_off = true:
   - winner_order = NULL
 ```
 
-### 6.4 Logic hạn mức
+### 6.4 Logic hạn mức (Production Critical)
 
+> ⚠️ **RACE CONDITION WARNING**: Đây là điểm dễ oversell nếu implement không đúng.
+
+#### Yêu cầu bắt buộc
+- **Enforce hạn mức MUST atomic / race-safe** — không được oversell dưới concurrent checkout.
+- Implementation có thể dùng: database transaction với row-level lock, atomic increment, hoặc optimistic locking với retry.
+
+#### Behavior khi checkout nhiều con
 ```
-Khi user đặt X đồng cho con A:
-  1. Lấy purchased hiện tại của con A
-  2. Lấy purchaseLimit của con A
-  3. Nếu purchased + X > purchaseLimit → Từ chối
-  4. Nếu OK → Tạo đơn, cập nhật purchased += X
+Nếu đơn hàng có nhiều con vật (A, B, C):
+  - Kiểm tra hạn mức TẤT CẢ con trước khi commit
+  - Nếu BẤT KỲ con nào hết hạn mức → FAIL TOÀN ĐƠN
+  - Không partial order (tránh UX phức tạp + tranh chấp)
+  - Trả về danh sách con nào đã hết để user biết
+```
+
+#### Pseudocode (Reference)
+```
+BEGIN TRANSACTION (SERIALIZABLE hoặc với row lock)
+  FOR EACH item IN order.items:
+    current = SELECT purchased FROM session_limits 
+              WHERE thai_id=? AND date=? AND session=? AND animal_order=?
+              FOR UPDATE
+    IF current + item.amount > limit:
+      ROLLBACK
+      RETURN error: "Con {item} đã hết hạn mức"
+  
+  FOR EACH item IN order.items:
+    UPDATE session_limits SET purchased += item.amount WHERE ...
+  
+  INSERT INTO orders (...)
+COMMIT
 ```
 
 ### 6.5 Logic giỏ hàng đa Thai
@@ -505,7 +579,32 @@ Khi user đặt X đồng cho con A:
 ```
 - User có thể chọn con từ NHIỀU Thai trong 1 giỏ hàng
 - Khi checkout → Tách thành NHIỀU đơn hàng (1 đơn/Thai/Session)
-- Mỗi đơn có order_id riêng
+- Mỗi đơn có order_id riêng + payment link riêng
+```
+
+### 6.6 Logic thanh toán PayOS
+
+#### Luồng chính
+```
+1. User checkout → Server tạo order (pending) + gọi PayOS createPaymentLink
+2. Server lưu: orderCode, paymentLinkId, expires_at
+3. User redirect đến PayOS để thanh toán
+4. PayOS gọi webhook khi hoàn tất
+5. Server verify webhook signature + cập nhật status
+```
+
+#### Webhook xử lý (QUAN TRỌNG)
+- **Webhook MUST idempotent**: Nếu PayOS bắn lại cùng webhook → không double-paid
+- Verify bằng: `orderCode` + signature từ PayOS
+- Chỉ cập nhật status nếu hiện tại là `pending`
+
+#### Timeout & Expiration
+```
+- Payment link có expires_at (ví dụ: 15 phút sau tạo)
+- Nếu pending quá expires_at → status=expired
+- Nếu pending quá close_time (giờ đóng tịch) → status=cancelled
+- Cronjob/scheduler chạy mỗi 5 phút cleanup expired orders
+- Khi order expired/cancelled → PHẢI rollback hạn mức đã reserve
 ```
 
 ---
@@ -517,10 +616,14 @@ Khi user đặt X đồng cho con A:
 ```
 THAIS (3 records cố định)
   ├── ORDERS (nhiều đơn hàng)
-  └── DAILY_RECORDS (kết quả + câu thai)
+  ├── DAILY_RECORDS (kết quả + câu thai)
+  └── SESSION_LIMITS (hạn mức realtime)
 
 USERS
   └── ORDERS (nhiều đơn hàng)
+
+PAYMENTS (audit trail)
+  └── ORDERS (1:1)
 ```
 
 ### 7.2 Bảng `thais`
@@ -532,7 +635,7 @@ USERS
 | animal_count | SMALLINT | 40 hoặc 36 |
 | schedule | JSONB | Khung giờ các phiên |
 | prices | JSONB | Override giá từng con |
-| limits | JSONB | Override hạn mức từng con |
+| limits | JSONB | Default hạn mức từng con |
 | is_tet | BOOLEAN | Mode Tết (hiện phiên 21h) |
 | is_open | BOOLEAN | Bật/tắt Thai |
 
@@ -557,7 +660,8 @@ USERS
 | order_date | DATE | Ngày đặt |
 | items | JSONB | [{o:1, q:2, p:10000}] (order, quantity, price) |
 | total | INTEGER | Tổng tiền |
-| status | VARCHAR(10) | pending / paid / done / cancel |
+| status | VARCHAR(10) | pending / paid / done / expired / cancel |
+| expires_at | TIMESTAMP | Thời hạn thanh toán |
 | created_at | TIMESTAMP | |
 
 ### 7.5 Bảng `daily_records`
@@ -574,6 +678,65 @@ USERS
 | img | VARCHAR(255) | URL hình ảnh |
 | created_at | TIMESTAMP | |
 
+### 7.6 Bảng `session_limits` (NEW - Hạn mức realtime)
+
+> **Mục đích**: Track hạn mức atomic theo từng session, tránh race condition.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | VARCHAR(60) PK | 'an-nhon_sang_2026-01-30_01' (thai_session_date_order) |
+| thai_id | VARCHAR(20) FK | → thais.id |
+| session | VARCHAR(10) | 'sang', 'chieu', 'toi', 'trua' |
+| limit_date | DATE | Ngày áp dụng |
+| animal_order | SMALLINT | 1-40 |
+| purchase_limit | INTEGER | Hạn mức tối đa (VNĐ) |
+| purchased | INTEGER DEFAULT 0 | Đã bán (VNĐ) |
+| is_banned | BOOLEAN DEFAULT FALSE | Con đang bị cấm |
+| ban_reason | VARCHAR(255) | Lý do cấm |
+| updated_at | TIMESTAMP | |
+
+**Index**: `(thai_id, session, limit_date, animal_order)` — cho query nhanh khi checkout
+
+### 7.7 Bảng `payments` (NEW - PayOS audit trail)
+
+> **Mục đích**: Lưu thông tin payment cho idempotent webhook + audit.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID PK | Auto-generated |
+| order_id | UUID FK UK | → orders.id (1:1) |
+| order_code | BIGINT UK | PayOS orderCode (unique, dùng để lookup) |
+| payment_link_id | VARCHAR(50) | PayOS paymentLinkId |
+| amount | INTEGER | Số tiền |
+| status | VARCHAR(20) | pending / paid / expired / cancelled |
+| paid_at | TIMESTAMP | Thời điểm thanh toán thành công |
+| webhook_data | JSONB | Raw webhook payload (audit) |
+| created_at | TIMESTAMP | |
+| updated_at | TIMESTAMP | |
+
+**Idempotent check**: `UPDATE payments SET status='paid' WHERE order_code=? AND status='pending'`
+
+### 7.8 Schema Design Notes
+
+#### Option A: Giữ `orders.items` JSONB (Recommended for MVP)
+- **Pros**: Schema đơn giản, ít bảng
+- **Cons**: Query "top con được mua nhiều" phải dùng JSONB functions
+
+#### Option B: Tách `order_items` (Consider cho Phase 2)
+```sql
+CREATE TABLE order_items (
+  id UUID PRIMARY KEY,
+  order_id UUID REFERENCES orders(id),
+  animal_order SMALLINT,
+  quantity INTEGER,
+  price INTEGER
+);
+```
+- **Pros**: Report/aggregate dễ hơn
+- **Cons**: Thêm bảng + JOIN
+
+**Khuyến nghị**: Start với Option A, migrate sang Option B nếu cần report phức tạp.
+
 ---
 
 ## 8. API ENDPOINTS
@@ -584,8 +747,17 @@ USERS
 GET  /api/thais                    # Danh sách Thai + trạng thái
 GET  /api/thais/:id                # Chi tiết 1 Thai
 GET  /api/thais/:id/animals        # Danh sách con vật của Thai
+                                   # Cache: max-age=3600, ETag
+
+GET  /api/thais/:id/sessions/:session/snapshot?date=YYYY-MM-DD
+                                   # Snapshot hạn mức gọn (poll 10-15s)
+                                   # Response: { server_time, close_time, animals: [{o, remaining}] }
+                                   # Cache: max-age=10
+
 GET  /api/results                  # Kết quả xổ (có filter)
+                                   # Cache: max-age=60, ETag
 GET  /api/results/:id              # Chi tiết 1 kết quả
+GET  /api/time                     # Server time để client sync countdown
 ```
 
 ### 8.2 User APIs (Cần auth)
@@ -595,19 +767,31 @@ POST /api/auth/login               # Đăng nhập
 POST /api/auth/register            # Đăng ký
 GET  /api/auth/me                  # Thông tin user hiện tại
 
-POST /api/orders                   # Tạo đơn hàng
+POST /api/orders                   # Tạo đơn hàng + payment link
+                                   # Request: { thai_id, session, items: [{o, q}] }
+                                   # Response: { order_id, payment_url, expires_at }
 GET  /api/orders                   # Danh sách đơn hàng của user
 GET  /api/orders/:id               # Chi tiết 1 đơn
 ```
 
-### 8.3 Admin APIs (Cần auth + role=admin)
+### 8.3 Webhook APIs
+
+```
+POST /api/payments/payos/webhook   # PayOS callback
+                                   # MUST: Verify signature
+                                   # MUST: Idempotent (check status before update)
+                                   # Response: 200 OK (PayOS expects 200)
+```
+
+### 8.4 Admin APIs (Cần auth + role=admin)
 
 ```
 # Thai
 PATCH /api/admin/thais/:id         # Cập nhật Thai (is_open, is_tet, schedule)
 
-# Animals
-PATCH /api/admin/animals/:thaiId/:order  # Cập nhật hạn mức, cấm/bỏ cấm
+# Animals & Limits
+GET   /api/admin/limits/:thaiId/:session/:date    # Lấy hạn mức session
+PATCH /api/admin/limits/:thaiId/:session/:date/:order  # Cập nhật hạn mức, cấm/bỏ cấm
 
 # Results
 POST  /api/admin/results           # Nhập kết quả xổ
@@ -624,7 +808,65 @@ PATCH /api/admin/users/:id         # Khóa/mở khóa
 # Reports
 GET   /api/admin/reports/revenue   # Báo cáo doanh thu
 GET   /api/admin/reports/orders    # Báo cáo đơn hàng
+GET   /api/admin/reports/top-animals  # Top con mua nhiều
 ```
+
+---
+
+## 9. TESTING & DEPLOYMENT
+
+### 9.1 Testing Strategy
+
+#### Unit Tests
+- Validation logic (phone format, order limits, time checks)
+- Auth/permission guards
+- Business rules (hạn mức calculation, status transitions)
+- PayOS webhook signature verification
+
+#### Integration Tests (Critical)
+- **Concurrency hạn mức**: Simulate 10+ concurrent checkouts cho cùng 1 con → verify no oversell
+- **Webhook idempotent**: Send same webhook 3 lần → verify only 1 status update
+- **Order flow**: pending → paid → done
+- **Expiration**: Order quá expires_at → auto expired + rollback hạn mức
+
+#### E2E Tests (Optional but recommended)
+- Full checkout flow trong browser
+- Admin nhập kết quả, xem báo cáo
+
+### 9.2 CI/CD Pipeline
+
+#### CI (On Pull Request)
+```
+1. Lint (ESLint/Prettier)
+2. Type check (tsc --noEmit)
+3. Unit tests
+4. Integration tests (with test DB)
+5. Build (verify no build errors)
+```
+
+#### CD (On merge to main)
+```
+1. Build Docker image
+2. Push to container registry
+3. Deploy to VPS:
+   a. Pull new image
+   b. Run database migrations
+   c. Rolling restart containers
+   d. Health check / smoke test
+   e. If failed → rollback to previous image tag
+4. Notify team (Slack/Discord)
+```
+
+### 9.3 Production Checklist
+
+- [ ] Database backups scheduled (daily)
+- [ ] Log aggregation setup (stdout → file/cloud)
+- [ ] Health check endpoint (`/api/health`)
+- [ ] Rate limiting on public APIs
+- [ ] PayOS webhook URL whitelisted
+- [ ] SSL/TLS configured
+- [ ] Environment variables secured (không commit .env)
+- [ ] Monitoring/alerts cho API response time > 1s
 
 ---
 
