@@ -1005,6 +1005,65 @@ const HomePage: React.FC = () => {
               <p className="mt-4 text-gray-600">40 con vật trong bảng Cổ Nhơn với ý nghĩa và biểu tượng đặc trưng</p>
             </div>
 
+            {/* Animal Meanings Grid - ĐƯA LÊN ĐẦU */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+              {[
+                { name: 'Cá Trắng', alias: 'Chiếm Khôi', meaning: 'Tượng trưng cho sự trong sáng, thuần khiết và may mắn' },
+                { name: 'Ốc', alias: 'Bản Quế', meaning: 'Biểu tượng của sự kiên nhẫn và bền bỉ' },
+                { name: 'Ngỗng', alias: 'Vinh Sanh', meaning: 'Đại diện cho sự thủy chung và tình yêu đôi lứa' },
+                { name: 'Công', alias: 'Phùng Xuân', meaning: 'Biểu tượng của vẻ đẹp, sự sang trọng và quyền quý' },
+                { name: 'Trùn', alias: 'Chí Cao', meaning: 'Tượng trưng cho sự khiêm nhường nhưng có giá trị lớn' },
+                { name: 'Cọp', alias: 'Khôn Sơn', meaning: 'Đại diện cho sức mạnh, quyền lực và sự dũng mãnh' },
+                { name: 'Heo', alias: 'Chánh Thuận', meaning: 'Biểu tượng của sự sung túc và no đủ' },
+                { name: 'Thỏ', alias: 'Nguyệt Bửu', meaning: 'Tượng trưng cho sự nhanh nhẹn và tinh thông' },
+                { name: 'Trâu', alias: 'Hớn Vân', meaning: 'Đại diện cho sự cần cù, chăm chỉ và bền bỉ' },
+                { name: 'Rồng Bay', alias: 'Giang Tứ', meaning: 'Biểu tượng của sự thăng tiến và quyền uy' },
+                { name: 'Chó', alias: 'Phước Tôn', meaning: 'Tượng trưng cho lòng trung thành và tình bạn' },
+                { name: 'Ngựa', alias: 'Quang Minh', meaning: 'Đại diện cho sự thành công và tiến về phía trước' },
+                { name: 'Voi', alias: 'Hữu Tài', meaning: 'Biểu tượng của sức mạnh, trí tuệ và may mắn' },
+                { name: 'Mèo', alias: 'Chỉ Đắc', meaning: 'Tượng trưng cho sự tinh tế và khéo léo' },
+                { name: 'Chuột', alias: 'Tất Khắc', meaning: 'Đại diện cho sự nhanh nhẹn và tiết kiệm' },
+                { name: 'Ong', alias: 'Mậu Lâm', meaning: 'Biểu tượng của sự chăm chỉ và đoàn kết' },
+                { name: 'Hạc', alias: 'Trọng Tiên', meaning: 'Tượng trưng cho sự trường thọ và thanh cao' },
+                { name: 'Kỳ Lân', alias: 'Thiên Thần', meaning: 'Đại diện cho điềm lành và sự may mắn lớn' },
+                { name: 'Bướm', alias: 'Cấn Ngọc', meaning: 'Biểu tượng của sự biến đổi và vẻ đẹp' },
+                { name: 'Hòn Núi', alias: 'Trân Châu', meaning: 'Tượng trưng cho sự vững chắc và kiên định' },
+                { name: 'Én', alias: 'Thượng Chiêu', meaning: 'Đại diện cho mùa xuân và tin vui' },
+                { name: 'Bồ Câu', alias: 'Song Đồng', meaning: 'Biểu tượng của sự hòa bình và yên ấm' },
+                { name: 'Khỉ', alias: 'Tam Hòe', meaning: 'Tượng trưng cho sự thông minh và nhanh nhẹn' },
+                { name: 'Ếch', alias: 'Hiệp Hải', meaning: 'Đại diện cho sự phồn thịnh và sung túc' },
+                { name: 'Quạ', alias: 'Cửu Quan', meaning: 'Biểu tượng của trí tuệ và sự tiên tri' },
+                { name: 'Rồng Nằm', alias: 'Thái Bình', meaning: 'Tượng trưng cho sự an bình và thịnh vượng' },
+                { name: 'Rùa', alias: 'Hỏa Diệm', meaning: 'Đại diện cho sự trường thọ và kiên nhẫn' },
+                { name: 'Gà', alias: 'Nhựt Thăng', meaning: 'Biểu tượng của bình minh và sự thức tỉnh' },
+                { name: 'Lươn', alias: 'Địa Lươn', meaning: 'Tượng trưng cho sự linh hoạt và khéo léo' },
+                { name: 'Cá Đỏ', alias: 'Tỉnh Lợi', meaning: 'Đại diện cho sự thịnh vượng và may mắn' },
+                { name: 'Tôm', alias: 'Trường Thọ', meaning: 'Biểu tượng của sự sống động và phát triển' },
+                { name: 'Rắn', alias: 'Vạn Kim', meaning: 'Tượng trưng cho sự tái sinh và trí tuệ' },
+                { name: 'Nhện', alias: 'Thanh Tuyền', meaning: 'Đại diện cho sự kiên nhẫn và sáng tạo' },
+                { name: 'Nai', alias: 'Nguyên Cát', meaning: 'Biểu tượng của sự nhẹ nhàng và thanh tao' },
+                { name: 'Dê', alias: 'Nhứt Phẩm', meaning: 'Tượng trưng cho sự hiền lành và tốt bụng' },
+                { name: 'Bà Vãi', alias: 'An Sĩ', meaning: 'Đại diện cho sự bí ẩn và huyền diệu' },
+                { name: 'Ông Trời', alias: 'Thiên Quan', meaning: 'Tượng trưng cho quyền năng tối cao và sự che chở' },
+                { name: 'Ông Địa', alias: 'Địa Chủ', meaning: 'Biểu tượng của sự phì nhiêu và thịnh vượng' },
+                { name: 'Thần Tài', alias: 'Tài Thần', meaning: 'Đại diện cho tài lộc và sự giàu có' },
+                { name: 'Ông Táo', alias: 'Táo Quân', meaning: 'Biểu tượng của gia đình và sự bảo hộ' },
+              ].map((animal, index) => (
+                <div key={index} className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 border border-red-100 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center mb-2">
+                    <span className="w-8 h-8 bg-tet-red-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-tet-red-800">{animal.name}</h4>
+                      <p className="text-xs text-gray-500">{animal.alias}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{animal.meaning}</p>
+                </div>
+              ))}
+            </div>
+
             {/* Bảng Thế Thân */}
             <div className="mb-12">
               <div className="text-center mb-6">
@@ -1132,65 +1191,6 @@ const HomePage: React.FC = () => {
                   </table>
                 </div>
               </div>
-            </div>
-
-            {/* Animal Meanings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { name: 'Cá Trắng', alias: 'Chiếm Khôi', meaning: 'Tượng trưng cho sự trong sáng, thuần khiết và may mắn' },
-                { name: 'Ốc', alias: 'Bản Quế', meaning: 'Biểu tượng của sự kiên nhẫn và bền bỉ' },
-                { name: 'Ngỗng', alias: 'Vinh Sanh', meaning: 'Đại diện cho sự thủy chung và tình yêu đôi lứa' },
-                { name: 'Công', alias: 'Phùng Xuân', meaning: 'Biểu tượng của vẻ đẹp, sự sang trọng và quyền quý' },
-                { name: 'Trùn', alias: 'Chí Cao', meaning: 'Tượng trưng cho sự khiêm nhường nhưng có giá trị lớn' },
-                { name: 'Cọp', alias: 'Khôn Sơn', meaning: 'Đại diện cho sức mạnh, quyền lực và sự dũng mãnh' },
-                { name: 'Heo', alias: 'Chánh Thuận', meaning: 'Biểu tượng của sự sung túc và no đủ' },
-                { name: 'Thỏ', alias: 'Nguyệt Bửu', meaning: 'Tượng trưng cho sự nhanh nhẹn và tinh thông' },
-                { name: 'Trâu', alias: 'Hớn Vân', meaning: 'Đại diện cho sự cần cù, chăm chỉ và bền bỉ' },
-                { name: 'Rồng Bay', alias: 'Giang Từ', meaning: 'Biểu tượng của sự thăng tiến và quyền uy' },
-                { name: 'Chó', alias: 'Phước Tôn', meaning: 'Tượng trưng cho lòng trung thành và tình bạn' },
-                { name: 'Ngựa', alias: 'Quang Minh', meaning: 'Đại diện cho sự thành công và tiến về phía trước' },
-                { name: 'Voi', alias: 'Hữu Tài', meaning: 'Biểu tượng của sức mạnh, trí tuệ và may mắn' },
-                { name: 'Mèo', alias: 'Chỉ Đắc', meaning: 'Tượng trưng cho sự tinh tế và khéo léo' },
-                { name: 'Chuột', alias: 'Tất Khắc', meaning: 'Đại diện cho sự nhanh nhẹn và tiết kiệm' },
-                { name: 'Ong', alias: 'Mậu Lâm', meaning: 'Biểu tượng của sự chăm chỉ và đoàn kết' },
-                { name: 'Hạc', alias: 'Trọng Tiên', meaning: 'Tượng trưng cho sự trường thọ và thanh cao' },
-                { name: 'Kỳ Lân', alias: 'Thiên Thân', meaning: 'Đại diện cho điềm lành và sự may mắn lớn' },
-                { name: 'Bướm', alias: 'Cấn Ngọc', meaning: 'Biểu tượng của sự biến đổi và vẻ đẹp' },
-                { name: 'Hòn Núi', alias: 'Trân Châu', meaning: 'Tượng trưng cho sự vững chắc và kiên định' },
-                { name: 'Én', alias: 'Thượng Chiêu', meaning: 'Đại diện cho mùa xuân và tin vui' },
-                { name: 'Bồ Câu', alias: 'Song Đồng', meaning: 'Biểu tượng của sự hòa bình và yên ấm' },
-                { name: 'Khỉ', alias: 'Tam Hòe', meaning: 'Tượng trưng cho sự thông minh và nhanh nhẹn' },
-                { name: 'Ếch', alias: 'Hiệp Hải', meaning: 'Đại diện cho sự phồn thịnh và sung túc' },
-                { name: 'Quạ', alias: 'Cửu Quan', meaning: 'Biểu tượng của trí tuệ và sự tiên tri' },
-                { name: 'Rồng Nằm', alias: 'Thái Bình', meaning: 'Tượng trưng cho sự an bình và thịnh vương' },
-                { name: 'Rùa', alias: 'Hỏa Diệm', meaning: 'Đại diện cho sự trường thọ và kiên nhẫn' },
-                { name: 'Gà', alias: 'Nhựt Thăng', meaning: 'Biểu tượng của bình minh và sự thức tỉnh' },
-                { name: 'Lươn', alias: 'Địa Lươn', meaning: 'Tượng trưng cho sự linh hoạt và khéo léo' },
-                { name: 'Cá Đỏ', alias: 'Tỉnh Lợi', meaning: 'Đại diện cho sự thịnh vượng và may mắn' },
-                { name: 'Tôm', alias: 'Trường Thọ', meaning: 'Biểu tượng của sự sống động và phát triển' },
-                { name: 'Rắn', alias: 'Vạn Kim', meaning: 'Tượng trưng cho sự tái sinh và trí tuệ' },
-                { name: 'Nhện', alias: 'Thanh Tuyền', meaning: 'Đại diện cho sự kiên nhẫn và sáng tạo' },
-                { name: 'Nai', alias: 'Nguyên Cát', meaning: 'Biểu tượng của sự nhẹ nhàng và thanh tao' },
-                { name: 'Dê', alias: 'Nhứt Phẩm', meaning: 'Tượng trưng cho sự hiền lành và tốt bụng' },
-                { name: 'Bà Vãi', alias: 'An Sĩ', meaning: 'Đại diện cho sự bí ẩn và huyền diệu' },
-                { name: 'Ông Trời', alias: 'Thiên Quan', meaning: 'Tượng trưng cho quyền năng tối cao và sự che chở' },
-                { name: 'Ông Địa', alias: 'Địa Chủ', meaning: 'Biểu tượng của sự phì nhiêu và thịnh vượng' },
-                { name: 'Thần Tài', alias: 'Tài Thần', meaning: 'Đại diện cho tài lộc và sự giàu có' },
-                { name: 'Ông Táo', alias: 'Táo Quân', meaning: 'Biểu tượng của gia đình và sự bảo hộ' },
-              ].map((animal, index) => (
-                <div key={index} className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 border border-red-100 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center mb-2">
-                    <span className="w-8 h-8 bg-tet-red-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-tet-red-800">{animal.name}</h4>
-                      <p className="text-xs text-gray-500">{animal.alias}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{animal.meaning}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>

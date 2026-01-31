@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockAnimals } from '../../mock-data/mockData';
+import { anNhonAnimals } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminButton } from '../../components/AdminPageWrapper';
 
 // Data cho Hoài Nhơn (36 con) - Thêm purchaseCount (đơn hàng)
@@ -43,7 +43,7 @@ const animalsHoaiNhon36 = [
 ];
 
 // Tạo data cho An Nhơn / Nhơn Phong (40 con) với purchased và limit
-const createAnNhonAnimals = () => mockAnimals.map(a => ({
+const createAnNhonAnimals = () => anNhonAnimals.map(a => ({
   ...a,
   purchaseLimit: 100000,
   purchased: Math.floor(Math.random() * 80000),
@@ -292,20 +292,12 @@ const AdminAnimals: React.FC = () => {
                     {animal.name}
                   </h3>
                 </div>
-
-                {/* Toggle */}
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={animal.isEnabled}
-                    onChange={(e) => updateAnimal(animal.id, { isEnabled: e.target.checked })}
-                    className="sr-only peer"
-                  />
-                  <div
-                    className="w-9 h-5 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"
-                    style={{ backgroundColor: animal.isEnabled ? '#a5673f' : '#d1ccc4' }}
-                  />
-                </label>
+                {/* Hiển thị trạng thái cấm */}
+                {animal.isBanned && (
+                  <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded">
+                    ĐÃ CẤM
+                  </span>
+                )}
               </div>
 
               {/* Hạn mức từng con */}

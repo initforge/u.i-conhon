@@ -272,8 +272,7 @@ const HuongDanPage: React.FC = () => {
                           Câu thai (đề đố):
                         </h3>
                         <p className="leading-relaxed">
-                          Câu thai gồm 4 câu thơ lục bát, được sáng tác dựa trên các chủ đề như lịch sử, văn hóa, danh lam thắng cảnh, con người, hoặc thiên nhiên.
-                          Nội dung câu thơ chứa các manh mối để người chơi suy luận và tìm ra con vật chính xác.
+                          Câu thai gồm 2 hoặc 4 câu thơ lục bát, chứa các manh mối để người chơi suy luận và tìm ra con vật chính xác.
                         </p>
                       </div>
 

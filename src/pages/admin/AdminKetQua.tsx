@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockThais, mockKetQuas, mockAnimals, getAnimalsByThai } from '../../mock-data/mockData';
+import { mockThais, mockKetQuas, getAnimalsByThai } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getAvailableYears } from '../../utils/yearUtils';
 
@@ -170,9 +170,11 @@ const AdminKetQua: React.FC = () => {
     return Object.entries(grouped).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
   };
 
-  // Lấy thông tin bộ phận cho con vật
+  // Lấy thông tin bộ phận cho con vật - dùng animals theo Thai đang xem
   const getAnimalWithBodyPart = (animalId: string) => {
-    const animal = mockAnimals.find(a => a.id === animalId);
+    const thaiId = selectedThai === 'an-nhon' ? 'thai-an-nhon' : selectedThai === 'nhon-phong' ? 'thai-nhon-phong' : 'thai-hoai-nhon';
+    const animals = getAnimalsByThai(thaiId);
+    const animal = animals.find(a => a.id === animalId);
     if (!animal) return null;
     const bodyInfo = bodyPartMapping[animal.order];
     return {
@@ -198,13 +200,16 @@ const AdminKetQua: React.FC = () => {
       ? animalGroups.filter(g => !g.orders.some(order => order > 36))
       : animalGroups;
 
+    const thaiId = selectedThai === 'an-nhon' ? 'thai-an-nhon' : selectedThai === 'nhon-phong' ? 'thai-nhon-phong' : 'thai-hoai-nhon';
+    const thaiAnimalsForStats = getAnimalsByThai(thaiId);
+
     return filteredGroups.map(group => {
       let count = 0;
       const animalCounts: Record<number, number> = {};
 
       yearKetQuas.forEach(kq => {
         kq.winningAnimalIds.forEach(animalId => {
-          const animal = mockAnimals.find(a => a.id === animalId);
+          const animal = thaiAnimalsForStats.find(a => a.id === animalId);
           if (animal && group.orders.includes(animal.order)) {
             count++;
             animalCounts[animal.order] = (animalCounts[animal.order] || 0) + 1;
@@ -213,7 +218,7 @@ const AdminKetQua: React.FC = () => {
       });
 
       const animalsInGroup = group.orders.map(order => {
-        const animal = mockAnimals.find(a => a.order === order);
+        const animal = thaiAnimalsForStats.find(a => a.order === order);
         return {
           order,
           name: animal?.name || '',
@@ -623,11 +628,11 @@ const AdminKetQua: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Số con đã xổ:</span>
-                        <span className="font-bold">{uniqueAnimals.size}/40 con</span>
+                        <span className="font-bold">{uniqueAnimals.size}/{thai.id === 'hoai-nhon' ? 36 : 40} con</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Con chưa xổ:</span>
-                        <span className="font-bold text-red-600">{40 - uniqueAnimals.size} con</span>
+                        <span className="font-bold text-red-600">{(thai.id === 'hoai-nhon' ? 36 : 40) - uniqueAnimals.size} con</span>
                       </div>
                     </div>
                   </div>
@@ -671,23 +676,24 @@ const AdminKetQua: React.FC = () => {
                     });
                   });
 
-                  // Top 5 con vật
+                  // Top 5 con vật - khai báo thaiAnimals trước
+                  const thaiAnimals = getAnimalsByThai(currentThai?.thaiId || 'thai-an-nhon');
                   const sortedAnimals = Object.entries(animalCounts)
-                    .map(([id, count]) => ({ animal: mockAnimals.find(a => a.id === id), count }))
+                    .map(([id, count]) => ({ animal: thaiAnimals.find(a => a.id === id), count }))
                     .filter(a => a.animal)
                     .sort((a, b) => b.count - a.count);
                   const top5 = sortedAnimals.slice(0, 5);
 
-                  // Con không xổ
+                  // Con không xổ - filter theo Thai được chọn
                   const drawnIds = new Set(Object.keys(animalCounts));
-                  const notDrawn = mockAnimals.filter(a => !drawnIds.has(a.id));
+                  const notDrawn = thaiAnimals.filter(a => !drawnIds.has(a.id));
 
                   // Thống kê nhóm
                   const groupCounts = animalGroups.map(group => {
                     let count = 0;
                     thaiKetQuas.forEach(kq => {
                       kq.winningAnimalIds.forEach(id => {
-                        const animal = mockAnimals.find(a => a.id === id);
+                        const animal = thaiAnimals.find(a => a.id === id);
                         if (animal && group.orders.includes(animal.order)) count++;
                       });
                     });
@@ -701,7 +707,7 @@ const AdminKetQua: React.FC = () => {
                   const positionCounts: Record<string, number> = {};
                   thaiKetQuas.forEach(kq => {
                     kq.winningAnimalIds.forEach(id => {
-                      const animal = mockAnimals.find(a => a.id === id);
+                      const animal = thaiAnimals.find(a => a.id === id);
                       if (animal) {
                         const bodyInfo = bodyPartMapping[animal.order];
                         if (bodyInfo) {
@@ -720,7 +726,7 @@ const AdminKetQua: React.FC = () => {
                   const noDrawPositions = [...allPositions].filter(p => !drawnPositions.has(p));
 
                   // Kiểm tra con Trùn (order = 5)
-                  const trunId = mockAnimals.find(a => a.order === 5)?.id;
+                  const trunId = thaiAnimals.find(a => a.order === 5)?.id;
                   const trunDraws = thaiKetQuas.filter(kq => trunId && kq.winningAnimalIds.includes(trunId));
 
                   // Mock thống kê thắng/thua

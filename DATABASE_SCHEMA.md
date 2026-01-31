@@ -57,9 +57,9 @@ const todayResults = await prisma.daily_records.findMany({
 
 | Bảng cũ | Lý do bỏ/gộp |
 |---------|--------------|
-| ~~`animals`~~ | Danh sách 40 con vật **cố định** → lưu constant trong code |
+| ~~`animals`~~ | Danh sách 40/36 con vật **cố định** → lưu constant trong code (ANIMAL_DATA.ts) |
 | ~~`cau_thais`~~ | Gộp vào `daily_records` (cùng key: thai_id + session + date) |
-| ~~`ket_quas`~~ | Gộp vào `daily_records` |
+| ~~`ket_quas`~~ | Gộp vào `daily_records` - MỖI LƯỢT XỔ CHỈ 1 CON TRÚNG |
 
 ---
 
@@ -122,8 +122,8 @@ erDiagram
         varchar session
         date record_date
         bool is_off "Ngay nghi khong xo"
-        jsonb winners "So thu tu trung"
-        text cau_thai "Cau thai"
+        smallint winner_order "Con trung 1-40. NULL neu is_off"
+        text cau_thai "2 hoac 4 cau tho luc bat"
         varchar img
     }
 ```
@@ -192,6 +192,7 @@ CREATE INDEX idx_orders_pending ON orders(status) WHERE status = 'pending';
 
 -- =============================================
 -- BANG 4: DAILY_RECORDS (gop ket_qua + cau_thai)
+-- MOI LUOT XO CHI CO 1 CON TRUNG
 -- =============================================
 CREATE TABLE daily_records (
     id VARCHAR(50) PRIMARY KEY,           -- 'an-nhon_sang_2026-01-30'
@@ -199,8 +200,8 @@ CREATE TABLE daily_records (
     session VARCHAR(10) NOT NULL,
     record_date DATE NOT NULL,
     is_off BOOLEAN DEFAULT FALSE,         -- TRUE = ngay nghi khong xo
-    winners JSONB,                        -- [1, 15, 28] (NULL neu is_off=true)
-    cau_thai TEXT,
+    winner_order SMALLINT,                -- 1-40 (NULL neu is_off=true). CHI 1 CON!
+    cau_thai TEXT,                        -- 2 hoac 4 cau tho luc bat
     img VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE(thai_id, session, record_date)
@@ -210,7 +211,7 @@ CREATE INDEX idx_daily_date ON daily_records(record_date DESC);
 
 -- VIEW tien query
 CREATE VIEW v_today AS
-SELECT d.thai_id, t.name, d.session, d.winners, d.cau_thai
+SELECT d.thai_id, t.name, d.session, d.winner_order, d.cau_thai
 FROM daily_records d JOIN thais t ON t.id = d.thai_id
 WHERE d.record_date = CURRENT_DATE;
 ```

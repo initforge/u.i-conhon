@@ -25,6 +25,21 @@ const BottomNavBar: React.FC = () => {
     }
   };
 
+  // Handler cho nút CHƠI NGAY - về trang chủ và scroll về đầu
+  const handleGoHome = () => {
+    if (location.pathname === '/') {
+      // Đang ở homepage - scroll về đầu trang
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Đang ở trang khác - navigate về homepage
+      navigate('/');
+      // Đợi DOM render xong rồi scroll về đầu
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
   const navItems = [
     {
       icon: '/assets/nav-icons/ketqua.png',
@@ -47,7 +62,7 @@ const BottomNavBar: React.FC = () => {
     {
       icon: '/assets/logo-moi.jpg',
       label: 'CHƠI NGAY',
-      link: '/dang-nhap',
+      link: '/',
       isLogo: true
     },
     {
@@ -167,6 +182,19 @@ const BottomNavBar: React.FC = () => {
               >
                 {content}
               </a>
+            );
+          }
+
+          // Nút CHƠI NGAY - xử lý đặc biệt
+          if (item.isLogo) {
+            return (
+              <button
+                key={index}
+                onClick={handleGoHome}
+                className="flex flex-col items-center justify-center flex-1 h-full transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                {content}
+              </button>
             );
           }
 
