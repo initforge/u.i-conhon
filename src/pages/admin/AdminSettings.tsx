@@ -143,8 +143,8 @@ const AdminSettings: React.FC = () => {
                                 ))}
                             </div>
 
-                            {/* Tet Mode Toggle */}
-                            {(thai.id === 'thai-an-nhon' || thai.id === 'thai-nhon-phong') && (
+                            {/* Tet Mode Toggle - Chỉ An Nhơn có buổi tối (Nhơn Phong không có) */}
+                            {thai.id === 'thai-an-nhon' && (
                                 <div className="mt-4">
                                     <div
                                         className="p-4 rounded-xl transition-colors"
@@ -218,7 +218,7 @@ const AdminSettings: React.FC = () => {
                                 <ul className="list-disc list-inside space-y-1 text-xs">
                                     <li><strong>Bắt đầu mua:</strong> Giờ người chơi bắt đầu được mua con vật</li>
                                     <li><strong>Giờ xổ:</strong> Giờ kết thúc mua và công bố kết quả</li>
-                                    <li><strong>Chế độ Tết:</strong> Bật để thêm khung giờ tối (chỉ An Nhơn & Nhơn Phong)</li>
+                                    <li><strong>Chế độ Tết:</strong> Bật để thêm khung giờ tối (chỉ An Nhơn)</li>
                                 </ul>
                             </div>
                         </div>

@@ -284,10 +284,9 @@ const AdminKetQua: React.FC = () => {
                   <optgroup label="Thai Nhơn Phong">
                     <option value="thai-nhon-phong-sang">Thai Nhơn Phong - Sáng (11:00)</option>
                     <option value="thai-nhon-phong-chieu">Thai Nhơn Phong - Chiều (17:00)</option>
-                    <option value="thai-nhon-phong-toi">Thai Nhơn Phong - Tối (21:00)</option>
                   </optgroup>
                   <optgroup label="Thai Hoài Nhơn">
-                    <option value="thai-hoai-nhon-trua">Thai Hoài Nhơn - Trưa (13:00)</option>
+                    <option value="thai-hoai-nhon-trua">Thai Hoài Nhơn - Sáng (13:00)</option>
                     <option value="thai-hoai-nhon-chieu">Thai Hoài Nhơn - Chiều (19:00)</option>
                   </optgroup>
                 </select>
@@ -880,7 +879,7 @@ const AdminKetQua: React.FC = () => {
                               )}
                               {mockProfitLoss.trua && (
                                 <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Trưa (13:00)</td>
+                                  <td className="py-2 px-3 font-medium">Sáng (13:00)</td>
                                   <td className="py-2 px-3 text-right">{mockProfitLoss.trua.revenue.toLocaleString()}đ</td>
                                   <td className="py-2 px-3 text-right text-red-600">{mockProfitLoss.trua.payout.toLocaleString()}đ</td>
                                   <td className={`py-2 px-3 text-right font-bold ${mockProfitLoss.trua.revenue - mockProfitLoss.trua.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>

@@ -10,22 +10,22 @@ const ChonThaiPage: React.FC = () => {
         {
             id: 'an-nhon',
             name: 'Thai An Nhơn',
-            description: 'Xổ lúc 11h và 17h. Từ mùng 1 có thêm 21h',
+            description: 'Xổ lúc 11h và 17h hàng ngày',
             color: 'from-green-500 to-green-700',
             icon: '🟢',
             bgColor: 'bg-green-50',
             borderColor: 'border-green-500',
-            times: ['11h', '17h', '21h (từ mùng 1)'],
+            times: ['11h', '17h'],
         },
         {
             id: 'nhon-phong',
             name: 'Thai Nhơn Phong',
-            description: 'Xổ lúc 11h và 17h. Từ mùng 1 có thêm 21h',
+            description: 'Xổ lúc 11h và 17h hàng ngày',
             color: 'from-yellow-500 to-yellow-700',
             icon: '🟡',
             bgColor: 'bg-yellow-50',
             borderColor: 'border-yellow-500',
-            times: ['11h', '17h', '21h (từ mùng 1)'],
+            times: ['11h', '17h'],
         },
         {
             id: 'hoai-nhon',
@@ -55,8 +55,8 @@ const ChonThaiPage: React.FC = () => {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <Link to="/" className="text-gray-500 hover:text-red-600 inline-block mb-6">
-                        ← Về trang chủ
+                    <Link to="/user/ho-tro" className="text-gray-500 hover:text-red-600 inline-block mb-6">
+                        ← Quay lại
                     </Link>
                     <h1 className="text-4xl font-bold text-gray-800 mb-4">Chọn Thai Để Mua</h1>
                     <p className="text-gray-600 text-lg">Mỗi Thai có lịch xổ và tỉ lệ thưởng riêng</p>
@@ -111,15 +111,18 @@ const ChonThaiPage: React.FC = () => {
 
                 {/* Info */}
                 <div className="mt-12 text-center bg-white rounded-xl p-6 shadow-md">
-                    <h3 className="font-bold text-gray-800 mb-2">📌 Lưu ý quan trọng</h3>
-                    <ul className="text-gray-600 text-sm space-y-1 text-left max-w-md mx-auto">
+                    <h3 className="font-bold text-gray-800 mb-4">📌 Lưu ý quan trọng</h3>
+                    <ul className="text-gray-600 text-sm space-y-2 text-left max-w-md mx-auto">
                         <li>• Tỉ lệ thưởng chung: <strong>1 chung 30</strong></li>
                         <li>• Riêng Thai Hoài Nhơn: Chí Cao (Con Trùn) <strong>chung 70</strong></li>
-                        <li>• <strong>Thời gian đóng tịch:</strong></li>
-                        <li className="ml-4">- Thai An Nhơn: Sáng 10h30 - Chiều 16h30</li>
-                        <li className="ml-4">- Thai Nhơn Phong: Sáng 10h30 - Chiều 16h30</li>
-                        <li className="ml-4">- Thai Hoài Nhơn: Sáng 12h30 - Chiều 18h30</li>
-                        <li className="ml-4 text-red-600">- Từ mùng 1 Tết: Tối 20h30 (An Nhơn, Nhơn Phong)</li>
+                        <li>• Thời gian đóng tịch:
+                            <ul className="ml-4 mt-1 space-y-1">
+                                <li>- Thai An Nhơn: Sáng 10h30 - Chiều 16h30</li>
+                                <li>- Thai Nhơn Phong: Sáng 10h30 - Chiều 16h30</li>
+                                <li>- Thai Hoài Nhơn: Sáng 12h30 - Chiều 18h30</li>
+                            </ul>
+                        </li>
+                        <li className="text-red-600">- Từ mùng 1 Tết: Tối 20h30 (An Nhơn)</li>
                         <li>• Mỗi đơn hàng, khách hàng có thể mua 3 Thai</li>
                     </ul>
                 </div>

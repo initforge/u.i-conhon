@@ -127,7 +127,7 @@ export const THAI_CONFIGS: Record<ThaiId, ThaiConfig> = {
         name: 'Thai Nhơn Phong',
         animalCount: 40,
         sessions: ['sang', 'chieu'],
-        hasTetNight: true,  // Tết có thêm 21h
+        hasTetNight: false,  // Nhơn Phong KHÔNG có buổi tối
     },
     'hoai-nhon': {
         id: 'hoai-nhon',

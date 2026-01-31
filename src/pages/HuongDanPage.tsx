@@ -127,7 +127,7 @@ const HuongDanPage: React.FC = () => {
                           </li>
                           <li>
                             <a
-                              href="https://www.facebook.com/groups/conhonannhon"
+                              href="https://www.facebook.com/groups/1579571855393409"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
@@ -137,22 +137,42 @@ const HuongDanPage: React.FC = () => {
                           </li>
                           <li>
                             <a
+                              href="https://www.facebook.com/ngoctuan.nguyen.5209"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              👤 Kết bạn Cậu Ba Họ Nguyễn (Facebook)
+                            </a>
+                          </li>
+                          <li>
+                            <a
                               href="https://zalo.me/0332697909"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
                             >
-                              💬 Kết bạn Cậu Ba Họ Nguyễn (Zalo)
+                              💬 Kết bạn Nguyễn Ngọc Tuân (Zalo)
                             </a>
                           </li>
                           <li>
                             <a
-                              href="https://www.youtube.com/@cau3honguyen"
+                              href="https://www.youtube.com/@caubahonguyenxunau3140"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-2 text-red-600 hover:text-red-800 hover:underline"
                             >
-                              ▶️ Đăng ký YouTube Cậu 3 Họ Nguyễn
+                              ▶️ Đăng ký YouTube Cậu Ba Họ Nguyễn Xứ Nẫu
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://www.facebook.com/profile.php?id=100064448272306"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              👍 Like và share bài viết gần nhất Fanpage Cổ Nhơn An Nhơn Bình Định
                             </a>
                           </li>
                         </ul>
@@ -173,9 +193,9 @@ const HuongDanPage: React.FC = () => {
                           Chọn một trong 3 Thai để tham gia:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li><strong>Thai An Nhơn:</strong> Đóng tịch 10:30, 16:30 (Tết thêm 20:30)</li>
-                          <li><strong>Thai Nhơn Phong:</strong> Đóng tịch 10:30, 16:30 (Tết thêm 20:30)</li>
-                          <li><strong>Thai Hoài Nhơn:</strong> Đóng tịch 12:30, 18:30 (không có tối)</li>
+                          <li><strong>Thai An Nhơn:</strong> Đóng tịch 10:30, 16:30</li>
+                          <li><strong>Thai Nhơn Phong:</strong> Đóng tịch 10:30, 16:30</li>
+                          <li><strong>Thai Hoài Nhơn:</strong> Đóng tịch 12:30, 18:30</li>
                         </ul>
                       </div>
                     </div>
@@ -290,7 +310,6 @@ const HuongDanPage: React.FC = () => {
                               <p className="font-semibold mb-1">Ra đề:</p>
                               <p>
                                 Ban tổ chức công bố câu thai và treo hộp gỗ chứa đáp án lên cây nêu tại quảng trường trung tâm thị xã.
-                                Ban tổ chức đã công bố bộ đề 40 câu thai Cổ Nhơn xuân Ất Tỵ 2025
                               </p>
                             </div>
                           </div>

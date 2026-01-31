@@ -105,128 +105,35 @@ const mockPosts: Post[] = [
 ];
 
 const thaiConfig = {
-    'an-nhon': { name: 'An Nhơn', icon: '🎯', bgColor: 'bg-red-50', borderColor: 'border-red-200', headerBg: 'bg-red-600' },
-    'nhon-phong': { name: 'Nhơn Phong', icon: '🏆', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', headerBg: 'bg-blue-600' },
-    'hoai-nhon': { name: 'Hoài Nhơn', icon: '🎲', bgColor: 'bg-green-50', borderColor: 'border-green-200', headerBg: 'bg-green-600' }
+    'an-nhon': { name: 'An Nhơn', icon: '🎯', color: 'red' },
+    'nhon-phong': { name: 'Nhơn Phong', icon: '🏆', color: 'blue' },
+    'hoai-nhon': { name: 'Hoài Nhơn', icon: '🎲', color: 'green' }
 };
 
 const CongDongPage: React.FC = () => {
+    const [posts] = useState<Post[]>(mockPosts);
+    const [activeTab, setActiveTab] = useState<'video' | 'binh-luan'>('video');
+    const [selectedThai, setSelectedThai] = useState<'an-nhon' | 'nhon-phong' | 'hoai-nhon'>('an-nhon');
+    const [selectedPost, setSelectedPost] = useState<string | null>(null);
     const [newComment, setNewComment] = useState('');
+
+    // Filter posts by selected Thai
+    const filteredPosts = posts.filter(p => p.thaiId === selectedThai);
+    const totalComments = filteredPosts.reduce((sum, post) => sum + post.comments.length, 0);
+    const totalLikes = filteredPosts.reduce((sum, post) => sum + post.likes, 0);
+    const currentThaiConfig = thaiConfig[selectedThai];
 
     const handleAddComment = (postId: string) => {
         if (!newComment.trim()) return;
-        alert(`Bình luận: "${newComment}" cho bài ${postId} (Mock)`);
+        alert(`Bình luận: "${newComment}" cho bài ${postId} (Tính năng sẽ sớm ra mắt!)`);
         setNewComment('');
-    };
-
-    // Render Thai Column
-    const renderThaiColumn = (thaiId: 'an-nhon' | 'nhon-phong' | 'hoai-nhon') => {
-        const config = thaiConfig[thaiId];
-        const thaiPosts = mockPosts.filter(p => p.thaiId === thaiId);
-
-        return (
-            <div className={`${config.bgColor} rounded-2xl border-2 ${config.borderColor} overflow-hidden`}>
-                {/* Header */}
-                <div className={`${config.headerBg} text-white p-4 text-center`}>
-                    <div className="flex items-center justify-center gap-2">
-                        <ThaiIcon thaiId={thaiId} size={28} />
-                        <h3 className="font-bold text-lg">{config.name}</h3>
-                    </div>
-                    <p className="text-sm opacity-90">{thaiPosts.length} bài viết</p>
-                </div>
-
-                {/* Posts */}
-                <div className="p-3 space-y-4 max-h-[600px] overflow-y-auto">
-                    {thaiPosts.map(post => (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                            {/* Post Header */}
-                            <div className="p-3 flex items-center space-x-2 border-b">
-                                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                                    {post.avatar}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-sm truncate">{post.author}</p>
-                                    <p className="text-xs text-gray-500">{post.time}</p>
-                                </div>
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-3">
-                                <p className="text-sm text-gray-700 line-clamp-3">{post.content}</p>
-                            </div>
-
-                            {/* Video Placeholder */}
-                            {post.videoUrl && (
-                                <div className="aspect-video bg-gray-900 flex items-center justify-center">
-                                    <div className="text-center text-white">
-                                        <span className="text-4xl block mb-1">▶️</span>
-                                        <span className="text-xs">{post.videoTitle}</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Stats */}
-                            <div className="px-3 py-2 border-t flex items-center justify-between text-sm text-gray-500">
-                                <div className="flex space-x-4">
-                                    <button className="flex items-center space-x-1 hover:text-red-600">
-                                        <span>❤️</span>
-                                        <span>{post.likes}</span>
-                                    </button>
-                                    <button className="flex items-center space-x-1 hover:text-blue-600">
-                                        <span>💬</span>
-                                        <span>{post.comments.length}</span>
-                                    </button>
-                                </div>
-                                <button className="hover:text-green-600">🔗 Chia sẻ</button>
-                            </div>
-
-                            {/* Comments Preview */}
-                            {post.comments.length > 0 && (
-                                <div className="px-3 pb-3 border-t pt-2">
-                                    {post.comments.slice(0, 2).map(comment => (
-                                        <div key={comment.id} className="flex space-x-2 mb-2">
-                                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs">👤</div>
-                                            <div className="flex-1 bg-gray-100 rounded-lg p-2">
-                                                <p className="font-semibold text-xs">{comment.author}</p>
-                                                <p className="text-xs text-gray-600">{comment.content}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {/* Add Comment */}
-                                    <div className="flex space-x-2 mt-2">
-                                        <input
-                                            type="text"
-                                            value={newComment}
-                                            onChange={(e) => setNewComment(e.target.value)}
-                                            placeholder="Bình luận..."
-                                            className="flex-1 px-3 py-1.5 text-sm border rounded-full focus:outline-none focus:ring-2 focus:ring-red-500"
-                                        />
-                                        <button
-                                            onClick={() => handleAddComment(post.id)}
-                                            className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-full hover:bg-red-700"
-                                        >
-                                            Gửi
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-
-                    {thaiPosts.length === 0 && (
-                        <p className="text-center text-gray-500 py-8">Chưa có bài viết</p>
-                    )}
-                </div>
-            </div>
-        );
     };
 
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Header */}
             <div className="bg-white shadow-sm sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 py-4">
+                <div className="max-w-5xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
                         <Link to="/" className="text-gray-500 hover:text-red-600">
                             ← Trang chủ
@@ -237,12 +144,229 @@ const CongDongPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Content - Grid 3 Thai */}
-            <div className="max-w-7xl mx-auto px-4 py-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {renderThaiColumn('an-nhon')}
-                    {renderThaiColumn('nhon-phong')}
-                    {renderThaiColumn('hoai-nhon')}
+            <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+                {/* Thai Selector - 3 Mini Cards giống Admin */}
+                <div className="bg-white rounded-xl shadow-md p-4">
+                    <p className="text-sm text-gray-500 mb-3">Chọn Thai để xem:</p>
+                    <div className="grid grid-cols-3 gap-3">
+                        {(['an-nhon', 'nhon-phong', 'hoai-nhon'] as const).map(thaiId => {
+                            const config = thaiConfig[thaiId];
+                            const isSelected = selectedThai === thaiId;
+                            const thaiPosts = posts.filter(p => p.thaiId === thaiId);
+                            return (
+                                <button
+                                    key={thaiId}
+                                    onClick={() => setSelectedThai(thaiId)}
+                                    className={`p-4 rounded-xl border-2 transition-all ${isSelected
+                                        ? `border-${config.color}-500 bg-${config.color}-50 shadow-lg`
+                                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                                        }`}
+                                >
+                                    <div className="mb-2 flex justify-center">
+                                        <ThaiIcon thaiId={thaiId} size={40} />
+                                    </div>
+                                    <p className={`font-bold ${isSelected ? `text-${config.color}-700` : 'text-gray-800'}`}>
+                                        {config.name}
+                                    </p>
+                                    <p className="text-sm text-gray-500">{thaiPosts.length} bài viết</p>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+
+
+                {/* Main Content with Tabs */}
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    {/* Tab Header với tên Thai */}
+                    <div className="border-b bg-gray-50 px-4 py-2">
+                        <span className="text-xl font-bold">{currentThaiConfig.icon} {currentThaiConfig.name}</span>
+                    </div>
+
+                    {/* Tab Navigation */}
+                    <div className="border-b flex">
+                        <button
+                            onClick={() => setActiveTab('video')}
+                            className={`flex-1 px-6 py-4 font-semibold transition-colors ${activeTab === 'video'
+                                ? 'text-red-600 border-b-2 border-red-600 bg-red-50'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
+                            📺 Video ({filteredPosts.filter(p => p.type === 'video').length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('binh-luan')}
+                            className={`flex-1 px-6 py-4 font-semibold transition-colors ${activeTab === 'binh-luan'
+                                ? 'text-red-600 border-b-2 border-red-600 bg-red-50'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
+                            💬 Tất cả bình luận ({totalComments})
+                        </button>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6">
+                        {activeTab === 'video' ? (
+                            // Video Tab
+                            <div className="space-y-6">
+                                {filteredPosts
+                                    .filter(post => post.type === 'video')
+                                    .map((post) => (
+                                        <div key={post.id} className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                                            {/* Post Header */}
+                                            <div className="p-4 flex items-center justify-between border-b bg-white">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-xl">
+                                                        {post.avatar}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-bold text-gray-800">{post.author}</h3>
+                                                        <p className="text-sm text-gray-500">{post.time}</p>
+                                                    </div>
+                                                </div>
+                                                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                                    {post.comments.length} bình luận
+                                                </span>
+                                            </div>
+
+                                            {/* Post Content */}
+                                            <div className="p-4 bg-white">
+                                                <p className="text-gray-700 whitespace-pre-line mb-3">{post.content}</p>
+                                                {post.videoTitle && (
+                                                    <p className="text-sm text-gray-500 mb-2">📹 {post.videoTitle}</p>
+                                                )}
+                                            </div>
+
+                                            {/* Video Placeholder */}
+                                            {post.videoUrl && (
+                                                <div className="aspect-video bg-gray-900 flex items-center justify-center">
+                                                    <div className="text-center text-white">
+                                                        <span className="text-6xl block mb-2">▶️</span>
+                                                        <span className="text-sm">Video Player</span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Stats Bar */}
+                                            <div className="px-4 py-3 bg-white border-t flex items-center justify-between">
+                                                <div className="flex items-center space-x-6">
+                                                    <button className="flex items-center space-x-2 text-gray-500 hover:text-red-500 transition-colors">
+                                                        <span>❤️</span>
+                                                        <span>{post.likes} thích</span>
+                                                    </button>
+                                                    <span className="flex items-center space-x-2 text-gray-500">
+                                                        <span>💬</span>
+                                                        <span>{post.comments.length} bình luận</span>
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    onClick={() => setSelectedPost(selectedPost === post.id ? null : post.id)}
+                                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
+                                                >
+                                                    {selectedPost === post.id ? '🔼 Ẩn bình luận' : '🔽 Xem bình luận'}
+                                                </button>
+                                            </div>
+
+                                            {/* Comments Section - Expandable */}
+                                            {selectedPost === post.id && (
+                                                <div className="p-4 bg-gray-50 border-t">
+                                                    <h4 className="font-bold text-gray-700 mb-4">📝 Bình luận ({post.comments.length})</h4>
+                                                    <div className="space-y-3">
+                                                        {post.comments.map((comment) => (
+                                                            <div
+                                                                key={comment.id}
+                                                                className="flex items-start space-x-3 p-3 rounded-lg bg-white border border-gray-200"
+                                                            >
+                                                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-lg flex-shrink-0">
+                                                                    👤
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <span className="font-semibold text-gray-800">{comment.author}</span>
+                                                                    <p className="text-sm text-gray-600">{comment.content}</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">{comment.time}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {post.comments.length === 0 && (
+                                                            <p className="text-center text-gray-500 py-4">Chưa có bình luận nào</p>
+                                                        )}
+
+                                                        {/* Add Comment - User version */}
+                                                        <div className="flex space-x-2 mt-4 pt-4 border-t">
+                                                            <input
+                                                                type="text"
+                                                                value={newComment}
+                                                                onChange={(e) => setNewComment(e.target.value)}
+                                                                placeholder="Viết bình luận của bạn..."
+                                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200"
+                                                            />
+                                                            <button
+                                                                onClick={() => handleAddComment(post.id)}
+                                                                className="px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors"
+                                                            >
+                                                                Gửi
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                {filteredPosts.filter(p => p.type === 'video').length === 0 && (
+                                    <div className="text-center py-12">
+                                        <span className="text-6xl">📭</span>
+                                        <p className="text-gray-500 mt-4">Chưa có video nào cho {currentThaiConfig.name}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            // All Comments Tab
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                                    <p className="text-gray-600">Tất cả bình luận từ các video và bài viết</p>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-500">Thai:</span>
+                                        <select
+                                            value={selectedThai}
+                                            onChange={(e) => setSelectedThai(e.target.value as 'an-nhon' | 'nhon-phong' | 'hoai-nhon')}
+                                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium"
+                                        >
+                                            <option value="an-nhon">🎯 An Nhơn</option>
+                                            <option value="nhon-phong">🏆 Nhơn Phong</option>
+                                            <option value="hoai-nhon">🎲 Hoài Nhơn</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {filteredPosts.flatMap(post =>
+                                    post.comments.map(comment => (
+                                        <div
+                                            key={comment.id}
+                                            className="flex items-start space-x-3 p-4 rounded-lg bg-gray-50 border border-gray-200"
+                                        >
+                                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-lg flex-shrink-0">
+                                                👤
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-semibold text-gray-800">{comment.author}</span>
+                                                <p className="text-sm text-gray-600">{comment.content}</p>
+                                                <p className="text-xs text-gray-400 mt-1">{comment.time}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+
+                                {totalComments === 0 && (
+                                    <div className="text-center py-12">
+                                        <span className="text-6xl">💬</span>
+                                        <p className="text-gray-500 mt-4">Chưa có bình luận nào cho {currentThaiConfig.name}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

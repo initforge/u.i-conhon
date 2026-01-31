@@ -292,10 +292,35 @@ const AdminAnimals: React.FC = () => {
                     {animal.name}
                   </h3>
                 </div>
-                {/* Hiển thị trạng thái cấm */}
-                {animal.isBanned && (
+                {/* Toggle bật/tắt con vật */}
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={animal.isEnabled && !animal.isBanned}
+                    onChange={() => updateAnimal(animal.id, { isEnabled: !animal.isEnabled })}
+                    disabled={animal.isBanned}
+                    className="sr-only peer"
+                  />
+                  <div
+                    className={`w-11 h-6 rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 ${animal.isBanned ? 'cursor-not-allowed opacity-50' : ''}`}
+                    style={{ backgroundColor: (animal.isEnabled && !animal.isBanned) ? '#22c55e' : '#d1d5db' }}
+                  />
+                </label>
+              </div>
+
+              {/* Status badges */}
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {animal.isBanned ? (
                   <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded">
-                    ĐÃ CẤM
+                    🚫 ĐÃ CẤM
+                  </span>
+                ) : animal.isEnabled ? (
+                  <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded">
+                    ✅ ĐANG BẬT
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                    ⏸️ ĐÃ TẮT
                   </span>
                 )}
               </div>

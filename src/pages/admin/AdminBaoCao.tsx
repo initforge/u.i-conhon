@@ -10,12 +10,13 @@ const AdminBaoCao: React.FC = () => {
     const [selectedThai, setSelectedThai] = useState('an-nhon');
     const [timeFilter, setTimeFilter] = useState('this-tet');
     const [selectedDate, setSelectedDate] = useState('');
+    const [selectedSession, setSelectedSession] = useState('all'); // Sáng/Chiều/Tối
     const [selectedAnimal, setSelectedAnimal] = useState<null | { order: number; name: string; alias: string }>(null);
 
     const thaiTabs = [
-        { id: 'an-nhon', name: 'An Nhơn', animals: 40 },
-        { id: 'nhon-phong', name: 'Nhơn Phong', animals: 40 },
-        { id: 'hoai-nhon', name: 'Hoài Nhơn', animals: 36 },
+        { id: 'an-nhon', name: 'An Nhơn', animals: 40, hasEvening: true },
+        { id: 'nhon-phong', name: 'Nhơn Phong', animals: 40, hasEvening: false },
+        { id: 'hoai-nhon', name: 'Hoài Nhơn', animals: 36, hasEvening: false },
     ];
 
     // Mock purchase data
@@ -304,6 +305,49 @@ const AdminBaoCao: React.FC = () => {
                         className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-200"
                     />
                 )}
+
+                {/* Session Filter */}
+                <div className="flex gap-2 p-1 bg-purple-50 rounded-xl">
+                    <button
+                        onClick={() => setSelectedSession('all')}
+                        className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'all'
+                            ? 'bg-white shadow-md text-purple-700'
+                            : 'text-purple-600 hover:bg-purple-100'
+                            }`}
+                    >
+                        Tất cả buổi
+                    </button>
+                    <button
+                        onClick={() => setSelectedSession('sang')}
+                        className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'sang'
+                            ? 'bg-white shadow-md text-purple-700'
+                            : 'text-purple-600 hover:bg-purple-100'
+                            }`}
+                    >
+                        ☀️ Sáng
+                    </button>
+                    <button
+                        onClick={() => setSelectedSession('chieu')}
+                        className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'chieu'
+                            ? 'bg-white shadow-md text-purple-700'
+                            : 'text-purple-600 hover:bg-purple-100'
+                            }`}
+                    >
+                        🌤️ Chiều
+                    </button>
+                    {/* Chỉ An Nhơn có buổi tối */}
+                    {thaiTabs.find(t => t.id === selectedThai)?.hasEvening && (
+                        <button
+                            onClick={() => setSelectedSession('toi')}
+                            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
+                                ? 'bg-white shadow-md text-purple-700'
+                                : 'text-purple-600 hover:bg-purple-100'
+                                }`}
+                        >
+                            🌙 Tối
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Summary Stats */}

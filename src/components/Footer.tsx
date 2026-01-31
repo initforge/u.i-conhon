@@ -16,9 +16,9 @@ const Footer: React.FC = () => {
             <p className="text-red-200 mt-3 text-sm">Khám phá thêm về trò chơi Cổ Nhơn qua hình ảnh và video</p>
           </div>
 
-          {/* Carousel Container */}
-          <div className="relative overflow-hidden">
-            <div className="flex gap-4 animate-scroll-left">
+          {/* Carousel Container - Horizontal Scroll */}
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+            <div className="flex gap-4 pb-4 snap-x snap-mandatory" style={{ WebkitOverflowScrolling: 'touch' }}>
               {/* Media Items - Real Images */}
               {[
                 { img: '/assets/gallery/1_hoi_tu.png', title: 'Hội tụ ngày Tết', desc: 'Người dân quây quần dịp lễ hội' },
@@ -28,35 +28,7 @@ const Footer: React.FC = () => {
                 { img: '/assets/gallery/5_con_vat.png', title: '36 Con Đề', desc: 'Bảng danh vật truyền thống' },
                 { img: '/assets/gallery/6_xo_thuong.png', title: 'Giây Phút Xổ Thưởng', desc: 'Niềm vui chiến thắng' },
               ].map((item, idx) => (
-                <div key={idx} className="flex-shrink-0 w-64 md:w-80">
-                  <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
-                    <div className="relative aspect-video bg-gray-100">
-                      <img
-                        src={item.img}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
-                        <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <h4 className="font-semibold text-gray-800 text-sm line-clamp-1">{item.title}</h4>
-                      <p className="text-xs text-gray-500">{item.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {/* Duplicate for seamless loop */}
-              {[
-                { img: '/assets/gallery/1_hoi_tu.png', title: 'Hội tụ ngày Tết', desc: 'Người dân quây quần dịp lễ hội' },
-                { img: '/assets/gallery/2_cau_thai.png', title: 'Đọc Câu Thai', desc: 'Nghệ nhân giải thích câu thai' },
-                { img: '/assets/gallery/3_cay_neu.png', title: 'Cây Nêu Cổ Nhơn', desc: 'Hộp bí mật treo trên cây nêu' },
-                { img: '/assets/gallery/4_mua_tich.png', title: 'Mua Tịch', desc: 'Người chơi đặt cược tại quầy' },
-                { img: '/assets/gallery/5_con_vat.png', title: '36 Con Đề', desc: 'Bảng danh vật truyền thống' },
-                { img: '/assets/gallery/6_xo_thuong.png', title: 'Giây Phút Xổ Thưởng', desc: 'Niềm vui chiến thắng' },
-              ].map((item, idx) => (
-                <div key={`dup-${idx}`} className="flex-shrink-0 w-64 md:w-80">
+                <div key={idx} className="flex-shrink-0 w-64 md:w-80 snap-start">
                   <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
                     <div className="relative aspect-video bg-gray-100">
                       <img
@@ -104,24 +76,51 @@ const Footer: React.FC = () => {
               <h3 className="footer-title mb-4" style={{ color: '#333333' }}>Liên kết nhanh</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link to="/" className="text-red-200 hover:text-white transition">
+                  <Link
+                    to="/"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="text-red-200 hover:text-white transition"
+                  >
                     Trang chủ
                   </Link>
                 </li>
                 <li>
-                  <Link to="/huong-dan" className="text-red-200 hover:text-white transition">
+                  <Link
+                    to="/huong-dan"
+                    onClick={() => setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100)}
+                    className="text-red-200 hover:text-white transition"
+                  >
                     Hướng dẫn
                   </Link>
                 </li>
                 <li>
-                  <Link to="/ket-qua" className="text-red-200 hover:text-white transition">
+                  <a
+                    href="/#ket-qua"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (window.location.pathname === '/') {
+                        const section = document.getElementById('ket-qua');
+                        if (section) {
+                          section.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      } else {
+                        window.location.href = '/#ket-qua';
+                      }
+                    }}
+                    className="text-red-200 hover:text-white transition cursor-pointer"
+                  >
                     Kết quả
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link to="/lien-he" className="text-red-200 hover:text-white transition">
+                  <a
+                    href="https://zalo.me/0332697909"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-red-200 hover:text-white transition"
+                  >
                     Liên hệ
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>

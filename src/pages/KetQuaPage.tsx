@@ -4,8 +4,8 @@ import { getCurrentYear, getAvailableYears } from '../utils/yearUtils';
 // Mock data cho các thai - sử dụng tên Thai thực tế với khung giờ
 const mockThais = [
   { id: 'an-nhon', name: 'Thai An Nhơn', times: ['Sáng (11:00)', 'Chiều (17:00)', 'Tối (21:00)'], color: 'green' },
-  { id: 'nhon-phong', name: 'Thai Nhơn Phong', times: ['Sáng (11:00)', 'Chiều (17:00)', 'Tối (21:00)'], color: 'yellow' },
-  { id: 'hoai-nhon', name: 'Thai Hoài Nhơn', times: ['Trưa (13:00)', 'Chiều (19:00)'], color: 'blue' },
+  { id: 'nhon-phong', name: 'Thai Nhơn Phong', times: ['Sáng (11:00)', 'Chiều (17:00)'], color: 'yellow' },
+  { id: 'hoai-nhon', name: 'Thai Hoài Nhơn', times: ['Sáng (13:00)', 'Chiều (19:00)'], color: 'blue' },
 ];
 
 const KetQuaPage: React.FC = () => {
@@ -80,17 +80,8 @@ const KetQuaPage: React.FC = () => {
         <p className="text-gray-600">Xem kết quả theo năm và theo từng Thai</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: Image */}
-        <div className="relative">
-          <img
-            src="/assets/decorations/form_img.png"
-            alt="Kết quả"
-            className="w-full h-auto rounded-lg shadow-lg"
-          />
-        </div>
-
-        {/* Right: Results Table */}
+      <div>
+        {/* Results Table */}
         <div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">KẾT QUẢ ĐÃ XỔ</h2>
 
@@ -149,7 +140,7 @@ const KetQuaPage: React.FC = () => {
                     </th>
                   )}
                   {(selectedThai === 'all' || selectedThai === 'nhon-phong') && (
-                    <th className="px-3 py-2 text-center font-bold text-yellow-200 border-l border-white/20" colSpan={3}>
+                    <th className="px-3 py-2 text-center font-bold text-yellow-200 border-l border-white/20" colSpan={2}>
                       NHƠN PHONG
                     </th>
                   )}
@@ -171,12 +162,11 @@ const KetQuaPage: React.FC = () => {
                     <>
                       <th className="px-2 py-1 border-l border-white/20">Sáng<br /><span className="text-yellow-200">11:00</span></th>
                       <th className="px-2 py-1">Chiều<br /><span className="text-yellow-200">17:00</span></th>
-                      <th className="px-2 py-1">Tối<br /><span className="text-yellow-200">21:00</span></th>
                     </>
                   )}
                   {(selectedThai === 'all' || selectedThai === 'hoai-nhon') && (
                     <>
-                      <th className="px-2 py-1 border-l border-white/20">Trưa<br /><span className="text-blue-200">13:00</span></th>
+                      <th className="px-2 py-1 border-l border-white/20">Sáng<br /><span className="text-blue-200">13:00</span></th>
                       <th className="px-2 py-1">Chiều<br /><span className="text-blue-200">19:00</span></th>
                     </>
                   )}
@@ -230,13 +220,6 @@ const KetQuaPage: React.FC = () => {
                             </span>
                           )}
                         </td>
-                        <td className="px-2 py-2 text-center">
-                          {result.nhonPhongToi && (
-                            <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs font-bold">
-                              {result.nhonPhongToi}
-                            </span>
-                          )}
-                        </td>
                       </>
                     )}
                     {(selectedThai === 'all' || selectedThai === 'hoai-nhon') && (
@@ -271,11 +254,11 @@ const KetQuaPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="w-4 h-4 bg-yellow-100 rounded border border-yellow-300"></span>
-              <span className="text-gray-600">Thai Nhơn Phong: Sáng (11:00) • Chiều (17:00) • Tối (21:00)</span>
+              <span className="text-gray-600">Thai Nhơn Phong: Sáng (11:00) • Chiều (17:00)</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-4 h-4 bg-blue-100 rounded border border-blue-300"></span>
-              <span className="text-gray-600">Thai Hoài Nhơn: Trưa (13:00) • Chiều (19:00)</span>
+              <span className="text-gray-600">Thai Hoài Nhơn: Sáng (13:00) • Chiều (19:00)</span>
             </div>
           </div>
         </div>

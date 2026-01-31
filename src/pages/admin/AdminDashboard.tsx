@@ -148,8 +148,8 @@ const AdminDashboard: React.FC = () => {
           >
             🌤️ Chiều
           </button>
-          {/* Hoài Nhơn không có buổi tối */}
-          {selectedThai !== 'thai-hoai-nhon' && (
+          {/* Chỉ An Nhơn có buổi tối (Nhơn Phong và Hoài Nhơn không có) */}
+          {selectedThai === 'thai-an-nhon' && (
             <button
               onClick={() => setSelectedSession('toi')}
               className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
