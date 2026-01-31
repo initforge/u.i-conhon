@@ -960,7 +960,7 @@ const HomePage: React.FC = () => {
                   return (
                     <div key={animal.order} className="bg-white border-2 border-tet-red-800 p-2 md:p-4 text-center relative rounded-lg shadow-md">
                       <div className="absolute top-1 left-1 md:top-2 md:left-2">
-                        <p className="text-[0.6rem] md:text-xs font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{animal.order}. {animal.name}</p>
+                        <p className="text-sm md:text-base font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{animal.order}. {animal.name}</p>
                       </div>
                       {/* Alias prominently displayed */}
                       <h4 className="text-sm md:text-lg font-bold mt-6 md:mt-8" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>
@@ -985,10 +985,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Cloud decoration */}
-          <div className="absolute bottom-0 right-0 opacity-60 pointer-events-none" style={{ width: '265px', height: '454px', zIndex: 10 }}>
-            <img src="/assets/decorations/cloud-4.png" alt="" className="w-full h-full object-contain" />
-          </div>
+          {/* Cloud decoration removed - was covering animal images */}
         </div>
       </section>
 
