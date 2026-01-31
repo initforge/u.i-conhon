@@ -120,7 +120,6 @@ const CongDongPage: React.FC = () => {
     // Filter posts by selected Thai
     const filteredPosts = posts.filter(p => p.thaiId === selectedThai);
     const totalComments = filteredPosts.reduce((sum, post) => sum + post.comments.length, 0);
-    const totalLikes = filteredPosts.reduce((sum, post) => sum + post.likes, 0);
     const currentThaiConfig = thaiConfig[selectedThai];
 
     const handleAddComment = (postId: string) => {
