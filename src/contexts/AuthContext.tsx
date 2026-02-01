@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '../mock-data/mockData';
 
 interface AuthContextType {
@@ -10,10 +10,29 @@ interface AuthContextType {
   isAdmin: boolean;
 }
 
+const AUTH_STORAGE_KEY = 'conhon_auth_user';
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  // Load user from localStorage on init
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Save to localStorage whenever user changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  }, [user]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const login = (phone: string, _password: string): boolean => {

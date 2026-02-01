@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const AdminLayout: React.FC = () => {
@@ -15,7 +15,7 @@ const AdminLayout: React.FC = () => {
     }, [user, navigate]);
 
     if (!user || user.role !== 'admin') {
-        return null;
+        return <Navigate to="/dang-nhap" replace />;
     }
 
     const menuItems = [

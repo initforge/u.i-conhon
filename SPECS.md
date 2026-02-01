@@ -9,7 +9,7 @@
 
 1. [Tổng quan hệ thống](#1-tổng-quan-hệ-thống)
 2. [Quy mô và hiệu năng](#2-quy-mô-và-hiệu-năng)
-3. [Phân quyền người dùng](#3-phân-quyền-người-dùng)
+3. [Phân quyền người dùng](#3-phân-quyền-người-dùng)  
 4. [Đặc tả màn hình NGƯỜI CHƠI](#4-đặc-tả-màn-hình-người-chơi)
 5. [Đặc tả màn hình ADMIN](#5-đặc-tả-màn-hình-admin)
 6. [Quy tắc nghiệp vụ](#6-quy-tắc-nghiệp-vụ)
@@ -29,10 +29,10 @@ Cổ Nhơn là trò chơi dân gian truyền thống của Bình Định, diễn
 | Thai | Số con vật | Phiên xổ | Giờ đóng tịch | Giờ xổ |
 |------|-----------|----------|---------------|--------|
 | **An Nhơn** | 40 | Sáng, Chiều, Tối (Tết) | 10:30, 16:30, 20:30 | 11:00, 17:00, 21:00 |
-| **Nhơn Phong** | 40 | Sáng, Chiều, Tối (Tết) | 10:30, 16:30, 20:30 | 11:00, 17:00, 21:00 |
+| **Nhơn Phong** | 40 | Sáng, Chiều | 10:30, 16:30 | 11:00, 17:00 |
 | **Hoài Nhơn** | 36 | Trưa, Chiều | 12:30, 18:30 | 13:00, 19:00 |
 
-> **Lưu ý**: Phiên Tối (21h) chỉ có trong dịp Tết (~mùng 1 đến mùng 5).
+> **Lưu ý**: Phiên Tối (21h) chỉ có ở **Thai An Nhơn** trong dịp Tết (~mùng 1 đến mùng 5).
 
 ### 1.3 Tỷ lệ thưởng
 - **Mặc định**: 1 chung 30 (đặt 10.000đ → trúng 300.000đ)

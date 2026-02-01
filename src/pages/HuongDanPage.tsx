@@ -193,7 +193,7 @@ const HuongDanPage: React.FC = () => {
                           Chọn một trong 3 Thai để tham gia:
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                          <li><strong>Thai An Nhơn:</strong> Đóng tịch 10:30, 16:30</li>
+                          <li><strong>Thai An Nhơn:</strong> Đóng tịch 10:30, 16:30 <span className="text-red-600">(Tết: 20:30)</span></li>
                           <li><strong>Thai Nhơn Phong:</strong> Đóng tịch 10:30, 16:30</li>
                           <li><strong>Thai Hoài Nhơn:</strong> Đóng tịch 12:30, 18:30</li>
                         </ul>

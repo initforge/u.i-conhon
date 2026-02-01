@@ -10,12 +10,12 @@ const ChonThaiPage: React.FC = () => {
         {
             id: 'an-nhon',
             name: 'Thai An Nhơn',
-            description: 'Xổ lúc 11h và 17h hàng ngày',
+            description: 'Xổ lúc 11h, 17h (Tết thêm 21h)',
             color: 'from-green-500 to-green-700',
             icon: '🟢',
             bgColor: 'bg-green-50',
             borderColor: 'border-green-500',
-            times: ['11h', '17h'],
+            times: ['11h', '17h', '21h'],
         },
         {
             id: 'nhon-phong',
