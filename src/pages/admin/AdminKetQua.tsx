@@ -72,6 +72,7 @@ const AdminKetQua: React.FC = () => {
   const [formData, setFormData] = useState({
     thaiId: mockThais[0]?.id || '',
     date: new Date().toISOString().split('T')[0],
+    lunarLabel: '', // Ngày âm lịch do Admin tự nhập (VD: "Mùng 3", "25 tháng Chạp")
     winningAnimalIds: [] as string[],
     imageUrl: '',
     isOff: false, // Ngày nghỉ không xổ
@@ -108,6 +109,7 @@ const AdminKetQua: React.FC = () => {
     setFormData({
       thaiId: mockThais[0]?.id || '',
       date: new Date().toISOString().split('T')[0],
+      lunarLabel: '',
       winningAnimalIds: [],
       imageUrl: '',
       isOff: false,
@@ -120,6 +122,7 @@ const AdminKetQua: React.FC = () => {
     setFormData({
       thaiId: kq.thaiId,
       date: kq.date,
+      lunarLabel: (kq as { lunarLabel?: string }).lunarLabel || '',
       winningAnimalIds: kq.winningAnimalIds,
       imageUrl: kq.imageUrl || '',
       isOff: kq.isOff || false,
@@ -304,6 +307,21 @@ const AdminKetQua: React.FC = () => {
               </div>
             </div>
 
+            {/* Ngày âm lịch */}
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>
+                📅 Ngày âm lịch <span className="text-gray-400 font-normal">(hiển thị cho người chơi)</span>
+              </label>
+              <input
+                type="text"
+                value={formData.lunarLabel}
+                onChange={(e) => setFormData({ ...formData, lunarLabel: e.target.value })}
+                placeholder="VD: Mùng 3, 25 tháng Chạp, 30 Tết..."
+                className="w-full px-3 py-2.5 rounded-lg focus:outline-none"
+                style={{ border: '1px solid #e8e4df', backgroundColor: '#fffbeb' }}
+              />
+            </div>
+
             {/* Checkbox Nghỉ */}
             <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: formData.isOff ? '#fef2f2' : '#faf8f5', border: '1px solid #e8e4df' }}>
               <input
@@ -382,6 +400,7 @@ const AdminKetQua: React.FC = () => {
                     setFormData({
                       thaiId: mockThais[0]?.id || '',
                       date: new Date().toISOString().split('T')[0],
+                      lunarLabel: '',
                       winningAnimalIds: [],
                       imageUrl: '',
                       isOff: false,

@@ -11,6 +11,7 @@ const AdminCauThai: React.FC = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploadName, setUploadName] = useState('');
+  const [uploadLunarLabel, setUploadLunarLabel] = useState(''); // Ngày âm lịch
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const availableYears = getAvailableYears(4);
@@ -59,6 +60,7 @@ const AdminCauThai: React.FC = () => {
     setShowUploadModal(false);
     setUploadPreview(null);
     setUploadName('');
+    setUploadLunarLabel('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -265,6 +267,7 @@ const AdminCauThai: React.FC = () => {
                   setShowUploadModal(false);
                   setUploadPreview(null);
                   setUploadName('');
+                  setUploadLunarLabel('');
                 }}
                 className="text-gray-400 hover:text-gray-600 text-2xl"
               >
@@ -303,7 +306,7 @@ const AdminCauThai: React.FC = () => {
             </div>
 
             {/* Name Input */}
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Tên ảnh câu thai</label>
               <input
                 type="text"
@@ -314,6 +317,21 @@ const AdminCauThai: React.FC = () => {
               />
             </div>
 
+            {/* Ngày âm lịch Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                📅 Ngày âm lịch <span className="text-gray-400 font-normal">(hiển thị cho người chơi)</span>
+              </label>
+              <input
+                type="text"
+                value={uploadLunarLabel}
+                onChange={(e) => setUploadLunarLabel(e.target.value)}
+                placeholder="VD: Mùng 9, 30 Tết, 25 tháng Chạp..."
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
+                style={{ backgroundColor: '#fffbeb' }}
+              />
+            </div>
+
             {/* Actions */}
             <div className="flex gap-3">
               <button
@@ -321,6 +339,7 @@ const AdminCauThai: React.FC = () => {
                   setShowUploadModal(false);
                   setUploadPreview(null);
                   setUploadName('');
+                  setUploadLunarLabel('');
                 }}
                 className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
               >

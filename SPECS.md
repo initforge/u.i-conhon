@@ -38,6 +38,26 @@ Cổ Nhơn là trò chơi dân gian truyền thống của Bình Định, diễn
 - **Mặc định**: 1 chung 30 (đặt 10.000đ → trúng 300.000đ)
 - **Riêng Hoài Nhơn**: Con Trùn (số 5) chung 70
 
+### 1.4 Quy ước về Lịch (Production Notes)
+
+> [!IMPORTANT]
+> **Backend sử dụng lịch DƯƠNG** cho tất cả timestamp và date fields.
+
+| Field | Format | Ví dụ |
+|-------|--------|-------|
+| `record_date`, `order_date`, `limit_date` | `YYYY-MM-DD` (dương lịch) | `2026-01-30` |
+| `lunar_label` | Text do Admin nhập | `"Mùng 3"`, `"25 tháng Chạp"` |
+
+**Lý do:**
+- Không cần thư viện convert âm-dương phức tạp
+- Admin địa phương nắm rõ lịch âm hơn máy
+- Linh hoạt: mùa chơi có thể thay đổi mỗi năm
+
+**Quy trình:**
+1. Admin chọn ngày dương trên Date Picker
+2. Admin **tự nhập** label âm lịch vào field `lunar_label`
+3. Frontend hiển thị `lunar_label` cho người chơi, backend lưu date dương
+
 ---
 
 ## 2. QUY MÔ VÀ HIỆU NĂNG
@@ -671,12 +691,14 @@ PAYMENTS (audit trail)
 | id | VARCHAR(50) PK | 'an-nhon_sang_2026-01-30' |
 | thai_id | VARCHAR(20) FK | → thais.id |
 | session | VARCHAR(10) | 'sang', 'chieu', 'toi', 'trua' |
-| record_date | DATE | Ngày xổ |
+| record_date | DATE | Ngày xổ (lịch dương) |
+| lunar_label | VARCHAR(50) | Ngày âm lịch do Admin nhập (VD: "Mùng 3", "25 tháng Chạp") |
 | is_off | BOOLEAN | Ngày nghỉ không xổ |
 | winner_order | SMALLINT | 1-40 (con trúng). NULL nếu is_off |
 | cau_thai | TEXT | 2 hoặc 4 câu thơ lục bát |
 | img | VARCHAR(255) | URL hình ảnh |
 | created_at | TIMESTAMP | |
+
 
 ### 7.6 Bảng `session_limits` (NEW - Hạn mức realtime)
 
