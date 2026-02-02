@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ThaiIcon } from '../../components/icons/ThaiIcons';
+import Portal from '../../components/Portal';
 
 interface Comment {
     id: string;
@@ -545,26 +546,28 @@ const AdminCMS: React.FC = () => {
             {/* Delete Confirmation Modal */}
             {
                 showDeleteModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                            <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ Xác nhận xóa</h3>
-                            <p className="text-gray-600 mb-6">Bạn có chắc chắn muốn xóa bình luận này? Hành động này không thể hoàn tác.</p>
-                            <div className="flex space-x-3">
-                                <button
-                                    onClick={() => setShowDeleteModal(false)}
-                                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    onClick={confirmDeleteComment}
-                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
-                                >
-                                    🗑️ Xóa bình luận
-                                </button>
+                    <Portal>
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+                            <div className="bg-white rounded-xl p-4 sm:p-6 max-w-md w-full shadow-2xl my-auto">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ Xác nhận xóa</h3>
+                                <p className="text-gray-600 mb-6">Bạn có chắc chắn muốn xóa bình luận này? Hành động này không thể hoàn tác.</p>
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={() => setShowDeleteModal(false)}
+                                        className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        onClick={confirmDeleteComment}
+                                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                                    >
+                                        🗑️ Xóa bình luận
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Portal>
                 )
             }
         </div >

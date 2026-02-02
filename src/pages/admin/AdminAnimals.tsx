@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { anNhonAnimals } from '../../mock-data/mockData';
-import AdminPageWrapper, { AdminButton } from '../../components/AdminPageWrapper';
+import AdminPageWrapper from '../../components/AdminPageWrapper';
+import Portal from '../../components/Portal';
 
 // Data cho Hoài Nhơn (36 con) - Thêm purchaseCount (đơn hàng)
 const animalsHoaiNhon36 = [
@@ -153,11 +154,6 @@ const AdminAnimals: React.FC = () => {
       title="Quản lý con vật"
       subtitle={`Cấu hình hạn mức và trạng thái - ${thaiOptions.find(t => t.id === selectedThai)?.animals} con`}
       icon="🐾"
-      actions={
-        <AdminButton variant="primary">
-          💾 Lưu thay đổi
-        </AdminButton>
-      }
     >
       {/* Thai Tabs */}
       <div className="mb-6">
@@ -244,6 +240,11 @@ const AdminAnimals: React.FC = () => {
               className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
               ✅ Áp dụng tất cả
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+            >
+              💾 Lưu thay đổi
             </button>
           </div>
         </div>
@@ -417,50 +418,52 @@ const AdminAnimals: React.FC = () => {
 
       {/* Modal cấm con vật */}
       {banModal.isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="bg-red-500 text-white p-5">
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                🚫 Cấm con vật
-              </h3>
-              <p className="text-red-100 text-sm mt-1">
-                Bạn đang cấm: <strong>{banModal.animalName}</strong>
-              </p>
-            </div>
+        <Portal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl w-full max-w-md max-h-[95vh] sm:max-h-[90vh] shadow-2xl overflow-y-auto my-auto">
+              {/* Header */}
+              <div className="bg-red-500 text-white p-5">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  🚫 Cấm con vật
+                </h3>
+                <p className="text-red-100 text-sm mt-1">
+                  Bạn đang cấm: <strong>{banModal.animalName}</strong>
+                </p>
+              </div>
 
-            {/* Body */}
-            <div className="p-5">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nhập lý do cấm con này:
-              </label>
-              <textarea
-                value={banModal.reason}
-                onChange={(e) => setBanModal({ ...banModal, reason: e.target.value })}
-                placeholder="VD: Con này đã có nhiều người mua..."
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-red-400 resize-none"
-                rows={3}
-                autoFocus
-              />
-            </div>
+              {/* Body */}
+              <div className="p-5">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nhập lý do cấm con này:
+                </label>
+                <textarea
+                  value={banModal.reason}
+                  onChange={(e) => setBanModal({ ...banModal, reason: e.target.value })}
+                  placeholder="VD: Con này đã có nhiều người mua..."
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-red-400 resize-none"
+                  rows={3}
+                  autoFocus
+                />
+              </div>
 
-            {/* Footer */}
-            <div className="flex gap-3 p-5 bg-gray-50">
-              <button
-                onClick={() => setBanModal({ isOpen: false, animalId: null, animalName: '', reason: '' })}
-                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition-colors"
-              >
-                ❌ Hủy
-              </button>
-              <button
-                onClick={confirmBan}
-                className="flex-1 px-4 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors"
-              >
-                🚫 Xác nhận cấm
-              </button>
+              {/* Footer */}
+              <div className="flex gap-3 p-5 bg-gray-50">
+                <button
+                  onClick={() => setBanModal({ isOpen: false, animalId: null, animalName: '', reason: '' })}
+                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition-colors"
+                >
+                  ❌ Hủy
+                </button>
+                <button
+                  onClick={confirmBan}
+                  className="flex-1 px-4 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors"
+                >
+                  🚫 Xác nhận cấm
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </AdminPageWrapper>
   );

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { mockOrders, mockUsers, mockThais, mockAnimals } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminCard, StatusBadge, AdminButton } from '../../components/AdminPageWrapper';
+import Portal from '../../components/Portal';
 
 interface OrderDetailModalProps {
   order: typeof mockOrders[0];
@@ -12,154 +13,156 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClose }) =
   const thai = mockThais.find((t) => t.id === order.thaiId);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200" style={{ backgroundColor: '#faf8f5' }}>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🛒</span>
-            <div>
-              <h3 className="font-bold" style={{ color: '#3d3428' }}>Chi tiết đơn hàng</h3>
-              <p className="text-xs" style={{ color: '#9a8c7a' }}>#{order.id}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Order Info */}
-        <div className="p-4 border-b border-gray-100" style={{ backgroundColor: '#fefcf9' }}>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-gray-500">Khách hàng:</span>
-              <div className="font-medium" style={{ color: '#3d3428' }}>{user?.zaloName || 'N/A'}</div>
-            </div>
-            <div>
-              <span className="text-gray-500">Số điện thoại:</span>
-              <div className="font-medium text-blue-600">{user?.phone || 'N/A'}</div>
-            </div>
-            <div>
-              <span className="text-gray-500">Thai:</span>
-              <div className="font-medium" style={{ color: '#3d3428' }}>{thai?.name || 'N/A'}</div>
-            </div>
-            <div>
-              <span className="text-gray-500">Thời gian mua:</span>
-              <div className="font-medium" style={{ color: '#3d3428' }}>
-                {new Date(order.createdAt).toLocaleString('vi-VN', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+    <Portal>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-y-auto my-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200" style={{ backgroundColor: '#faf8f5' }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🛒</span>
+              <div>
+                <h3 className="font-bold" style={{ color: '#3d3428' }}>Chi tiết đơn hàng</h3>
+                <p className="text-xs" style={{ color: '#9a8c7a' }}>#{order.id}</p>
               </div>
             </div>
-            <div>
-              <span className="text-gray-500">Trạng thái:</span>
-              <div className="mt-0.5">
-                <StatusBadge
-                  status={
-                    order.status === 'completed' ? 'success'
-                      : order.status === 'paid' ? 'info'
-                        : 'warning'
-                  }
-                >
-                  {order.status === 'completed' ? 'Hoàn tất'
-                    : order.status === 'paid' ? 'Đã thanh toán'
-                      : 'Chờ thanh toán'}
-                </StatusBadge>
-              </div>
-            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+            >
+              ✕
+            </button>
           </div>
 
-          {/* Thông tin tài khoản */}
-          {user?.bankAccount && (
-            <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: '#f0f9ff' }}>
-              <div className="text-xs font-medium text-blue-700 mb-2">💳 Tài khoản ngân hàng</div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-gray-500">Ngân hàng:</span>
-                  <span className="ml-1 font-medium text-gray-700">{user.bankAccount.bankName}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">STK:</span>
-                  <span className="ml-1 font-medium text-gray-700">{user.bankAccount.accountNumber}</span>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-gray-500">Chủ TK:</span>
-                  <span className="ml-1 font-medium text-gray-700">{user.bankAccount.accountHolder}</span>
+          {/* Order Info */}
+          <div className="p-4 border-b border-gray-100" style={{ backgroundColor: '#fefcf9' }}>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span className="text-gray-500">Khách hàng:</span>
+                <div className="font-medium" style={{ color: '#3d3428' }}>{user?.zaloName || 'N/A'}</div>
+              </div>
+              <div>
+                <span className="text-gray-500">Số điện thoại:</span>
+                <div className="font-medium text-blue-600">{user?.phone || 'N/A'}</div>
+              </div>
+              <div>
+                <span className="text-gray-500">Thai:</span>
+                <div className="font-medium" style={{ color: '#3d3428' }}>{thai?.name || 'N/A'}</div>
+              </div>
+              <div>
+                <span className="text-gray-500">Thời gian mua:</span>
+                <div className="font-medium" style={{ color: '#3d3428' }}>
+                  {new Date(order.createdAt).toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Items List - Cart Style */}
-        <div className="p-4 max-h-[300px] overflow-y-auto">
-          <h4 className="text-sm font-medium mb-3" style={{ color: '#6b5c4c' }}>
-            Danh sách con vật ({order.items.length} con)
-          </h4>
-          <div className="space-y-3">
-            {order.items.map((item) => {
-              const animal = mockAnimals.find((a) => a.id === item.animalId);
-              return (
-                <div
-                  key={item.animalId}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-100"
-                  style={{ backgroundColor: '#faf8f5' }}
-                >
-                  {/* Animal Image/Icon */}
-                  <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center text-xl"
-                    style={{ backgroundColor: '#fee2e2' }}
+              <div>
+                <span className="text-gray-500">Trạng thái:</span>
+                <div className="mt-0.5">
+                  <StatusBadge
+                    status={
+                      order.status === 'completed' ? 'success'
+                        : order.status === 'paid' ? 'info'
+                          : 'warning'
+                    }
                   >
-                    🐾
-                  </div>
+                    {order.status === 'completed' ? 'Hoàn tất'
+                      : order.status === 'paid' ? 'Đã thanh toán'
+                        : 'Chờ thanh toán'}
+                  </StatusBadge>
+                </div>
+              </div>
+            </div>
 
-                  {/* Animal Info */}
-                  <div className="flex-1">
-                    <div className="font-bold text-sm" style={{ color: '#991b1b' }}>
-                      {animal?.name || 'N/A'}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {item.price.toLocaleString('vi-VN')}đ x {item.quantity}
-                    </div>
+            {/* Thông tin tài khoản */}
+            {user?.bankAccount && (
+              <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: '#f0f9ff' }}>
+                <div className="text-xs font-medium text-blue-700 mb-2">💳 Tài khoản ngân hàng</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-gray-500">Ngân hàng:</span>
+                    <span className="ml-1 font-medium text-gray-700">{user.bankAccount.bankName}</span>
                   </div>
-
-                  {/* Subtotal */}
-                  <div className="text-right">
-                    <div className="font-bold" style={{ color: '#991b1b' }}>
-                      {(item.price * item.quantity).toLocaleString('vi-VN')}đ
-                    </div>
+                  <div>
+                    <span className="text-gray-500">STK:</span>
+                    <span className="ml-1 font-medium text-gray-700">{user.bankAccount.accountNumber}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-500">Chủ TK:</span>
+                    <span className="ml-1 font-medium text-gray-700">{user.bankAccount.accountHolder}</span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Total */}
-        <div className="p-4 border-t border-gray-200" style={{ backgroundColor: '#faf8f5' }}>
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-medium" style={{ color: '#6b5c4c' }}>Tổng cộng:</span>
-            <span className="text-2xl font-bold" style={{ color: '#991b1b' }}>
-              {order.total.toLocaleString('vi-VN')}đ
-            </span>
+          {/* Items List - Cart Style */}
+          <div className="p-4 max-h-[300px] overflow-y-auto">
+            <h4 className="text-sm font-medium mb-3" style={{ color: '#6b5c4c' }}>
+              Danh sách con vật ({order.items.length} con)
+            </h4>
+            <div className="space-y-3">
+              {order.items.map((item) => {
+                const animal = mockAnimals.find((a) => a.id === item.animalId);
+                return (
+                  <div
+                    key={item.animalId}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-100"
+                    style={{ backgroundColor: '#faf8f5' }}
+                  >
+                    {/* Animal Image/Icon */}
+                    <div
+                      className="w-12 h-12 rounded-lg flex items-center justify-center text-xl"
+                      style={{ backgroundColor: '#fee2e2' }}
+                    >
+                      🐾
+                    </div>
+
+                    {/* Animal Info */}
+                    <div className="flex-1">
+                      <div className="font-bold text-sm" style={{ color: '#991b1b' }}>
+                        {animal?.name || 'N/A'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {item.price.toLocaleString('vi-VN')}đ x {item.quantity}
+                      </div>
+                    </div>
+
+                    {/* Subtotal */}
+                    <div className="text-right">
+                      <div className="font-bold" style={{ color: '#991b1b' }}>
+                        {(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Actions */}
-        <div className="p-4 border-t border-gray-100 flex gap-2">
-          <AdminButton variant="secondary" onClick={onClose} className="flex-1">
-            Đóng
-          </AdminButton>
+          {/* Total */}
+          <div className="p-4 border-t border-gray-200" style={{ backgroundColor: '#faf8f5' }}>
+            <div className="flex items-center justify-between">
+              <span className="text-lg font-medium" style={{ color: '#6b5c4c' }}>Tổng cộng:</span>
+              <span className="text-2xl font-bold" style={{ color: '#991b1b' }}>
+                {order.total.toLocaleString('vi-VN')}đ
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="p-4 border-t border-gray-100 flex gap-2">
+            <AdminButton variant="secondary" onClick={onClose} className="flex-1">
+              Đóng
+            </AdminButton>
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 };
 
@@ -285,8 +288,8 @@ const AdminOrders: React.FC = () => {
             >
               🌤️ Chiều
             </button>
-            {/* Hoài Nhơn không có buổi tối */}
-            {selectedThai !== 'thai-hoai-nhon' && (
+            {/* Chỉ An Nhơn có buổi tối */}
+            {selectedThai === 'thai-an-nhon' && (
               <button
                 onClick={() => setSelectedSession('toi')}
                 className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'

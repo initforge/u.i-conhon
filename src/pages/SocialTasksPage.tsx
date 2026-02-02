@@ -9,6 +9,7 @@ const SocialTasksPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [localTasks, setLocalTasks] = useState([
+        { id: 'zalo-friend', name: '🌟 Kết bạn Zalo với Nguyễn Ngọc Tuân', completed: false, type: 'one-time', icon: '💬', isZalo: true },
         { id: 'facebook-follow', name: 'Theo dõi Facebook Cổ Nhơn An Nhơn', completed: false, type: 'one-time', icon: '📘' },
         { id: 'youtube-subscribe', name: 'Đăng ký YouTube Cậu Ba Họ Nguyễn', completed: false, type: 'one-time', icon: '📺' },
         { id: 'facebook-like', name: 'Like bài viết mới nhất', completed: false, type: 'daily', icon: '👍' },
@@ -44,9 +45,54 @@ const SocialTasksPage: React.FC = () => {
         <div className="container mx-auto px-4 py-8">
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-3xl font-bold text-tet-red-700 mb-2">Nhiệm vụ mạng xã hội</h1>
-                <p className="text-gray-600 mb-8">
+                <p className="text-gray-600 mb-6">
                     Hoàn thành tất cả nhiệm vụ để mở khóa tính năng mua con vật
                 </p>
+
+                {/* ⚠️ CRITICAL ZALO PRIVACY WARNING - Very Prominent */}
+                <div className="mb-8 p-0 rounded-2xl overflow-hidden shadow-lg border-4 border-red-500">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4">
+                        <div className="flex items-center gap-3">
+                            <span className="text-4xl animate-pulse">⚠️</span>
+                            <div>
+                                <h2 className="text-xl font-bold">LƯU Ý CỰC KỲ QUAN TRỌNG!</h2>
+                                <p className="text-red-100 text-sm">Đọc kỹ trước khi thực hiện nhiệm vụ Zalo</p>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Content */}
+                    <div className="bg-red-50 p-5">
+                        <div className="space-y-4">
+                            <div className="flex items-start gap-3 p-4 bg-white rounded-xl border-2 border-red-200">
+                                <span className="text-3xl">📱</span>
+                                <div>
+                                    <h3 className="font-bold text-red-800 text-lg mb-1">TẮT CHẾ ĐỘ RIÊNG TƯ ZALO</h3>
+                                    <p className="text-red-700">
+                                        Sau khi kết bạn Zalo, vui lòng <strong className="underline">TẮT CHẾ ĐỘ RIÊNG TƯ</strong> để admin có thể liên hệ khi bạn trúng thưởng!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-xl border-2 border-amber-300">
+                                <h4 className="font-bold text-amber-800 mb-2">📋 Câu chuyện thực tế:</h4>
+                                <div className="text-sm text-gray-700 space-y-2 italic">
+                                    <p>💬 "Có người trúng mà không liên hệ được..."</p>
+                                    <p>💬 "Em lục tin nhắn tìm gần <strong className="text-red-600">3 tiếng đồng hồ</strong> mới ra người trúng"</p>
+                                    <p>💬 "Gọi cả ngày trời không được - máy báo <strong className="text-red-600">chế độ riêng tư</strong>"</p>
+                                    <p>💬 "Qua ngày sau gọi lại nói ngày qua em say quá không biết gì luôn 😭"</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 p-3 bg-green-100 rounded-lg border border-green-300">
+                                <span className="text-2xl">✅</span>
+                                <p className="text-green-800 font-medium">
+                                    Hãy bật nhận tin nhắn từ người lạ / tắt chế độ riêng tư để admin dễ dàng liên hệ khi bạn TRÚNG THƯỞNG!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Progress Bar */}
                 <div className="card mb-8">
@@ -95,6 +141,7 @@ const SocialTasksPage: React.FC = () => {
                                         <button
                                             onClick={() => {
                                                 const urls: { [key: string]: string } = {
+                                                    'zalo-friend': 'https://zalo.me/0332697909',
                                                     'facebook-follow': 'https://facebook.com',
                                                     'youtube-subscribe': 'https://youtube.com/@caubahonguyenxunau3140?si=HvJ9wVQsKVIu1BR8',
                                                     'facebook-like': 'https://facebook.com',

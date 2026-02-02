@@ -14,6 +14,7 @@ const UserLayout: React.FC = () => {
     const menuItems = [
         { path: '/user/mua-con-vat', label: 'Mua hàng', icon: '🛒' },
         { path: '/user/ket-qua', label: 'Kết quả', icon: '🎁' },
+        { path: '/user/lich-su', label: 'Lịch sử', icon: '📋' },
         { path: '/user/cong-dong', label: 'Cộng đồng', icon: '👥' },
         { path: '/user/thong-tin-ca-nhan', label: 'Thông tin', icon: '👤' },
         { path: '/user/ho-tro', label: 'Hỗ trợ', icon: '📞' },

@@ -12,6 +12,7 @@ import ScrollToTop from './components/ScrollToTop'
 import HomePage from './pages/HomePage'
 import HuongDanPage from './pages/HuongDanPage'
 import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import ChonThaiPage from './pages/ChonThaiPage'
 
 // User pages (require login - wrapped in UserLayout)
@@ -22,6 +23,7 @@ import KetQuaPage from './pages/KetQuaPage'
 import CongDongPage from './pages/CongDongPage'
 import ThongTinCaNhanPage from './pages/ThongTinCaNhanPage'
 import HoTroPage from './pages/HoTroPage'
+import LichSuPage from './pages/LichSuPage'
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -33,6 +35,7 @@ import AdminBaoCao from './pages/admin/AdminBaoCao'
 import AdminCMS from './pages/admin/AdminCMS'
 import AdminCauThai from './pages/admin/AdminCauThai'
 import AdminSettings from './pages/admin/AdminSettings'
+import AdminLoginPage from './pages/admin/AdminLoginPage'
 
 function App() {
   return (
@@ -48,10 +51,12 @@ function App() {
                   <Route index element={<HomePage />} />
                   <Route path="huong-dan" element={<HuongDanPage />} />
                   <Route path="dang-nhap" element={<LoginPage />} />
+                  <Route path="dang-ky" element={<RegisterPage />} />
                 </Route>
 
                 {/* Public standalone pages */}
                 <Route path="/chon-thai" element={<ChonThaiPage />} />
+                <Route path="/admin/dang-nhap" element={<AdminLoginPage />} />
 
                 {/* User routes with UserLayout - requires login */}
                 <Route path="/user" element={<UserLayout />}>
@@ -63,6 +68,7 @@ function App() {
                   <Route path="cong-dong" element={<CongDongPage />} />
                   <Route path="thong-tin-ca-nhan" element={<ThongTinCaNhanPage />} />
                   <Route path="ho-tro" element={<HoTroPage />} />
+                  <Route path="lich-su" element={<LichSuPage />} />
                 </Route>
 
                 {/* Admin routes with AdminLayout */}

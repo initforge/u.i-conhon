@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { mockCauThaiImages, CauThaiImage } from '../../mock-data/mockData';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getCurrentYear, getAvailableYears } from '../../utils/yearUtils';
+import Portal from '../../components/Portal';
 
 const AdminCauThai: React.FC = () => {
   const [cauThaiImages, setCauThaiImages] = useState<CauThaiImage[]>(mockCauThaiImages);
@@ -258,109 +259,112 @@ const AdminCauThai: React.FC = () => {
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">📤 Upload ảnh câu thai</h3>
-              <button
-                onClick={() => {
-                  setShowUploadModal(false);
-                  setUploadPreview(null);
-                  setUploadName('');
-                  setUploadLunarLabel('');
-                }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+        <Portal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 my-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">📤 Upload ảnh câu thai</h3>
+                <button
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setUploadPreview(null);
+                    setUploadName('');
+                    setUploadLunarLabel('');
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Info */}
+              <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-sm text-amber-800">
+                  <strong>Năm:</strong> {selectedYear} | <strong>Thai:</strong> {thaiTabs.find(t => t.id === selectedThai)?.name}
+                </p>
+              </div>
+
+              {/* Upload Area */}
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-xl p-6 mb-4 text-center hover:border-amber-400 transition cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
               >
-                ×
-              </button>
-            </div>
+                {uploadPreview ? (
+                  <img src={uploadPreview} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
+                ) : (
+                  <>
+                    <span className="text-4xl mb-2 block">📷</span>
+                    <p className="text-gray-500">Click để chọn ảnh hoặc kéo thả vào đây</p>
+                    <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP (max 5MB)</p>
+                  </>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
 
-            {/* Info */}
-            <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-              <p className="text-sm text-amber-800">
-                <strong>Năm:</strong> {selectedYear} | <strong>Thai:</strong> {thaiTabs.find(t => t.id === selectedThai)?.name}
-              </p>
-            </div>
+              {/* Name Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tên ảnh câu thai</label>
+                <input
+                  type="text"
+                  value={uploadName}
+                  onChange={(e) => setUploadName(e.target.value)}
+                  placeholder="VD: Câu Thai Mùng 9 Tết Ất Tỵ"
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
+                />
+              </div>
 
-            {/* Upload Area */}
-            <div
-              className="border-2 border-dashed border-gray-300 rounded-xl p-6 mb-4 text-center hover:border-amber-400 transition cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {uploadPreview ? (
-                <img src={uploadPreview} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
-              ) : (
-                <>
-                  <span className="text-4xl mb-2 block">📷</span>
-                  <p className="text-gray-500">Click để chọn ảnh hoặc kéo thả vào đây</p>
-                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP (max 5MB)</p>
-                </>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
+              {/* Ngày âm lịch Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  📅 Ngày âm lịch <span className="text-gray-400 font-normal">(hiển thị cho người chơi)</span>
+                </label>
+                <input
+                  type="text"
+                  value={uploadLunarLabel}
+                  onChange={(e) => setUploadLunarLabel(e.target.value)}
+                  placeholder="VD: Mùng 9, 30 Tết, 25 tháng Chạp..."
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
+                  style={{ backgroundColor: '#fffbeb' }}
+                />
+              </div>
 
-            {/* Name Input */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tên ảnh câu thai</label>
-              <input
-                type="text"
-                value={uploadName}
-                onChange={(e) => setUploadName(e.target.value)}
-                placeholder="VD: Câu Thai Mùng 9 Tết Ất Tỵ"
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
-              />
-            </div>
-
-            {/* Ngày âm lịch Input */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                📅 Ngày âm lịch <span className="text-gray-400 font-normal">(hiển thị cho người chơi)</span>
-              </label>
-              <input
-                type="text"
-                value={uploadLunarLabel}
-                onChange={(e) => setUploadLunarLabel(e.target.value)}
-                placeholder="VD: Mùng 9, 30 Tết, 25 tháng Chạp..."
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400"
-                style={{ backgroundColor: '#fffbeb' }}
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowUploadModal(false);
-                  setUploadPreview(null);
-                  setUploadName('');
-                  setUploadLunarLabel('');
-                }}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleUpload}
-                disabled={!uploadPreview || !uploadName.trim()}
-                className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${uploadPreview && uploadName.trim()
-                  ? 'bg-amber-600 text-white hover:bg-amber-700'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-              >
-                💾 Lưu ảnh
-              </button>
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setUploadPreview(null);
+                    setUploadName('');
+                    setUploadLunarLabel('');
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleUpload}
+                  disabled={!uploadPreview || !uploadName.trim()}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${uploadPreview && uploadName.trim()
+                    ? 'bg-amber-600 text-white hover:bg-amber-700'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
+                >
+                  💾 Lưu ảnh
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </AdminPageWrapper>
   );
 };
 
 export default AdminCauThai;
+

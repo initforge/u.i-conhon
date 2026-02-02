@@ -1,0 +1,108 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+
+const AdminLoginPage: React.FC = () => {
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const { login, loginAsDemo } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (!phone || !password) {
+            setError('Vui lòng nhập đầy đủ thông tin');
+            return;
+        }
+
+        const success = login(phone, password);
+        if (success) {
+            navigate('/admin');
+        } else {
+            setError('Số điện thoại hoặc mật khẩu không đúng');
+        }
+    };
+
+    const handleDemoAdmin = () => {
+        loginAsDemo('admin');
+        navigate('/admin');
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-red-50 to-yellow-50 flex items-center justify-center p-4">
+            <div className="max-w-md w-full">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full mb-4 shadow-lg">
+                        <span className="text-3xl">🔐</span>
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-800">Quản trị viên</h1>
+                    <p className="text-gray-500 mt-2">Đăng nhập để quản lý hệ thống</p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm">
+                            ⚠️ {error}
+                        </div>
+                    )}
+
+                    <div className="mb-4">
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Số điện thoại Admin
+                        </label>
+                        <input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                            placeholder="Nhập số điện thoại"
+                            required
+                        />
+                    </div>
+
+                    <div className="mb-6">
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Mật khẩu
+                        </label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                            placeholder="Nhập mật khẩu"
+                            required
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-bold hover:from-amber-600 hover:to-amber-700 transition-all shadow-md mb-4"
+                    >
+                        🔓 Đăng nhập
+                    </button>
+
+                    {/* Demo section */}
+                    <button
+                        type="button"
+                        onClick={handleDemoAdmin}
+                        className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+                    >
+                        🧪 Demo Admin
+                    </button>
+                </form>
+
+                {/* Footer */}
+                <p className="text-center text-gray-400 mt-6 text-sm">
+                    Chỉ dành cho quản trị viên hệ thống
+                </p>
+            </div>
+        </div>
+    );
+};
+
+export default AdminLoginPage;

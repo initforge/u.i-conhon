@@ -20,20 +20,15 @@ const LoginForm: React.FC = () => {
 
     const success = login(phone, password);
     if (success) {
-      // Redirect to user mua con vat page
       navigate('/user/mua-con-vat');
     } else {
       setError('Số điện thoại hoặc mật khẩu không đúng');
     }
   };
 
-  const handleDemoLogin = (role: 'user' | 'admin') => {
-    loginAsDemo(role);
-    if (role === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate('/user/mua-con-vat');
-    }
+  const handleDemoLogin = () => {
+    loginAsDemo('user');
+    navigate('/user/mua-con-vat');
   };
 
   return (
@@ -81,24 +76,23 @@ const LoginForm: React.FC = () => {
           Đăng nhập
         </button>
 
+        {/* Register link */}
+        <p className="text-center text-gray-600 mb-4">
+          Chưa có tài khoản?{' '}
+          <a href="/dang-ky" className="text-red-600 font-semibold hover:underline">
+            Đăng ký ngay
+          </a>
+        </p>
+
+        {/* Demo section */}
         <div className="border-t pt-4">
-          <p className="text-center text-gray-600 mb-4">Hoặc đăng nhập demo:</p>
-          <div className="flex space-x-4">
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('user')}
-              className="flex-1 btn-secondary"
-            >
-              Demo User
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('admin')}
-              className="flex-1 btn-primary"
-            >
-              Demo Admin
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            className="w-full btn-secondary"
+          >
+            🧪 Demo User
+          </button>
         </div>
       </form>
     </div>

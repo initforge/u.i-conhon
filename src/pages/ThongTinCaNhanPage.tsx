@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-
-const banks = [
-    'Vietcombank', 'BIDV', 'Agribank', 'VietinBank', 'Techcombank',
-    'MB Bank', 'ACB', 'VPBank', 'Sacombank', 'TPBank',
-    'HDBank', 'OCB', 'MSB', 'VIB', 'SHB', 'SeABank', 'Eximbank', 'LienVietPostBank'
-];
+import SearchableBankDropdown, { BANKS } from '../components/SearchableBankDropdown';
 
 const ThongTinCaNhanPage: React.FC = () => {
     const { user } = useAuth();
@@ -14,8 +9,14 @@ const ThongTinCaNhanPage: React.FC = () => {
     const [bankInfo, setBankInfo] = useState({
         accountNumber: '',
         accountName: user?.name || '',
-        bankName: 'Vietcombank',
+        bankCode: 'VCB',  // Changed from bankName to bankCode
     });
+
+    // Get bank display name
+    const getBankDisplayName = (code: string) => {
+        const bank = BANKS.find(b => b.code === code);
+        return bank ? bank.shortName : code;
+    };
 
     const handleSave = () => {
         // Mock save
@@ -78,15 +79,11 @@ const ThongTinCaNhanPage: React.FC = () => {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Ngân hàng</label>
-                                <select
-                                    value={bankInfo.bankName}
-                                    onChange={(e) => setBankInfo({ ...bankInfo, bankName: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                >
-                                    {banks.map((bank) => (
-                                        <option key={bank} value={bank}>{bank}</option>
-                                    ))}
-                                </select>
+                                <SearchableBankDropdown
+                                    value={bankInfo.bankCode}
+                                    onChange={(code) => setBankInfo({ ...bankInfo, bankCode: code })}
+                                    placeholder="Chọn ngân hàng..."
+                                />
                             </div>
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">Số tài khoản</label>
@@ -127,7 +124,7 @@ const ThongTinCaNhanPage: React.FC = () => {
                         <div className="space-y-4">
                             <div className="flex justify-between py-3 border-b">
                                 <span className="text-gray-600">Ngân hàng:</span>
-                                <span className="font-medium">{bankInfo.bankName || 'Chưa cập nhật'}</span>
+                                <span className="font-medium">{getBankDisplayName(bankInfo.bankCode) || 'Chưa cập nhật'}</span>
                             </div>
                             <div className="flex justify-between py-3 border-b">
                                 <span className="text-gray-600">Số tài khoản:</span>

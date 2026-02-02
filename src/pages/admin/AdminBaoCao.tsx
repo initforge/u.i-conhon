@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AdminPageWrapper from '../../components/AdminPageWrapper';
 import { ANIMALS_AN_NHON, ANIMALS_HOAI_NHON } from '../../constants/animalData';
+import Portal from '../../components/Portal';
 
 // Sử dụng dữ liệu từ central file
 const animalsAnNhon40 = ANIMALS_AN_NHON;
@@ -269,15 +270,6 @@ const AdminBaoCao: React.FC = () => {
             <div className="mb-6 flex flex-wrap items-center gap-4">
                 <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
                     <button
-                        onClick={() => { setTimeFilter('this-tet'); setSelectedDate(''); }}
-                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${timeFilter === 'this-tet'
-                            ? 'bg-white shadow-md text-amber-700'
-                            : 'text-gray-600 hover:bg-gray-200'
-                            }`}
-                    >
-                        Dịp Tết
-                    </button>
-                    <button
                         onClick={() => setTimeFilter('by-date')}
                         className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${timeFilter === 'by-date'
                             ? 'bg-white shadow-md text-amber-700'
@@ -473,87 +465,89 @@ const AdminBaoCao: React.FC = () => {
 
             {/* Modal Chi tiết hóa đơn */}
             {selectedAnimal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-xl font-bold">Chi tiết hóa đơn - {selectedAnimal.name}</h2>
-                                <p className="text-red-200 text-sm">"{selectedAnimal.alias}" - #{String(selectedAnimal.order).padStart(2, '0')}</p>
+                <Portal>
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto my-auto">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold">Chi tiết hóa đơn - {selectedAnimal.name}</h2>
+                                    <p className="text-red-200 text-sm">"{selectedAnimal.alias}" - #{String(selectedAnimal.order).padStart(2, '0')}</p>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedAnimal(null)}
+                                    className="text-white hover:bg-red-500 p-2 rounded-lg transition"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setSelectedAnimal(null)}
-                                className="text-white hover:bg-red-500 p-2 rounded-lg transition"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
 
-                        {/* Statistics */}
-                        <div className="p-4 bg-gray-50 border-b border-gray-200 grid grid-cols-3 gap-4">
-                            <div className="text-center">
-                                <p className="text-2xl font-bold text-red-600">{getMockPurchaseData(selectedAnimal.order).count}</p>
-                                <p className="text-sm text-gray-600">Tổng lượt mua</p>
+                            {/* Statistics */}
+                            <div className="p-4 bg-gray-50 border-b border-gray-200 grid grid-cols-3 gap-4">
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-red-600">{getMockPurchaseData(selectedAnimal.order).count}</p>
+                                    <p className="text-sm text-gray-600">Tổng lượt mua</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-green-600">{getMockPurchaseData(selectedAnimal.order).amount.toLocaleString('vi-VN')}đ</p>
+                                    <p className="text-sm text-gray-600">Tổng doanh thu</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-blue-600">{getMockCustomerDetails(selectedAnimal.order).length}</p>
+                                    <p className="text-sm text-gray-600">Số khách hàng</p>
+                                </div>
                             </div>
-                            <div className="text-center">
-                                <p className="text-2xl font-bold text-green-600">{getMockPurchaseData(selectedAnimal.order).amount.toLocaleString('vi-VN')}đ</p>
-                                <p className="text-sm text-gray-600">Tổng doanh thu</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-2xl font-bold text-blue-600">{getMockCustomerDetails(selectedAnimal.order).length}</p>
-                                <p className="text-sm text-gray-600">Số khách hàng</p>
-                            </div>
-                        </div>
 
-                        {/* Customer List */}
-                        <div className="p-4 overflow-y-auto max-h-[50vh]">
-                            <h3 className="font-bold text-gray-800 mb-4">Danh sách khách hàng mua (để trả thưởng):</h3>
-                            <div className="space-y-3">
-                                {getMockCustomerDetails(selectedAnimal.order).map((customer) => (
-                                    <div key={customer.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">{customer.id}</span>
-                                                    <span className="text-gray-500 text-xs">{customer.date} - {customer.time}</span>
+                            {/* Customer List */}
+                            <div className="p-4 overflow-y-auto max-h-[50vh]">
+                                <h3 className="font-bold text-gray-800 mb-4">Danh sách khách hàng mua (để trả thưởng):</h3>
+                                <div className="space-y-3">
+                                    {getMockCustomerDetails(selectedAnimal.order).map((customer) => (
+                                        <div key={customer.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">{customer.id}</span>
+                                                        <span className="text-gray-500 text-xs">{customer.date} - {customer.time}</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Tên khách hàng</p>
+                                                            <p className="font-bold text-gray-800">{customer.name}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Số điện thoại</p>
+                                                            <p className="font-bold text-blue-600">{customer.phone}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Số tài khoản ({customer.bankName})</p>
+                                                            <p className="font-bold text-green-600">{customer.bankAccount}</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Tên khách hàng</p>
-                                                        <p className="font-bold text-gray-800">{customer.name}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Số điện thoại</p>
-                                                        <p className="font-bold text-blue-600">{customer.phone}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">Số tài khoản ({customer.bankName})</p>
-                                                        <p className="font-bold text-green-600">{customer.bankAccount}</p>
-                                                    </div>
+                                                <div className="text-right ml-4">
+                                                    <p className="text-lg font-bold text-red-600">{customer.amount.toLocaleString('vi-VN')}đ</p>
                                                 </div>
-                                            </div>
-                                            <div className="text-right ml-4">
-                                                <p className="text-lg font-bold text-red-600">{customer.amount.toLocaleString('vi-VN')}đ</p>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end">
+                                <button
+                                    onClick={() => setSelectedAnimal(null)}
+                                    className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-semibold"
+                                >
+                                    Đóng
+                                </button>
                             </div>
                         </div>
-
-                        {/* Footer */}
-                        <div className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end">
-                            <button
-                                onClick={() => setSelectedAnimal(null)}
-                                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-semibold"
-                            >
-                                Đóng
-                            </button>
-                        </div>
                     </div>
-                </div>
+                </Portal>
             )}
         </AdminPageWrapper>
     );

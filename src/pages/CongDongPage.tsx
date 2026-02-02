@@ -116,16 +116,34 @@ const CongDongPage: React.FC = () => {
     const [selectedThai, setSelectedThai] = useState<'an-nhon' | 'nhon-phong' | 'hoai-nhon'>('an-nhon');
     const [selectedPost, setSelectedPost] = useState<string | null>(null);
     const [newComment, setNewComment] = useState('');
+    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
     // Filter posts by selected Thai
     const filteredPosts = posts.filter(p => p.thaiId === selectedThai);
     const totalComments = filteredPosts.reduce((sum, post) => sum + post.comments.length, 0);
     const currentThaiConfig = thaiConfig[selectedThai];
 
+    // Handle like toggle
+    const handleLike = (postId: string) => {
+        setLikedPosts(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(postId)) {
+                newSet.delete(postId);
+            } else {
+                newSet.add(postId);
+            }
+            return newSet;
+        });
+        // TODO: API call to save like
+    };
+
+    // Handle add comment
     const handleAddComment = (postId: string) => {
         if (!newComment.trim()) return;
-        alert(`Bình luận: "${newComment}" cho bài ${postId} (Tính năng sẽ sớm ra mắt!)`);
+        console.log('Comment for post:', postId, newComment);
+        alert(`Đã gửi bình luận: "${newComment}" (Sẽ hiển thị sau khi admin duyệt)`);
         setNewComment('');
+        // TODO: API call to save comment
     };
 
     return (
@@ -248,12 +266,17 @@ const CongDongPage: React.FC = () => {
                                                 </div>
                                             )}
 
-                                            {/* Stats Bar */}
+                                            {/* Stats Bar - Interactive */}
                                             <div className="px-4 py-3 bg-white border-t flex items-center justify-between">
                                                 <div className="flex items-center space-x-6">
-                                                    <button className="flex items-center space-x-2 text-gray-500 hover:text-red-500 transition-colors">
-                                                        <span>❤️</span>
-                                                        <span>{post.likes} thích</span>
+                                                    <button
+                                                        onClick={() => handleLike(post.id)}
+                                                        className={`flex items-center space-x-2 transition-all ${likedPosts.has(post.id)
+                                                            ? 'text-red-500 scale-110'
+                                                            : 'text-gray-500 hover:text-red-400'}`}
+                                                    >
+                                                        <span className="text-xl">{likedPosts.has(post.id) ? '❤️' : '🤍'}</span>
+                                                        <span className="font-medium">{post.likes + (likedPosts.has(post.id) ? 1 : 0)} thích</span>
                                                     </button>
                                                     <span className="flex items-center space-x-2 text-gray-500">
                                                         <span>💬</span>
@@ -264,7 +287,7 @@ const CongDongPage: React.FC = () => {
                                                     onClick={() => setSelectedPost(selectedPost === post.id ? null : post.id)}
                                                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
                                                 >
-                                                    {selectedPost === post.id ? '🔼 Ẩn bình luận' : '🔽 Xem bình luận'}
+                                                    {selectedPost === post.id ? '🔼 Ẩn bình luận' : '🔽 Xem & Bình luận'}
                                                 </button>
                                             </div>
 
@@ -272,6 +295,25 @@ const CongDongPage: React.FC = () => {
                                             {selectedPost === post.id && (
                                                 <div className="p-4 bg-gray-50 border-t">
                                                     <h4 className="font-bold text-gray-700 mb-4">📝 Bình luận ({post.comments.length})</h4>
+
+                                                    {/* Add Comment Form - User can comment */}
+                                                    <div className="flex space-x-2 mb-4 pb-4 border-b">
+                                                        <input
+                                                            type="text"
+                                                            value={newComment}
+                                                            onChange={(e) => setNewComment(e.target.value)}
+                                                            placeholder="Viết bình luận của bạn..."
+                                                            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200"
+                                                            onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
+                                                        />
+                                                        <button
+                                                            onClick={() => handleAddComment(post.id)}
+                                                            className="px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors"
+                                                        >
+                                                            Gửi
+                                                        </button>
+                                                    </div>
+
                                                     <div className="space-y-3">
                                                         {post.comments.map((comment) => (
                                                             <div
@@ -289,25 +331,8 @@ const CongDongPage: React.FC = () => {
                                                             </div>
                                                         ))}
                                                         {post.comments.length === 0 && (
-                                                            <p className="text-center text-gray-500 py-4">Chưa có bình luận nào</p>
+                                                            <p className="text-center text-gray-500 py-4">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
                                                         )}
-
-                                                        {/* Add Comment - User version */}
-                                                        <div className="flex space-x-2 mt-4 pt-4 border-t">
-                                                            <input
-                                                                type="text"
-                                                                value={newComment}
-                                                                onChange={(e) => setNewComment(e.target.value)}
-                                                                placeholder="Viết bình luận của bạn..."
-                                                                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200"
-                                                            />
-                                                            <button
-                                                                onClick={() => handleAddComment(post.id)}
-                                                                className="px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors"
-                                                            >
-                                                                Gửi
-                                                            </button>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             )}

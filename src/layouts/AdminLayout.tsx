@@ -208,7 +208,7 @@ const AdminLayout: React.FC = () => {
 
                 {/* Main Content */}
                 <main
-                    className="flex-1 p-6 lg:p-8 overflow-x-hidden"
+                    className="flex-1 p-6 lg:p-8"
                     style={{ minHeight: 'calc(100vh - 72px)' }}
                 >
                     <div className="max-w-7xl mx-auto animate-fade-in-up">
