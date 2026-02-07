@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { THAIS, KetQua, getAnimalsByThai } from '../../types';
+import { useThaiConfig } from '../../contexts/ThaiConfigContext';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getAvailableYears } from '../../utils/yearUtils';
-import { getAdminProfitLoss, ProfitLossData, getAdminSessions, setSessionResult, AdminSession } from '../../services/api';
+import { ProfitLossData, getAdminSessions, AdminSession, getResultsHistory, deleteSessionResult, LotteryResult, submitLotteryResult, getAdminYearlyProfitLoss } from '../../services/api';
 
 // Mapping bộ phận cá thể cho An Nhơn / Nhơn Phong (theo đồ hình nhơn)
 const bodyPartMapping: Record<number, { bodyPart: string; column: string }> = {
@@ -68,7 +69,8 @@ const animalGroups = [
 const AdminKetQua: React.FC = () => {
   const [selectedThai, setSelectedThai] = useState('an-nhon');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
-  const [ketQuas, setKetQuas] = useState<KetQua[]>([]);
+  const [ketQuas, setKetQuas] = useState<(KetQua | LotteryResult)[]>([]);
+  const [loadingResults, setLoadingResults] = useState(false);
   const [editingKetQua, setEditingKetQua] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     thaiId: THAIS[0]?.id || '',
@@ -81,6 +83,10 @@ const AdminKetQua: React.FC = () => {
   const [todaySessions, setTodaySessions] = useState<AdminSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [savingResult, setSavingResult] = useState(false);
+  const [selectedKhungIndex, setSelectedKhungIndex] = useState(0);
+
+  // Get Thai configs from context (dynamic from database)
+  const { thais, loading: thaiLoading } = useThaiConfig();
 
   const thaiTabs = [
     { id: 'an-nhon', name: 'An Nhơn', thaiId: 'thai-an-nhon' },
@@ -88,28 +94,131 @@ const AdminKetQua: React.FC = () => {
     { id: 'hoai-nhon', name: 'Hoài Nhơn', thaiId: 'thai-hoai-nhon' },
   ];
 
+  // Get current Thai's timeSlots from context (now dynamic!)
+  const currentThaiConfig = useMemo(() => {
+    return thais.find(t => t.id === `thai-${selectedThai}`) ?? thais[0];
+  }, [selectedThai, thais]);
+
+  // Fixed draw times from SPECS (§1.2)
+  const DRAW_TIMES: Record<string, string[]> = {
+    'thai-an-nhon': ['11:00', '17:00', '21:00'],
+    'thai-nhon-phong': ['11:00', '17:00'],
+    'thai-hoai-nhon': ['13:00', '19:00'],
+  };
+
+  // Compute khung options from timeSlots + detect active khung based on current time
+  const { khungOptions, activeKhungIndex } = useMemo(() => {
+    if (!currentThaiConfig?.timeSlots) {
+      return { khungOptions: [], activeKhungIndex: -1 };
+    }
+
+    const now = new Date();
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+    let detectedActiveIndex = -1;
+    const thaiDrawTimes = DRAW_TIMES[currentThaiConfig.id] || [];
+
+    const slotLabels = ['Sáng', 'Chiều', 'Tối'];
+    const options = currentThaiConfig.timeSlots.map((slot: { startTime: string; endTime: string }, idx: number) => {
+      const isActive = currentTime >= slot.startTime && currentTime < slot.endTime;
+      if (isActive) detectedActiveIndex = idx;
+
+      const drawTime = thaiDrawTimes[idx] || slot.endTime;
+
+      return {
+        index: idx,
+        label: slotLabels[idx] || `Khung ${idx + 1}`,
+        time: `${slot.startTime} - ${slot.endTime}`, // Display actual slot range
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        drawTime: drawTime, // Fixed draw time from SPECS
+      };
+    });
+
+    // Add Tết slot if enabled
+    if (currentThaiConfig.id === 'thai-an-nhon' && currentThaiConfig.isTetMode && currentThaiConfig.tetTimeSlot) {
+      const eveningSlot = currentThaiConfig.tetTimeSlot;
+      const isEveningActive = currentTime >= eveningSlot.startTime && currentTime < eveningSlot.endTime;
+      if (isEveningActive) detectedActiveIndex = options.length;
+
+      const drawTime = thaiDrawTimes[2] || '21:00'; // Evening slot is always 21:00
+
+      options.push({
+        index: options.length,
+        label: 'Tối (Tết)',
+        time: `${eveningSlot.startTime} - ${eveningSlot.endTime}`,
+        startTime: eveningSlot.startTime,
+        endTime: eveningSlot.endTime,
+        drawTime: drawTime,
+      });
+    }
+
+    return { khungOptions: options, activeKhungIndex: detectedActiveIndex };
+  }, [currentThaiConfig]);
+
+  // Auto-select active khung when Thai changes
+  useEffect(() => {
+    setSelectedKhungIndex(activeKhungIndex >= 0 ? activeKhungIndex : 0);
+  }, [selectedThai, activeKhungIndex]);
+
   const availableYears = getAvailableYears(5);
 
-  const [profitLoss, setProfitLoss] = useState<{
+  const [yearlyProfitLoss, setYearlyProfitLoss] = useState<{
     sang?: ProfitLossData;
     trua?: ProfitLossData;
     chieu?: ProfitLossData;
     toi?: ProfitLossData;
   }>({});
+  const [loadingYearlyPL, setLoadingYearlyPL] = useState(false);
 
+  // Fetch yearly P&L when year or thai changes
   useEffect(() => {
-    const fetchProfitLoss = async () => {
+    if (!selectedYear) {
+      setYearlyProfitLoss({});
+      return;
+    }
+    const fetchYearlyPL = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const res = await getAdminProfitLoss(selectedThai, today);
-        setProfitLoss(res.profitLoss);
+        setLoadingYearlyPL(true);
+        const res = await getAdminYearlyProfitLoss(selectedThai, selectedYear);
+        setYearlyProfitLoss(res.profitLoss);
       } catch (error) {
-        console.error('Failed to fetch profit/loss:', error);
-        setProfitLoss({});
+        console.error('Failed to fetch yearly profit/loss:', error);
+        setYearlyProfitLoss({});
+      } finally {
+        setLoadingYearlyPL(false);
       }
     };
-    fetchProfitLoss();
+    fetchYearlyPL();
+  }, [selectedThai, selectedYear]);
+
+  // Fetch results history from database
+  const fetchResultsHistory = useCallback(async () => {
+    try {
+      setLoadingResults(true);
+      const thaiId = thaiTabs.find(t => t.id === selectedThai)?.thaiId || 'thai-an-nhon';
+      const res = await getResultsHistory({ thai_id: thaiId, limit: 200 });
+      // Convert LotteryResult to KetQua-like format
+      const formatted = res.results.map(r => ({
+        id: r.id,
+        thaiId: r.thai_id,
+        date: r.session_date?.split('T')[0] || r.session_date,
+        winningAnimalIds: r.winning_animal ? [r.winning_animal.toString()] : [],
+        lunarLabel: r.lunar_label,
+        isOff: !r.winning_animal,
+        sessionType: r.session_type,
+      }));
+      setKetQuas(formatted as any);
+    } catch (error) {
+      console.error('Failed to fetch results history:', error);
+    } finally {
+      setLoadingResults(false);
+    }
   }, [selectedThai]);
+
+  useEffect(() => {
+    fetchResultsHistory();
+  }, [fetchResultsHistory]);
 
   // Fetch today's sessions for the selected thai
   useEffect(() => {
@@ -124,6 +233,11 @@ const AdminKetQua: React.FC = () => {
         if (openSession) {
           setSelectedSessionId(openSession.id);
         }
+        // Auto-fill lunar_label from any existing session on the same date
+        const existingLunar = res.sessions?.find(s => s.lunar_label && s.lunar_label.trim() !== '');
+        if (existingLunar && existingLunar.lunar_label) {
+          setFormData(prev => ({ ...prev, lunarLabel: existingLunar.lunar_label! }));
+        }
       } catch (error) {
         console.error('Failed to fetch sessions:', error);
         setTodaySessions([]);
@@ -135,47 +249,63 @@ const AdminKetQua: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Call API to set session result
-    if (selectedSessionId && formData.winningAnimalIds.length > 0) {
-      try {
-        setSavingResult(true);
-        const winningAnimal = parseInt(formData.winningAnimalIds[0]); // First selected animal
-        await setSessionResult(selectedSessionId, {
-          winning_animal: formData.isOff ? undefined : winningAnimal,
-          lunar_label: formData.lunarLabel || undefined,
-          is_holiday: formData.isOff,
-        });
-        alert('Đã lưu kết quả thành công!');
-        // Update local ketQuas for display
-        const newKetQua = { id: selectedSessionId, ...formData };
-        setKetQuas([...ketQuas, newKetQua]);
-      } catch (error) {
-        console.error('Failed to save result:', error);
-        alert('Không thể lưu kết quả. Vui lòng thử lại!');
-      } finally {
-        setSavingResult(false);
-      }
-    } else if (editingKetQua) {
-      // Local edit for history (fallback)
-      setKetQuas(ketQuas.map(kq =>
-        kq.id === editingKetQua ? { ...kq, ...formData } : kq
-      ));
-      setEditingKetQua(null);
-      alert('Đã cập nhật kết quả!');
-    } else {
-      alert('Vui lòng chọn phiên và con vật trúng!');
+    // Get the selected khung from khungOptions
+    const selectedKhung = khungOptions[selectedKhungIndex];
+    if (!selectedKhung) {
+      alert('Vui lòng chọn khung giờ!');
       return;
     }
 
-    // Reset form
-    setFormData({
+    // Validate: must select an animal or mark as holiday
+    if (!formData.isOff && formData.winningAnimalIds.length === 0) {
+      alert('Vui lòng chọn con vật trúng hoặc đánh dấu ngày nghỉ!');
+      return;
+    }
+
+    // Get thaiId from current tab
+    const thaiId = currentThaiConfig?.id || `thai-${selectedThai}`;
+
+    try {
+      setSavingResult(true);
+
+      // Get winning animal ORDER number (not ID string) for backend
+      let winningAnimal: number | undefined;
+      if (formData.winningAnimalIds.length > 0) {
+        // winningAnimalIds stores order as string, parse to number for backend
+        winningAnimal = parseInt(formData.winningAnimalIds[0], 10);
+      }
+
+      // Use new simplified API - backend handles session finding/creation
+      await submitLotteryResult({
+        thai_id: thaiId,
+        date: formData.date,
+        slot_label: selectedKhung.label,
+        winning_animal: formData.isOff ? undefined : winningAnimal,
+        lunar_label: formData.lunarLabel || undefined,
+        is_holiday: formData.isOff,
+      });
+
+
+      alert('Đã lưu kết quả thành công!');
+
+      // Refetch from API to get proper data format
+      await fetchResultsHistory();
+    } catch (error) {
+      console.error('Failed to save result:', error);
+      alert('Không thể lưu kết quả. Vui lòng thử lại!');
+    } finally {
+      setSavingResult(false);
+    }
+
+    // Reset form — keep lunarLabel for same day (admin enters once, applies to all khung)
+    setFormData(prev => ({
       thaiId: THAIS[0]?.id || '',
       date: new Date().toISOString().split('T')[0],
-      lunarLabel: '',
+      lunarLabel: prev.lunarLabel,
       winningAnimalIds: [],
       imageUrl: '',
       isOff: false,
-    });
+    }));
   };
 
   const startEditKetQua = (kq: typeof ketQuas[0]) => {
@@ -190,9 +320,16 @@ const AdminKetQua: React.FC = () => {
     });
   };
 
-  const deleteKetQua = (id: string) => {
-    if (confirm('Bạn có chắc muốn xóa kết quả này?')) {
-      setKetQuas(ketQuas.filter(kq => kq.id !== id));
+  const deleteKetQua = async (id: string) => {
+    if (confirm('Bạn có chắc muốn xóa kết quả này? Điều này sẽ reset trạng thái đơn hàng liên quan về "paid".')) {
+      try {
+        await deleteSessionResult(id);
+        setKetQuas(ketQuas.filter(kq => kq.id !== id));
+        alert('Đã xóa kết quả thành công!');
+      } catch (error) {
+        console.error('Failed to delete result:', error);
+        alert('Không thể xóa kết quả. Vui lòng thử lại!');
+      }
     }
   };
 
@@ -231,7 +368,9 @@ const AdminKetQua: React.FC = () => {
   const getAnimalWithBodyPart = (animalId: string) => {
     const thaiId = selectedThai === 'an-nhon' ? 'thai-an-nhon' : selectedThai === 'nhon-phong' ? 'thai-nhon-phong' : 'thai-hoai-nhon';
     const animals = getAnimalsByThai(thaiId);
-    const animal = animals.find(a => a.id === animalId);
+    // animalId is order as string (e.g., "2"), parse to number for comparison
+    const orderNum = parseInt(animalId, 10);
+    const animal = animals.find(a => a.order === orderNum);
     if (!animal) return null;
     const bodyInfo = bodyPartMapping[animal.order];
     return {
@@ -261,10 +400,10 @@ const AdminKetQua: React.FC = () => {
       const animalCounts: Record<number, number> = {};
       yearKetQuas.forEach(kq => {
         kq.winningAnimalIds.forEach(animalId => {
-          const animal = thaiAnimalsForStats.find(a => a.id === animalId);
-          if (animal && group.orders.includes(animal.order)) {
+          const orderNum = parseInt(animalId, 10);
+          if (!isNaN(orderNum) && group.orders.includes(orderNum)) {
             count++;
-            animalCounts[animal.order] = (animalCounts[animal.order] || 0) + 1;
+            animalCounts[orderNum] = (animalCounts[orderNum] || 0) + 1;
           }
         });
       });
@@ -310,27 +449,19 @@ const AdminKetQua: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>Thai (Khung giờ)</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>Khung giờ</label>
                 <select
-                  value={formData.thaiId}
-                  onChange={(e) => setFormData({ ...formData, thaiId: e.target.value })}
+                  value={selectedKhungIndex}
+                  onChange={(e) => setSelectedKhungIndex(Number(e.target.value))}
                   className="w-full px-3 py-2.5 rounded-lg focus:outline-none"
                   style={{ border: '1px solid #e8e4df' }}
                   required
                 >
-                  <optgroup label="Thai An Nhơn">
-                    <option value="thai-an-nhon-sang">Thai An Nhơn - Sáng (11:00)</option>
-                    <option value="thai-an-nhon-chieu">Thai An Nhơn - Chiều (17:00)</option>
-                    <option value="thai-an-nhon-toi">Thai An Nhơn - Tối (21:00)</option>
-                  </optgroup>
-                  <optgroup label="Thai Nhơn Phong">
-                    <option value="thai-nhon-phong-sang">Thai Nhơn Phong - Sáng (11:00)</option>
-                    <option value="thai-nhon-phong-chieu">Thai Nhơn Phong - Chiều (17:00)</option>
-                  </optgroup>
-                  <optgroup label="Thai Hoài Nhơn">
-                    <option value="thai-hoai-nhon-trua">Thai Hoài Nhơn - Sáng (13:00)</option>
-                    <option value="thai-hoai-nhon-chieu">Thai Hoài Nhơn - Chiều (19:00)</option>
-                  </optgroup>
+                  {khungOptions.map((khung) => (
+                    <option key={khung.index} value={khung.index}>
+                      {khung.label} ({khung.time})
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -398,13 +529,14 @@ const AdminKetQua: React.FC = () => {
                     const baseThaiId = formData.thaiId.replace(/-sang|-chieu|-toi|-trua$/, '');
                     const animals = getAnimalsByThai(baseThaiId);
                     return animals.map((animal) => {
-                      const isSelected = formData.winningAnimalIds.includes(animal.id);
+                      const orderStr = animal.order.toString();
+                      const isSelected = formData.winningAnimalIds.includes(orderStr);
                       const bodyInfo = bodyPartMapping[animal.order];
                       return (
                         <button
-                          key={animal.id}
+                          key={orderStr}
                           type="button"
-                          onClick={() => toggleAnimal(animal.id)}
+                          onClick={() => toggleAnimal(orderStr)}
                           className="p-2 rounded-lg text-center transition-all"
                           style={{
                             backgroundColor: isSelected ? '#a5673f' : 'white',
@@ -496,7 +628,7 @@ const AdminKetQua: React.FC = () => {
                                 </div>
                               </div>
                               <div className="flex flex-wrap gap-1">
-                                {kq.winningAnimalIds.map(animalId => {
+                                {kq.winningAnimalIds.length > 0 ? kq.winningAnimalIds.map(animalId => {
                                   const animalInfo = getAnimalWithBodyPart(animalId);
                                   if (!animalInfo) return null;
                                   return (
@@ -511,7 +643,9 @@ const AdminKetQua: React.FC = () => {
                                       )}
                                     </div>
                                   );
-                                })}
+                                }) : (
+                                  <span className="text-xs text-gray-400 italic">🚫 Nghỉ xổ</span>
+                                )}
                               </div>
                             </div>
                           );
@@ -704,43 +838,51 @@ const AdminKetQua: React.FC = () => {
                     new Date(kq.date).getFullYear() === selectedYear
                   );
 
-                  const animalCounts: Record<string, number> = {};
+                  const animalCounts: Record<number, number> = {};
                   thaiKetQuas.forEach(kq => {
                     kq.winningAnimalIds.forEach(id => {
-                      animalCounts[id] = (animalCounts[id] || 0) + 1;
+                      const orderNum = parseInt(id, 10);
+                      if (!isNaN(orderNum)) {
+                        animalCounts[orderNum] = (animalCounts[orderNum] || 0) + 1;
+                      }
                     });
                   });
 
                   const thaiAnimals = getAnimalsByThai(currentThai?.thaiId || 'thai-an-nhon');
                   const sortedAnimals = Object.entries(animalCounts)
-                    .map(([id, count]) => ({ animal: thaiAnimals.find(a => a.id === id), count }))
+                    .map(([orderStr, count]) => ({ animal: thaiAnimals.find(a => a.order === parseInt(orderStr, 10)), count }))
                     .filter(a => a.animal)
                     .sort((a, b) => b.count - a.count);
                   const top5 = sortedAnimals.slice(0, 5);
 
-                  const drawnIds = new Set(Object.keys(animalCounts));
-                  const notDrawn = thaiAnimals.filter(a => !drawnIds.has(a.id));
+                  const drawnOrders = new Set(Object.keys(animalCounts).map(k => parseInt(k, 10)));
+                  const notDrawn = thaiAnimals.filter(a => !drawnOrders.has(a.order));
 
-                  const groupCounts = animalGroups.map(group => {
+                  const isHoaiNhon = currentThai?.id === 'hoai-nhon' || currentThai?.thaiId === 'thai-hoai-nhon';
+                  const filteredAnimalGroups = isHoaiNhon
+                    ? animalGroups.filter(g => !g.orders.some(order => order > 36))
+                    : animalGroups;
+
+                  const groupCounts = filteredAnimalGroups.map(group => {
                     let count = 0;
                     thaiKetQuas.forEach(kq => {
                       kq.winningAnimalIds.forEach(id => {
-                        const animal = thaiAnimals.find(a => a.id === id);
-                        if (animal && group.orders.includes(animal.order)) count++;
+                        const orderNum = parseInt(id, 10);
+                        if (!isNaN(orderNum) && group.orders.includes(orderNum)) count++;
                       });
                     });
                     return { ...group, count };
                   }).sort((a, b) => b.count - a.count);
 
-                  const top2Groups = groupCounts.slice(0, 2);
+                  const drawnGroups = groupCounts.filter(g => g.count > 0);
                   const noDrawGroups = groupCounts.filter(g => g.count === 0);
 
                   const positionCounts: Record<string, number> = {};
                   thaiKetQuas.forEach(kq => {
                     kq.winningAnimalIds.forEach(id => {
-                      const animal = thaiAnimals.find(a => a.id === id);
-                      if (animal) {
-                        const bodyInfo = bodyPartMapping[animal.order];
+                      const orderNum = parseInt(id, 10);
+                      if (!isNaN(orderNum)) {
+                        const bodyInfo = bodyPartMapping[orderNum];
                         if (bodyInfo) {
                           positionCounts[bodyInfo.bodyPart] = (positionCounts[bodyInfo.bodyPart] || 0) + 1;
                         }
@@ -755,8 +897,6 @@ const AdminKetQua: React.FC = () => {
                   const drawnPositions = new Set(Object.keys(positionCounts));
                   const noDrawPositions = [...allPositions].filter(p => !drawnPositions.has(p));
 
-                  const trunId = thaiAnimals.find(a => a.order === 5)?.id;
-                  const trunDraws = thaiKetQuas.filter(kq => trunId && kq.winningAnimalIds.includes(trunId));
 
                   return (
                     <>
@@ -792,14 +932,14 @@ const AdminKetQua: React.FC = () => {
 
                       <div>
                         <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                          <span>🔥</span> Top 2 nhóm xổ nhiều nhất
+                          <span>🔥</span> Nhóm xổ (xếp từ nhiều → ít)
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                          {top2Groups.map((group, i) => (
-                            <div key={group.id} className={`px-4 py-2 rounded-lg text-sm font-medium ${i === 0 ? 'bg-amber-100 text-amber-800' : 'bg-orange-100 text-orange-700'}`}>
+                          {drawnGroups.length > 0 ? drawnGroups.map((group, i) => (
+                            <div key={group.id} className={`px-4 py-2 rounded-lg text-sm font-medium ${i === 0 ? 'bg-amber-100 text-amber-800' : i === 1 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'}`}>
                               <span className="font-bold">#{i + 1}</span> {group.name} ({group.count} lần)
                             </div>
-                          ))}
+                          )) : <span className="text-gray-500">Chưa có dữ liệu</span>}
                         </div>
                         {noDrawGroups.length > 0 && (
                           <p className="mt-2 text-sm text-gray-500">
@@ -826,129 +966,78 @@ const AdminKetQua: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200">
-                        <h4 className="font-bold text-indigo-800 mb-3 flex items-center gap-2">
-                          <span>🔗</span> Quy luật xổ đặc biệt
+
+
+                      {/* Yearly Profit/Loss Summary */}
+                      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200">
+                        <h4 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
+                          <span>💰</span> Báo cáo Thắng/Thua CẢ NĂM {selectedYear}
                         </h4>
-                        <div className="space-y-2 text-sm">
-                          {(selectedThai === 'an-nhon' || selectedThai === 'nhon-phong') && (
-                            <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 bg-indigo-200 rounded-full flex items-center justify-center">🐛</span>
-                              <span>Con Trùn (số 5):</span>
-                              {trunDraws.length > 0 ? (
-                                <span className="text-green-600 font-medium">
-                                  ✅ Đã xổ {trunDraws.length} lần
-                                </span>
-                              ) : (
-                                <span className="text-red-600 font-medium">❌ Chưa xổ</span>
-                              )}
-                            </div>
-                          )}
-
-                          {selectedThai === 'an-nhon' && (
-                            <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 bg-indigo-200 rounded-full flex items-center justify-center">🌙</span>
-                              <span>Buổi tối:</span>
-                              <span className="text-indigo-600">
-                                Kiểm tra trùng/thế thân với sáng-chiều...
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 bg-indigo-200 rounded-full flex items-center justify-center">🔄</span>
-                            <span>Nhóm xổ liên tiếp:</span>
-                            <span className="text-indigo-600">
-                              Tứ trạng nguyên (3 lần), Ngũ hổ tướng (2 lần)...
-                            </span>
+                        {loadingYearlyPL ? (
+                          <div className="flex items-center justify-center py-6">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200">
-                        <h4 className="font-bold text-emerald-800 mb-3 flex items-center gap-2">
-                          <span>💰</span> Báo cáo Thắng/Thua theo buổi
-                        </h4>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="border-b border-emerald-200">
-                                <th className="text-left py-2 px-3">Buổi</th>
-                                <th className="text-right py-2 px-3">Doanh thu</th>
-                                <th className="text-right py-2 px-3">Trả thưởng</th>
-                                <th className="text-right py-2 px-3">Lãi/Lỗ</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {profitLoss.sang && (
-                                <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Sáng (11:00)</td>
-                                  <td className="py-2 px-3 text-right">{profitLoss.sang.revenue.toLocaleString()}đ</td>
-                                  <td className="py-2 px-3 text-right text-red-600">{profitLoss.sang.payout.toLocaleString()}đ</td>
-                                  <td className={`py-2 px-3 text-right font-bold ${profitLoss.sang.revenue - profitLoss.sang.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {profitLoss.sang.revenue - profitLoss.sang.payout > 0 ? '+' : ''}{(profitLoss.sang.revenue - profitLoss.sang.payout).toLocaleString()}đ
-                                  </td>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-amber-200">
+                                  <th className="text-left py-2 px-3">Buổi</th>
+                                  <th className="text-right py-2 px-3">Doanh thu</th>
+                                  <th className="text-right py-2 px-3">Trả thưởng</th>
+                                  <th className="text-right py-2 px-3">Lãi/Lỗ</th>
                                 </tr>
+                              </thead>
+                              <tbody>
+                                {(['sang', 'trua', 'chieu', 'toi'] as const).map(slot => {
+                                  const data = yearlyProfitLoss[slot];
+                                  if (!data) return null;
+                                  const net = data.revenue - data.payout;
+                                  const slotLabels: Record<string, string> = { sang: 'Sáng', trua: 'Trưa', chieu: 'Chiều', toi: 'Tối' };
+                                  return (
+                                    <tr key={slot} className="border-b border-amber-100">
+                                      <td className="py-2 px-3 font-medium">{slotLabels[slot]}</td>
+                                      <td className="py-2 px-3 text-right">{data.revenue.toLocaleString()}đ</td>
+                                      <td className="py-2 px-3 text-right text-red-600">{data.payout.toLocaleString()}đ</td>
+                                      <td className={`py-2 px-3 text-right font-bold ${net > 0 ? 'text-green-600' : net < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                                        {net > 0 ? '+' : ''}{net.toLocaleString()}đ
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                                {!yearlyProfitLoss.sang && !yearlyProfitLoss.trua && !yearlyProfitLoss.chieu && !yearlyProfitLoss.toi && (
+                                  <tr><td colSpan={4} className="py-6 text-center text-gray-500">Chưa có dữ liệu tài chính cho năm {selectedYear}</td></tr>
+                                )}
+                              </tbody>
+                              {(yearlyProfitLoss.sang || yearlyProfitLoss.trua || yearlyProfitLoss.chieu || yearlyProfitLoss.toi) && (
+                                <tfoot>
+                                  {(() => {
+                                    const totalRev = (yearlyProfitLoss.sang?.revenue || 0) + (yearlyProfitLoss.trua?.revenue || 0) + (yearlyProfitLoss.chieu?.revenue || 0) + (yearlyProfitLoss.toi?.revenue || 0);
+                                    const totalPay = (yearlyProfitLoss.sang?.payout || 0) + (yearlyProfitLoss.trua?.payout || 0) + (yearlyProfitLoss.chieu?.payout || 0) + (yearlyProfitLoss.toi?.payout || 0);
+                                    const totalNet = totalRev - totalPay;
+                                    return (
+                                      <tr className="bg-amber-100 font-bold">
+                                        <td className="py-2 px-3">TỔNG NĂM {selectedYear}</td>
+                                        <td className="py-2 px-3 text-right">{totalRev.toLocaleString()}đ</td>
+                                        <td className="py-2 px-3 text-right text-red-600">{totalPay.toLocaleString()}đ</td>
+                                        <td className={`py-2 px-3 text-right ${totalNet > 0 ? 'text-green-700' : totalNet < 0 ? 'text-red-700' : 'text-gray-600'}`}>
+                                          {totalNet > 0 ? '+' : ''}{totalNet.toLocaleString()}đ
+                                        </td>
+                                      </tr>
+                                    );
+                                  })()}
+                                </tfoot>
                               )}
-                              {profitLoss.trua && (
-                                <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Sáng (13:00)</td>
-                                  <td className="py-2 px-3 text-right">{profitLoss.trua.revenue.toLocaleString()}đ</td>
-                                  <td className="py-2 px-3 text-right text-red-600">{profitLoss.trua.payout.toLocaleString()}đ</td>
-                                  <td className={`py-2 px-3 text-right font-bold ${profitLoss.trua.revenue - profitLoss.trua.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {profitLoss.trua.revenue - profitLoss.trua.payout > 0 ? '+' : ''}{(profitLoss.trua.revenue - profitLoss.trua.payout).toLocaleString()}đ
-                                  </td>
-                                </tr>
-                              )}
-                              {profitLoss.chieu && (
-                                <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Chiều ({selectedThai === 'hoai-nhon' ? '19:00' : '17:00'})</td>
-                                  <td className="py-2 px-3 text-right">{profitLoss.chieu.revenue.toLocaleString()}đ</td>
-                                  <td className="py-2 px-3 text-right text-red-600">{profitLoss.chieu.payout.toLocaleString()}đ</td>
-                                  <td className={`py-2 px-3 text-right font-bold ${profitLoss.chieu.revenue - profitLoss.chieu.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {profitLoss.chieu.revenue - profitLoss.chieu.payout > 0 ? '+' : ''}{(profitLoss.chieu.revenue - profitLoss.chieu.payout).toLocaleString()}đ
-                                  </td>
-                                </tr>
-                              )}
-                              {profitLoss.toi && (
-                                <tr className="border-b border-emerald-100">
-                                  <td className="py-2 px-3 font-medium">Tối (21:00)</td>
-                                  <td className="py-2 px-3 text-right">{profitLoss.toi.revenue.toLocaleString()}đ</td>
-                                  <td className="py-2 px-3 text-right text-red-600">{profitLoss.toi.payout.toLocaleString()}đ</td>
-                                  <td className={`py-2 px-3 text-right font-bold ${profitLoss.toi.revenue - profitLoss.toi.payout > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {profitLoss.toi.revenue - profitLoss.toi.payout > 0 ? '+' : ''}{(profitLoss.toi.revenue - profitLoss.toi.payout).toLocaleString()}đ
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                            <tfoot>
-                              <tr className="bg-emerald-100 font-bold">
-                                <td className="py-2 px-3">TỔNG CỘNG</td>
-                                <td className="py-2 px-3 text-right">
-                                  {((profitLoss.sang?.revenue || 0) + (profitLoss.chieu?.revenue || 0) + (profitLoss.toi?.revenue || 0) + (profitLoss.trua?.revenue || 0)).toLocaleString()}đ
-                                </td>
-                                <td className="py-2 px-3 text-right text-red-600">
-                                  {((profitLoss.sang?.payout || 0) + (profitLoss.chieu?.payout || 0) + (profitLoss.toi?.payout || 0) + (profitLoss.trua?.payout || 0)).toLocaleString()}đ
-                                </td>
-                                <td className="py-2 px-3 text-right text-green-700">
-                                  +{(
-                                    ((profitLoss.sang?.revenue || 0) - (profitLoss.sang?.payout || 0)) +
-                                    ((profitLoss.chieu?.revenue || 0) - (profitLoss.chieu?.payout || 0)) +
-                                    ((profitLoss.toi?.revenue || 0) - (profitLoss.toi?.payout || 0)) +
-                                    ((profitLoss.trua?.revenue || 0) - (profitLoss.trua?.payout || 0))
-                                  ).toLocaleString()}đ
-                                </td>
-                              </tr>
-                            </tfoot>
-                          </table>
-                        </div>
-
+                            </table>
+                          </div>
+                        )}
                         {selectedThai !== 'hoai-nhon' && (
-                          <p className="mt-3 text-xs text-emerald-600 bg-emerald-100 rounded px-3 py-2">
-                            ℹ️ <strong>Lưu ý:</strong> Trả thưởng đã bao gồm con xổ + con thế thân (trừ Hoài Nhơn chỉ tính con xổ)
+                          <p className="mt-3 text-xs text-amber-600 bg-amber-100 rounded px-3 py-2">
+                            ℹ️ <strong>Lưu ý:</strong> Trả thưởng đã bao gồm con xổ + con thế thân (trừ Hoài Nhơn chỉ tính con xổ). Hệ số: 1:30, riêng Trùn 1:70.
                           </p>
                         )}
                       </div>
+
                     </>
                   );
                 })()}

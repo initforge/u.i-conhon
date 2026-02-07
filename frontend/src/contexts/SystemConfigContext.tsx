@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { getThaiSwitches, ThaiSwitches as ApiThaiSwitches } from '../services/api';
+import { sharedSSE } from '../services/sharedSSE';
 
 interface ThaiSwitch {
     thaiId: string;
@@ -65,12 +66,9 @@ export const SystemConfigProvider: React.FC<{ children: ReactNode }> = ({ childr
         refreshSwitches();
     }, [refreshSwitches]);
 
-    // SSE: Listen for real-time switch updates from server
+    // SSE: Listen for real-time switch updates via shared SSE service
     useEffect(() => {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-        const eventSource = new EventSource(`${API_BASE}/sse/switches`);
-
-        eventSource.addEventListener('switch_update', (event) => {
+        const unsubscribeSwitchUpdate = sharedSSE.subscribe('switch_update', (event) => {
             try {
                 const data = JSON.parse(event.data);
                 console.log('SSE switch_update received:', data);
@@ -81,18 +79,13 @@ export const SystemConfigProvider: React.FC<{ children: ReactNode }> = ({ childr
             }
         });
 
-        eventSource.addEventListener('connected', () => {
-            console.log('SSE connected to /sse/switches');
+        const unsubscribeConnected = sharedSSE.subscribe('connected', () => {
+            console.log('SSE connected to /sse/switches (via shared service)');
         });
 
-        eventSource.onerror = (error) => {
-            console.error('SSE connection error:', error);
-            // EventSource will auto-reconnect
-        };
-
         return () => {
-            eventSource.close();
-            console.log('SSE disconnected');
+            unsubscribeSwitchUpdate();
+            unsubscribeConnected();
         };
     }, []);
 

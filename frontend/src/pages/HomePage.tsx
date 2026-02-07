@@ -9,6 +9,7 @@ const HomePage: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState('tất-cả');
   const [selectedThai, setSelectedThai] = useState('an-nhon');
   const [selectedKhung, setSelectedKhung] = useState('khung-1');
+  const [now, setNow] = useState(new Date());
   const [currentCauThaiIndex, setCurrentCauThaiIndex] = useState(0);
 
   // Khung giờ cho từng Thai
@@ -52,6 +53,12 @@ const HomePage: React.FC = () => {
     fetchResults();
   }, [selectedThai, selectedYear]);
 
+  // Tick every second for countdown
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Fetch cau thai images from API
   useEffect(() => {
     const fetchCauThai = async () => {
@@ -69,64 +76,7 @@ const HomePage: React.FC = () => {
     fetchCauThai();
   }, [selectedThai, selectedYear]);
 
-  // Mock data câu thai - fallback when no real data
-  const cauThaiData = [
-    {
-      id: 1,
-      session: 'CHIỀU mùng 9 TẾT ẤT TỴ 2025',
-      date: '06-02-2025',
-      lines: [
-        'Trinh Nương nức tiếng trăm miền',
-        'Tượng binh xuất trận đảo điên quân thù',
-        'Tùng Sơn nắng quyện mây trời',
-        'Dấu chân Bà Triệu rạng ngời sử xanh'
-      ],
-      result: 'Voi (13)'
-    },
-    {
-      id: 2,
-      session: 'SÁNG mùng 9 TẾT ẤT TỴ 2025',
-      date: '06-02-2025',
-      lines: [
-        'Xuân về hoa nở đầy vườn',
-        'Con ong chăm chỉ bay vòng hút mật',
-        'Bốn mùa không nghỉ không ngơi',
-        'Ấm no làng xóm vui tươi tháng năm'
-      ],
-      result: 'Ong (16)'
-    },
-    {
-      id: 3,
-      session: 'CHIỀU mùng 8 TẾT ẤT TỴ 2025',
-      date: '05-02-2025',
-      lines: [
-        'Rồng bay phượng múa trời xanh',
-        'Vua Hùng dựng nước đất lành muôn phương',
-        'Lạc Long Quân với Âu Cơ',
-        'Trăm con về biển về rừng chia ly'
-      ],
-      result: 'Rồng Bay (10)'
-    },
-    {
-      id: 4,
-      session: 'SÁNG mùng 8 TẾT ẤT TỴ 2025',
-      date: '05-02-2025',
-      lines: [
-        'Trăng tròn soi sáng đêm trường',
-        'Thỏ ngọc giã thuốc mười phương vọng về',
-        'Nhân gian nhàn hạ êm đềm',
-        'Cầu cho mưa thuận gió hòa tốt tươi'
-      ],
-      result: 'Thỏ (8)'
-    }
-  ];
 
-  // Filter câu thai theo năm
-  const selectedCauThaiYear = selectedYear;
-  const filteredCauThaiData = cauThaiData.filter(cau => cau.date.includes(selectedCauThaiYear.toString()));
-  const currentCauThai = filteredCauThaiData[currentCauThaiIndex] || null;
-  const canGoPrev = currentCauThaiIndex > 0;
-  const canGoNext = currentCauThaiIndex < filteredCauThaiData.length - 1;
 
   // Animal groups from HTML
   const animalGroups = [
@@ -158,55 +108,6 @@ const HomePage: React.FC = () => {
     'tứ-thần-linh': [37, 38, 39, 40], // Ông Trời, Ông Địa, Thần Tài, Ông Táo
   };
 
-  // Results data by year
-  const resultsByYear: { [key: number]: Array<{ day: string; morning: string; afternoon: string }> } = {
-    2025: [
-      { day: 'Mùng 1', morning: 'CON HẠC', afternoon: 'CON YÊU' },
-      { day: 'Mùng 2', morning: 'CON CỌP', afternoon: 'CON NGỖNG' },
-      { day: 'Mùng 3', morning: 'CON DÊ', afternoon: 'CON YÊU' },
-      { day: 'Mùng 4', morning: 'CON NGỖNG', afternoon: 'CON KHỈ' },
-      { day: 'Mùng 5', morning: 'CON ỐC', afternoon: 'CON MÈO' },
-      { day: 'Mùng 6', morning: 'RỒNG BAY', afternoon: 'KỲ LÂN' },
-      { day: 'Mùng 7', morning: 'CON QUẠ', afternoon: 'CON NGỖNG' },
-      { day: 'Mùng 8', morning: 'RỒNG NẰM', afternoon: 'CON NHỆN' },
-      { day: 'Mùng 9', morning: 'CON ỐC', afternoon: 'CON ẾCH' },
-    ],
-    2024: [
-      { day: '30 Tết', morning: 'HỔ', afternoon: 'TÔM' },
-      { day: 'Mùng 1', morning: 'ẾCH', afternoon: 'NHỆN' },
-      { day: 'Mùng 2', morning: 'RÙA', afternoon: 'CỌP' },
-      { day: 'Mùng 3', morning: 'NGỰA', afternoon: 'TÔM' },
-      { day: 'Mùng 4', morning: 'KỲ LÂN', afternoon: 'HÒN ĐÁ' },
-      { day: 'Mùng 5', morning: 'ÉN', afternoon: 'ỐC' },
-      { day: 'Mùng 6', morning: 'RẮN', afternoon: 'CON CÔNG' },
-      { day: 'Mùng 7', morning: 'NGỰA', afternoon: 'TÔM' },
-      { day: 'Mùng 8', morning: 'RỒNG BAY', afternoon: 'RẮN' },
-    ],
-    2023: [
-      { day: 'Mùng 1', morning: 'ÉN', afternoon: 'NHỆN' },
-      { day: 'Mùng 2', morning: 'CHÓ', afternoon: 'VOI' },
-      { day: 'Mùng 3', morning: 'RÙA', afternoon: 'TRÂU' },
-      { day: 'Mùng 4', morning: 'CON CU', afternoon: 'HÒN ĐÁ' },
-      { day: 'Mùng 5', morning: 'CON CU', afternoon: 'CỌP' },
-      { day: 'Mùng 6', morning: 'GÀ', afternoon: 'CÁ TRẮNG' },
-      { day: 'Mùng 7', morning: 'CON YÊU', afternoon: 'VOI' },
-      { day: 'Mùng 8', morning: 'CÁ TRẮNG', afternoon: 'NHỆN' },
-      { day: 'Mùng 9', morning: 'CHÓ', afternoon: 'CON CU' },
-    ],
-    2022: [
-      { day: 'Mùng 1', morning: 'ÉN', afternoon: 'NHỆN' },
-      { day: 'Mùng 2', morning: 'CHÓ', afternoon: 'VOI' },
-      { day: 'Mùng 3', morning: 'RÙA', afternoon: 'TRÂU' },
-      { day: 'Mùng 4', morning: 'CON CU', afternoon: 'HÒN ĐÁ' },
-      { day: 'Mùng 5', morning: 'CON CU', afternoon: 'CỌP' },
-      { day: 'Mùng 6', morning: 'GÀ', afternoon: 'CÁ TRẮNG' },
-      { day: 'Mùng 7', morning: 'CON YÊU', afternoon: 'VOI' },
-      { day: 'Mùng 8', morning: 'CÁ TRẮNG', afternoon: 'NHỆN' },
-      { day: 'Mùng 9', morning: 'CHÓ', afternoon: 'CON CU' },
-    ],
-  };
-
-  // Get results for selected year - prioritize API data, fallback to mock
   // Helper to get animal name from order number
   const getAnimalName = (order: number): string => {
     const names: { [key: number]: string } = {
@@ -222,24 +123,52 @@ const HomePage: React.FC = () => {
     return names[order] || `Con ${order}`;
   };
 
-  // Transform API results to display format, or use mock if no API data
+  // Countdown helper for homepage
+  const getHomepageCountdown = (drawTime: string): string | null => {
+    const [h, m] = drawTime.split(':').map(Number);
+    const target = new Date(now);
+    target.setHours(h, m, 0, 0);
+    if (target <= now) return null;
+    const diff = target.getTime() - now.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  // Draw times per Thai for countdown
+  const thaiDrawTimes: Record<string, { morning: string; afternoon: string; evening?: string }> = {
+    'an-nhon': { morning: '11:00', afternoon: '17:00', evening: '21:00' },
+    'nhon-phong': { morning: '11:00', afternoon: '17:00' },
+    'hoai-nhon': { morning: '13:00', afternoon: '19:00' },
+  };
+
+  const todayStr = now.toISOString().split('T')[0];
+  const currentDrawTimes = thaiDrawTimes[selectedThai] || thaiDrawTimes['an-nhon'];
+
+  // Transform API results to display format - NO FALLBACK, empty if no data
   const transformedResults = sessionResults.length > 0
     ? (() => {
-      // Group results by session_date
-      const grouped: { [date: string]: { morning?: number; afternoon?: number; evening?: number } } = {};
+      // Group results by session_date, also capture lunar_label
+      const grouped: { [date: string]: { morning?: number | null; afternoon?: number | null; evening?: number | null; lunarLabel?: string; sessionDate: string } } = {};
       sessionResults.forEach(r => {
-        if (!grouped[r.session_date]) grouped[r.session_date] = {};
+        if (!grouped[r.session_date]) grouped[r.session_date] = { sessionDate: r.session_date };
+        // Store lunar_label from any session of this date
+        if (r.lunar_label) grouped[r.session_date].lunarLabel = r.lunar_label;
         if (r.session_type === 'morning') grouped[r.session_date].morning = r.winning_animal;
         if (r.session_type === 'afternoon') grouped[r.session_date].afternoon = r.winning_animal;
         if (r.session_type === 'evening') grouped[r.session_date].evening = r.winning_animal;
       });
       return Object.entries(grouped).map(([date, results]) => ({
-        day: results.morning !== undefined ? new Date(date).toLocaleDateString('vi-VN') : date,
-        morning: results.morning ? getAnimalName(results.morning) : '-',
-        afternoon: results.afternoon ? getAnimalName(results.afternoon) : '-'
+        // Use lunar_label if available, otherwise fallback to formatted date
+        day: results.lunarLabel || new Date(date).toLocaleDateString('vi-VN'),
+        sessionDate: date,
+        morning: results.morning ? getAnimalName(results.morning) : '',
+        afternoon: results.afternoon ? getAnimalName(results.afternoon) : '',
+        evening: results.evening ? getAnimalName(results.evening) : ''
       }));
     })()
-    : (resultsByYear[selectedYear] || resultsByYear[getCurrentYear()] || resultsByYear[2025]);
+    : []; // Empty array instead of fallback
 
   const mockResults = transformedResults;
 
@@ -724,19 +653,37 @@ const HomePage: React.FC = () => {
                         <th className="px-4 py-3 text-center font-bold" style={{ fontFamily: "'Nunito', sans-serif" }}>NGÀY</th>
                         <th className="px-4 py-3 text-center font-bold" style={{ fontFamily: "'Nunito', sans-serif" }}>SÁNG</th>
                         <th className="px-4 py-3 text-center font-bold" style={{ fontFamily: "'Nunito', sans-serif" }}>CHIỀU</th>
+                        {selectedThai === 'an-nhon' && (
+                          <th className="px-4 py-3 text-center font-bold" style={{ fontFamily: "'Nunito', sans-serif" }}>TỐI</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
-                      {mockResults.map((result, index) => (
-                        <tr
-                          key={index}
-                          className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}
-                        >
-                          <td className="px-4 py-3 text-center font-semibold" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>{result.day}</td>
-                          <td className="px-4 py-3 text-center" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>{result.morning}</td>
-                          <td className="px-4 py-3 text-center" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>{result.afternoon}</td>
-                        </tr>
-                      ))}
+                      {mockResults.map((result, index) => {
+                        const isToday = result.sessionDate === todayStr;
+                        const renderSlotCell = (value: string, drawTime: string) => {
+                          if (value) return value;
+                          if (isToday) {
+                            const cd = getHomepageCountdown(drawTime);
+                            if (cd) return <span className="text-xs font-mono text-orange-600 animate-pulse">⏳ {cd}</span>;
+                            return <span className="text-xs text-gray-400">Chờ kết quả...</span>;
+                          }
+                          return '-';
+                        };
+                        return (
+                          <tr
+                            key={index}
+                            className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}
+                          >
+                            <td className="px-4 py-3 text-center font-semibold" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>{result.day}</td>
+                            <td className="px-4 py-3 text-center" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>{renderSlotCell(result.morning, currentDrawTimes.morning)}</td>
+                            <td className="px-4 py-3 text-center" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>{renderSlotCell(result.afternoon, currentDrawTimes.afternoon)}</td>
+                            {selectedThai === 'an-nhon' && (
+                              <td className="px-4 py-3 text-center" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>{renderSlotCell(result.evening, currentDrawTimes.evening || '21:00')}</td>
+                            )}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -827,14 +774,14 @@ const HomePage: React.FC = () => {
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 items-center">
-              {/* Left: Background Image with Text + Navigation Buttons */}
+              {/* Left: Cau Thai Image from API + Navigation */}
               <div className="lg:col-span-2 relative text-center">
                 <div className="relative mx-auto" style={{ width: '100%', maxWidth: '600px' }}>
                   {/* Navigation Buttons */}
                   <button
                     onClick={() => setCurrentCauThaiIndex(prev => prev - 1)}
-                    disabled={!canGoPrev}
-                    className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${canGoPrev
+                    disabled={currentCauThaiIndex <= 0}
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${currentCauThaiIndex > 0
                       ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
                       : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
                       }`}
@@ -845,8 +792,8 @@ const HomePage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => setCurrentCauThaiIndex(prev => prev + 1)}
-                    disabled={!canGoNext}
-                    className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${canGoNext
+                    disabled={currentCauThaiIndex >= cauThaiImages.length - 1}
+                    className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${currentCauThaiIndex < cauThaiImages.length - 1
                       ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
                       : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
                       }`}
@@ -856,54 +803,62 @@ const HomePage: React.FC = () => {
                     ›
                   </button>
 
-                  <img
-                    src="/assets/decorations/bg-cau-thai-co-nhon.png"
-                    alt="Câu thai"
-                    className="w-full h-auto object-contain"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center px-4 md:px-8">
-                    {currentCauThai ? (
-                      <div className="text-center w-full">
-                        <h6 className="uppercase text-font mb-1 text-sm md:text-base" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif", fontWeight: 400 }}>
-                          {currentCauThai.session}
-                        </h6>
-                        <p className="text-base md:text-xl mb-2" style={{ color: '#fff', fontFamily: "'Nunito', sans-serif" }}>{currentCauThai.date}</p>
-                        <p className="text-sm md:text-xl leading-tight" style={{ color: '#F5E87F', fontFamily: "'Nunito', sans-serif" }}>
-                          {currentCauThai.lines.map((line, idx) => (
-                            <React.Fragment key={idx}>
-                              {line}
-                              {idx < currentCauThai.lines.length - 1 && <br />}
-                            </React.Fragment>
-                          ))}
+                  {cauThaiImages.length > 0 && cauThaiImages[currentCauThaiIndex] ? (
+                    <div>
+                      <img
+                        src={cauThaiImages[currentCauThaiIndex].image_url}
+                        alt={cauThaiImages[currentCauThaiIndex].description || 'Câu thai'}
+                        className="w-full h-auto object-contain rounded-lg shadow-lg"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/assets/decorations/bg-cau-thai-co-nhon.png';
+                        }}
+                      />
+                      {cauThaiImages[currentCauThaiIndex].description && (
+                        <p className="mt-3 text-sm font-medium" style={{ color: '#b2012f' }}>
+                          {cauThaiImages[currentCauThaiIndex].description}
                         </p>
-                        {/* Hiển thị kết quả cho câu thai cũ */}
-                        {currentCauThaiIndex > 0 && (
-                          <p className="mt-2 text-sm font-bold" style={{ color: '#fef08a' }}>
-                            ✅ Kết quả: {currentCauThai.result}
-                          </p>
-                        )}
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(cauThaiImages[currentCauThaiIndex].created_at).toLocaleDateString('vi-VN')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <img
+                        src="/assets/decorations/bg-cau-thai-co-nhon.png"
+                        alt="Câu thai"
+                        className="w-full h-auto object-contain"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center px-4 md:px-8">
+                        <div className="text-center w-full">
+                          {loadingCauThai ? (
+                            <p className="text-yellow-300 text-lg font-medium">⏳ Đang tải...</p>
+                          ) : (
+                            <>
+                              <p className="text-yellow-300 text-lg font-medium mb-2">📭 Chưa có câu thai</p>
+                              <p className="text-white/80 text-sm">Năm {selectedYear} chưa có dữ liệu câu thai</p>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    ) : (
-                      <div className="text-center w-full">
-                        <p className="text-yellow-300 text-lg font-medium mb-2">📭 Chưa có câu thai</p>
-                        <p className="text-white/80 text-sm">Năm {selectedYear} chưa có dữ liệu câu thai</p>
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
                 {/* Indicator dots */}
-                <div className="flex justify-center gap-2 mt-4">
-                  {filteredCauThaiData.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentCauThaiIndex(idx)}
-                      className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentCauThaiIndex
-                        ? 'bg-red-600 scale-125'
-                        : 'bg-gray-300 hover:bg-gray-400'
-                        }`}
-                    />
-                  ))}
-                </div>
+                {cauThaiImages.length > 1 && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    {cauThaiImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentCauThaiIndex(idx)}
+                        className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentCauThaiIndex
+                          ? 'bg-red-600 scale-125'
+                          : 'bg-gray-300 hover:bg-gray-400'
+                          }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Right: Countdown and Info */}

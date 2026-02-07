@@ -2,21 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getMyOrders, Order } from '../services/api';
+import { getAnimalName } from '../types';
 
 // Thai names constant
 const THAI_NAMES: Record<string, string> = {
     'an-nhon': 'Thai An Nhơn',
+    'thai-an-nhon': 'Thai An Nhơn',
     'nhon-phong': 'Thai Nhơn Phong',
-    'hoai-nhon': 'Thai Hoài Nhơn'
+    'thai-nhon-phong': 'Thai Nhơn Phong',
+    'hoai-nhon': 'Thai Hoài Nhơn',
+    'thai-hoai-nhon': 'Thai Hoài Nhơn'
+};
+
+// Format money with dots: 10000 -> 10.000
+const formatMoney = (amount: number | string): string => {
+    const num = typeof amount === 'string' ? parseInt(amount, 10) : amount;
+    if (isNaN(num)) return '0';
+    return num.toLocaleString('vi-VN');
 };
 
 const LichSuPage: React.FC = () => {
     const { user } = useAuth();
     const [filterThai, setFilterThai] = useState('all');
-    const [filterStatus, setFilterStatus] = useState('all');
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
     // Fetch orders from API
     useEffect(() => {
@@ -24,9 +35,8 @@ const LichSuPage: React.FC = () => {
             try {
                 setLoading(true);
                 const thaiId = filterThai !== 'all' ? filterThai : undefined;
-                const status = filterStatus !== 'all' ? filterStatus : undefined;
 
-                const response = await getMyOrders({ thaiId, status });
+                const response = await getMyOrders({ thaiId });
                 setOrders(response.orders || []);
                 setError(null);
             } catch (err: unknown) {
@@ -43,7 +53,7 @@ const LichSuPage: React.FC = () => {
         } else {
             setLoading(false);
         }
-    }, [user, filterThai, filterStatus]);
+    }, [user, filterThai]);
 
     const getThaiName = (thaiId: string) => {
         return THAI_NAMES[thaiId] || thaiId;
@@ -59,27 +69,14 @@ const LichSuPage: React.FC = () => {
     };
 
     const getStatusBadge = (status: string) => {
-        const styles: Record<string, string> = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            paid: 'bg-blue-100 text-blue-800',
-            won: 'bg-green-100 text-green-800',
-            lost: 'bg-gray-100 text-gray-600',
-            cancelled: 'bg-red-100 text-red-800',
-            expired: 'bg-gray-100 text-gray-500',
-        };
-        const labels: Record<string, string> = {
-            pending: 'Chờ TT',
-            paid: 'Đã TT',
-            won: 'Trúng 🎉',
-            lost: 'Không trúng',
-            cancelled: 'Đã hủy',
-            expired: 'Hết hạn',
-        };
-        return (
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
-                {labels[status] || status}
-            </span>
-        );
+        if (status === 'won') {
+            return <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Trúng thưởng 🎉</span>;
+        }
+        if (status === 'lost') {
+            return <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Không trúng</span>;
+        }
+        // paid là mặc định, không cần badge
+        return null;
     };
 
     const formatDate = (dateStr: string) => {
@@ -96,6 +93,10 @@ const LichSuPage: React.FC = () => {
         }
     };
 
+    const toggleExpand = (orderId: string) => {
+        setExpandedOrder(prev => prev === orderId ? null : orderId);
+    };
+
     return (
         <div className="container mx-auto px-4 py-6 max-w-4xl">
             {/* Header */}
@@ -106,35 +107,18 @@ const LichSuPage: React.FC = () => {
 
             {/* Filters */}
             <div className="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Theo Thai</label>
-                        <select
-                            value={filterThai}
-                            onChange={(e) => setFilterThai(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-200"
-                        >
-                            <option value="all">Tất cả</option>
-                            <option value="an-nhon">Thai An Nhơn</option>
-                            <option value="nhon-phong">Thai Nhơn Phong</option>
-                            <option value="hoai-nhon">Thai Hoài Nhơn</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-200"
-                        >
-                            <option value="all">Tất cả</option>
-                            <option value="pending">Chờ thanh toán</option>
-                            <option value="paid">Đã thanh toán</option>
-                            <option value="won">Trúng</option>
-                            <option value="lost">Không trúng</option>
-                            <option value="cancelled">Đã hủy</option>
-                        </select>
-                    </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Theo Thai</label>
+                    <select
+                        value={filterThai}
+                        onChange={(e) => setFilterThai(e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-200"
+                    >
+                        <option value="all">Tất cả</option>
+                        <option value="an-nhon">Thai An Nhơn</option>
+                        <option value="nhon-phong">Thai Nhơn Phong</option>
+                        <option value="hoai-nhon">Thai Hoài Nhơn</option>
+                    </select>
                 </div>
             </div>
 
@@ -192,17 +176,44 @@ const LichSuPage: React.FC = () => {
                                         </p>
                                     </div>
                                     <p className="text-lg font-bold text-red-600">
-                                        {order.total.toLocaleString('vi-VN')}đ
+                                        {formatMoney(order.total)}đ
                                     </p>
                                 </div>
 
-                                {/* Action */}
-                                <Link
-                                    to={`/user/hoa-don/${order.id}`}
-                                    className="block w-full text-center py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition"
-                                >
-                                    Xem chi tiết
-                                </Link>
+                                {/* Expand/collapse order items */}
+                                {order.items && order.items.length > 0 && (
+                                    <>
+                                        <button
+                                            onClick={() => toggleExpand(order.id)}
+                                            className="w-full text-center py-2 border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition text-sm"
+                                        >
+                                            {expandedOrder === order.id ? '▲ Thu gọn' : `▼ Chi tiết (${order.items.length} con vật)`}
+                                        </button>
+                                        {expandedOrder === order.id && (
+                                            <div className="mt-3 space-y-2 border-t pt-3">
+                                                {order.items.map((item: any, idx: number) => (
+                                                    <div key={idx} className="flex items-center justify-between text-sm py-2 px-3 bg-gray-50 rounded-lg">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold">
+                                                                {item.animal_order}
+                                                            </span>
+                                                            <span className="text-gray-700 font-medium">
+                                                                {getAnimalName(item.animal_order)}
+                                                            </span>
+                                                            {item.quantity > 1 && (
+                                                                <span className="text-xs text-gray-400">x{item.quantity}</span>
+                                                            )}
+                                                        </div>
+                                                        <span className="font-semibold text-red-600">
+                                                            {formatMoney(item.amount || item.subtotal)}đ
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
                             </div>
                         </div>
                     ))}
@@ -219,7 +230,7 @@ const LichSuPage: React.FC = () => {
                     <div className="flex items-center justify-between mt-2">
                         <span className="text-gray-700">Tổng chi tiêu:</span>
                         <span className="font-bold text-red-600">
-                            {orders.reduce((sum, o) => sum + o.total, 0).toLocaleString('vi-VN')}đ
+                            {formatMoney(orders.reduce((sum, o) => sum + Number(o.total), 0))}đ
                         </span>
                     </div>
                 </div>

@@ -28,7 +28,9 @@ const AdminDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
         const thaiId = selectedThai !== 'all' ? selectedThai : undefined;
-        const data = await getAdminStats(thaiId);
+        const sessionType = selectedSession !== 'all' ? selectedSession : undefined;
+        const date = timeFilter === 'by-date' && selectedDate ? selectedDate : undefined;
+        const data = await getAdminStats(thaiId, sessionType, date);
         setStats(data);
       } catch (err) {
         console.error('Failed to fetch dashboard stats:', err);
@@ -133,8 +135,8 @@ const AdminDashboard: React.FC = () => {
             Tất cả buổi
           </button>
           <button
-            onClick={() => setSelectedSession('sang')}
-            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'sang'
+            onClick={() => setSelectedSession('morning')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'morning'
               ? 'bg-white shadow-md text-purple-700'
               : 'text-purple-600 hover:bg-purple-100'
               }`}
@@ -142,8 +144,8 @@ const AdminDashboard: React.FC = () => {
             ☀️ Sáng
           </button>
           <button
-            onClick={() => setSelectedSession('chieu')}
-            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'chieu'
+            onClick={() => setSelectedSession('afternoon')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'afternoon'
               ? 'bg-white shadow-md text-purple-700'
               : 'text-purple-600 hover:bg-purple-100'
               }`}
@@ -151,8 +153,8 @@ const AdminDashboard: React.FC = () => {
             🌤️ Chiều
           </button>
           <button
-            onClick={() => setSelectedSession('toi')}
-            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
+            onClick={() => setSelectedSession('evening')}
+            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'evening'
               ? 'bg-white shadow-md text-purple-700'
               : 'text-purple-600 hover:bg-purple-100'
               }`}

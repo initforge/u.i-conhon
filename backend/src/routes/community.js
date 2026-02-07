@@ -17,7 +17,7 @@ router.get('/posts', async (req, res) => {
         const { thai_id, page = 1, limit = 10 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
-        let baseWhere = 'WHERE is_approved = true';
+        let baseWhere = 'WHERE 1=1';
         const params = [];
         let paramIndex = 1;
 
@@ -50,7 +50,7 @@ router.get('/posts', async (req, res) => {
             const commentsResult = await db.query(
                 `SELECT id, user_name, content, created_at
                  FROM community_comments 
-                 WHERE post_id = $1 AND is_banned = false
+                 WHERE post_id = $1
                  ORDER BY created_at ASC
                  LIMIT 50`,
                 [post.id]
@@ -95,7 +95,7 @@ router.get('/posts/:id', async (req, res) => {
         const commentsResult = await db.query(
             `SELECT id, user_name, content, created_at
        FROM community_comments 
-       WHERE post_id = $1 AND is_banned = false
+       WHERE post_id = $1
        ORDER BY created_at DESC
        LIMIT 50`,
             [id]
@@ -170,6 +170,15 @@ router.post('/posts/:id/comments', authenticate, async (req, res) => {
 
         if (content.length > 500) {
             return res.status(400).json({ error: 'Bình luận tối đa 500 ký tự' });
+        }
+
+        // Check if user is banned from commenting
+        const userBanCheck = await db.query(
+            'SELECT is_comment_banned FROM users WHERE id = $1',
+            [user.id]
+        );
+        if (userBanCheck.rows[0]?.is_comment_banned) {
+            return res.status(403).json({ error: 'Bạn đã bị cấm bình luận' });
         }
 
         // Check comment limit (SPECS: max 3 comments/user/post)

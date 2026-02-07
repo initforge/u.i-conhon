@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getCurrentYear, getAvailableYears } from '../../utils/yearUtils';
 import Portal from '../../components/Portal';
-import { getAdminCauThai, createAdminCauThai, updateAdminCauThai, deleteAdminCauThai, AdminCauThai as AdminCauThaiItem } from '../../services/api';
+import { getAdminCauThai, createAdminCauThai, updateAdminCauThai, deleteAdminCauThai, uploadCauThaiImage, AdminCauThai as AdminCauThaiItem } from '../../services/api';
 
 const AdminCauThai: React.FC = () => {
   const [cauThaiImages, setCauThaiImages] = useState<AdminCauThaiItem[]>([]);
   const [selectedYear, setSelectedYear] = useState(getCurrentYear());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   // Fetch data from API
   useEffect(() => {
@@ -31,6 +31,8 @@ const AdminCauThai: React.FC = () => {
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [uploadAdminNote, setUploadAdminNote] = useState(''); // Ghi chú cho admin
   const [uploadPlayerNote, setUploadPlayerNote] = useState(''); // Ghi chú cho người chơi
+  const [uploadFile, setUploadFile] = useState<File | null>(null); // Actual file for upload
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const availableYears = getAvailableYears(4);
@@ -75,19 +77,26 @@ const AdminCauThai: React.FC = () => {
     if (file) {
       const url = URL.createObjectURL(file);
       setUploadPreview(url);
+      setUploadFile(file); // Store actual file for upload
     }
   };
 
   const handleUpload = async () => {
-    if (!uploadPreview) {
+    if (!uploadFile) {
       alert('Vui lòng chọn ảnh!');
       return;
     }
 
     try {
+      setUploading(true);
+
+      // Step 1: Upload actual file to server
+      const uploadResult = await uploadCauThaiImage(uploadFile);
+
+      // Step 2: Save metadata with real server URL
       const response = await createAdminCauThai({
         thai_id: selectedThai,
-        image_url: uploadPreview, // Note: In production, upload to cloud storage first
+        image_url: uploadResult.imageUrl, // Real URL: /uploads/cau-thai/xxx.jpg
         description: uploadPlayerNote.trim() || uploadAdminNote.trim() || `Câu thai ${selectedYear}`,
         khung_id: selectedKhung,
       });
@@ -95,13 +104,16 @@ const AdminCauThai: React.FC = () => {
       setCauThaiImages([response.cauThai, ...cauThaiImages]);
       setShowUploadModal(false);
       setUploadPreview(null);
+      setUploadFile(null);
       setUploadAdminNote('');
       setUploadPlayerNote('');
       if (fileInputRef.current) fileInputRef.current.value = '';
       alert('Đã upload câu thai thành công!');
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Không thể upload câu thai!');
+      alert('Không thể upload câu thai! ' + (error instanceof Error ? error.message : ''));
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -343,6 +355,7 @@ const AdminCauThai: React.FC = () => {
                   onClick={() => {
                     setShowUploadModal(false);
                     setUploadPreview(null);
+                    setUploadFile(null);
                     setUploadAdminNote('');
                     setUploadPlayerNote('');
                   }}
@@ -438,6 +451,7 @@ const AdminCauThai: React.FC = () => {
                   onClick={() => {
                     setShowUploadModal(false);
                     setUploadPreview(null);
+                    setUploadFile(null);
                     setUploadAdminNote('');
                     setUploadPlayerNote('');
                   }}
@@ -447,13 +461,13 @@ const AdminCauThai: React.FC = () => {
                 </button>
                 <button
                   onClick={handleUpload}
-                  disabled={!uploadPreview}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${uploadPreview
+                  disabled={!uploadFile || uploading}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${uploadFile && !uploading
                     ? 'bg-amber-600 text-white hover:bg-amber-700'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                 >
-                  💾 Lưu ảnh
+                  {uploading ? '⏳ Đang upload...' : '💾 Lưu ảnh'}
                 </button>
               </div>
             </div>

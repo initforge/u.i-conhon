@@ -1,28 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AdminPageWrapper from '../../components/AdminPageWrapper';
 import { ANIMALS_AN_NHON, ANIMALS_HOAI_NHON } from '../../constants/animalData';
-import { getAdminStats, AdminStats } from '../../services/api';
+import { getAdminStats, getAdminAnimalStats, getAdminAnimalOrders, AdminStats, AnimalPurchaseData, AnimalOrderDetail } from '../../services/api';
 import Portal from '../../components/Portal';
+import { useThaiConfig } from '../../contexts/ThaiConfigContext';
 
 // Sử dụng dữ liệu từ central file
 const animalsAnNhon40 = ANIMALS_AN_NHON;
 const animalsHoaiNhon36 = ANIMALS_HOAI_NHON;
 
-// Convert API top/bottom animals to a lookup map
-const createPurchaseMap = (stats: AdminStats | null) => {
-    const map: Record<number, { count: number; amount: number }> = {};
-    if (!stats) return map;
 
-    [...(stats.top_animals || []), ...(stats.bottom_animals || [])].forEach(a => {
-        if (a.animal_order && !map[a.animal_order]) {
-            map[a.animal_order] = {
-                count: Number(a.total_qty) || 0,
-                amount: Number(a.total_amount) || 0
-            };
-        }
-    });
-    return map;
-};
 
 const AdminBaoCao: React.FC = () => {
     const [selectedThai, setSelectedThai] = useState('an-nhon');
@@ -33,23 +20,37 @@ const AdminBaoCao: React.FC = () => {
 
     // API state
     const [stats, setStats] = useState<AdminStats | null>(null);
+    const [allAnimals, setAllAnimals] = useState<AnimalPurchaseData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const thaiTabs = [
-        { id: 'an-nhon', name: 'An Nhơn', animals: 40, hasEvening: true },
-        { id: 'nhon-phong', name: 'Nhơn Phong', animals: 40, hasEvening: false },
-        { id: 'hoai-nhon', name: 'Hoài Nhơn', animals: 36, hasEvening: false },
-    ];
+    // Animal orders modal state
+    const [animalOrders, setAnimalOrders] = useState<AnimalOrderDetail[]>([]);
+    const [loadingOrders, setLoadingOrders] = useState(false);
 
-    // Fetch stats from API
+    // Dynamic Thai tabs from context (database-driven)
+    const { thais } = useThaiConfig();
+    const thaiTabs = useMemo(() => thais.map(t => ({
+        id: t.slug,
+        name: t.name.replace('Thai ', ''),
+        animals: t.slug === 'hoai-nhon' ? animalsHoaiNhon36.length : animalsAnNhon40.length,
+        hasEvening: (t.timeSlots?.length ?? 0) >= 3 || (t.isTetMode && !!t.tetTimeSlot),
+    })), [thais]);
+
+    // Fetch stats from API (both summary + all animals for grid)
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await getAdminStats(selectedThai);
-                setStats(data);
+                const sessionType = selectedSession !== 'all' ? selectedSession : undefined;
+                const date = selectedDate || undefined;
+                const [statsData, animalsData] = await Promise.all([
+                    getAdminStats(selectedThai, sessionType, date),
+                    getAdminAnimalStats(selectedThai, sessionType, date),
+                ]);
+                setStats(statsData);
+                setAllAnimals(animalsData.animals || []);
             } catch (err) {
                 console.error('Failed to fetch stats:', err);
                 setError('Không thể tải dữ liệu thống kê');
@@ -60,8 +61,33 @@ const AdminBaoCao: React.FC = () => {
         fetchStats();
     }, [selectedThai, selectedSession, selectedDate]);
 
-    // Get purchase data from API stats
-    const purchaseMap = createPurchaseMap(stats);
+    // Fetch orders for selected animal
+    useEffect(() => {
+        if (!selectedAnimal) {
+            setAnimalOrders([]);
+            return;
+        }
+        const fetchOrders = async () => {
+            try {
+                setLoadingOrders(true);
+                const sessionType = selectedSession !== 'all' ? selectedSession : undefined;
+                const date = selectedDate || undefined;
+                const data = await getAdminAnimalOrders(selectedAnimal.order, selectedThai, sessionType, date);
+                setAnimalOrders(data.orders || []);
+            } catch {
+                setAnimalOrders([]);
+            } finally {
+                setLoadingOrders(false);
+            }
+        };
+        fetchOrders();
+    }, [selectedAnimal, selectedThai, selectedSession, selectedDate]);
+
+    // Get purchase data from ALL animals (not top/bottom 5 only)
+    const purchaseMap: Record<number, { count: number; amount: number }> = {};
+    allAnimals.forEach(a => {
+        purchaseMap[a.animal_order] = { count: Number(a.total_qty) || 0, amount: Number(a.total_amount) || 0 };
+    });
     const getPurchaseData = (animalOrder: number) => {
         return purchaseMap[animalOrder] || { count: 0, amount: 0 };
     };
@@ -316,8 +342,8 @@ const AdminBaoCao: React.FC = () => {
                             Tất cả buổi
                         </button>
                         <button
-                            onClick={() => setSelectedSession('sang')}
-                            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'sang'
+                            onClick={() => setSelectedSession('morning')}
+                            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'morning'
                                 ? 'bg-white shadow-md text-purple-700'
                                 : 'text-purple-600 hover:bg-purple-100'
                                 }`}
@@ -325,8 +351,8 @@ const AdminBaoCao: React.FC = () => {
                             ☀️ Sáng
                         </button>
                         <button
-                            onClick={() => setSelectedSession('chieu')}
-                            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'chieu'
+                            onClick={() => setSelectedSession('afternoon')}
+                            className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'afternoon'
                                 ? 'bg-white shadow-md text-purple-700'
                                 : 'text-purple-600 hover:bg-purple-100'
                                 }`}
@@ -335,8 +361,8 @@ const AdminBaoCao: React.FC = () => {
                         </button>
                         {thaiTabs.find(t => t.id === selectedThai)?.hasEvening && (
                             <button
-                                onClick={() => setSelectedSession('toi')}
-                                className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'toi'
+                                onClick={() => setSelectedSession('evening')}
+                                className={`px-3 py-1.5 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'evening'
                                     ? 'bg-white shadow-md text-purple-700'
                                     : 'text-purple-600 hover:bg-purple-100'
                                     }`}
@@ -511,12 +537,38 @@ const AdminBaoCao: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Info */}
+                            {/* Order list */}
                             <div className="p-4">
-                                <div className="text-center py-8 text-gray-500">
-                                    <p className="mb-2">📋 Để xem chi tiết khách hàng, vui lòng vào trang <strong>Đơn hàng</strong></p>
-                                    <p className="text-sm">và lọc theo con vật này.</p>
-                                </div>
+                                {loadingOrders ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <div className="animate-spin w-8 h-8 border-4 border-red-200 border-t-red-600 rounded-full mx-auto mb-3"></div>
+                                        <p>Đang tải đơn hàng...</p>
+                                    </div>
+                                ) : animalOrders.length === 0 ? (
+                                    <div className="text-center py-8 text-gray-400">
+                                        <p>Không có đơn hàng nào</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                                        <p className="text-xs text-gray-500 mb-2 font-semibold">{animalOrders.length} đơn hàng</p>
+                                        {animalOrders.map((o) => (
+                                            <div key={o.order_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-sm text-gray-800 truncate">{o.user_name || 'Ẩn danh'}</p>
+                                                    <p className="text-xs text-gray-500">{o.user_phone} · {o.session_type === 'morning' ? '🌅 Sáng' : o.session_type === 'afternoon' ? '🌇 Chiều' : o.session_type === 'evening' ? '🌙 Tối' : o.session_type}</p>
+                                                    <p className="text-xs text-gray-400">{new Date(o.created_at).toLocaleString('vi-VN')}</p>
+                                                </div>
+                                                <div className="text-right ml-3 flex-shrink-0">
+                                                    <p className="font-bold text-red-600 text-sm">{o.subtotal.toLocaleString('vi-VN')}đ</p>
+                                                    <p className="text-xs text-gray-500">{o.quantity} lượt × {o.unit_price.toLocaleString('vi-VN')}đ</p>
+                                                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${o.status === 'won' ? 'bg-green-100 text-green-700' : o.status === 'lost' ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                        {o.status === 'won' ? '🏆 Thắng' : o.status === 'lost' ? 'Thua' : o.status === 'paid' ? 'Đã TT' : o.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Footer */}

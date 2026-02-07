@@ -3,50 +3,49 @@ import { anNhonAnimals } from '../../types';
 import { useThaiConfig } from '../../contexts/ThaiConfigContext';
 import AdminPageWrapper from '../../components/AdminPageWrapper';
 import Portal from '../../components/Portal';
-import { getThaiLimits, saveThaiLimits } from '../../services/api';
+import { getThaiLimits, saveThaiLimits, getAdminCurrentSession } from '../../services/api';
 
 // Data cho Hoài Nhơn (36 con) - Thêm purchaseCount (đơn hàng)
 const animalsHoaiNhon36 = [
   { id: 'hn-1', order: 1, name: 'Cá Trắng', alias: 'Chiếm Khôi', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0, purchaseCount: 0 },
   { id: 'hn-2', order: 2, name: 'Ốc', alias: 'Bản Quế', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0, purchaseCount: 0 },
   { id: 'hn-3', order: 3, name: 'Ngỗng', alias: 'Vinh Sanh', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-4', order: 4, name: 'Công', alias: 'Phùng Xuân', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 12000 },
+  { id: 'hn-4', order: 4, name: 'Công', alias: 'Phùng Xuân', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-5', order: 5, name: 'Trùn', alias: 'Chí Cao', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-6', order: 6, name: 'Cọp', alias: 'Khôn Sơn', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 78000 },
+  { id: 'hn-6', order: 6, name: 'Cọp', alias: 'Khôn Sơn', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-7', order: 7, name: 'Heo', alias: 'Chánh Thuận', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-8', order: 8, name: 'Thỏ', alias: 'Nguyệt Bửu', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 33000 },
+  { id: 'hn-8', order: 8, name: 'Thỏ', alias: 'Nguyệt Bửu', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-9', order: 9, name: 'Trâu', alias: 'Hớn Vân', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-10', order: 10, name: 'Rồng Bay', alias: 'Giang Tứ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 50000 },
+  { id: 'hn-10', order: 10, name: 'Rồng Bay', alias: 'Giang Tứ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-11', order: 11, name: 'Chó', alias: 'Phước Tôn', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-12', order: 12, name: 'Ngựa', alias: 'Quang Minh', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 22000 },
+  { id: 'hn-12', order: 12, name: 'Ngựa', alias: 'Quang Minh', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-13', order: 13, name: 'Voi', alias: 'Hữu Tài', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-14', order: 14, name: 'Mèo', alias: 'Chỉ Đắc', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 88000 },
+  { id: 'hn-14', order: 14, name: 'Mèo', alias: 'Chỉ Đắc', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-15', order: 15, name: 'Chuột', alias: 'Tất Khắc', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-16', order: 16, name: 'Ong', alias: 'Mậu Lâm', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 15000 },
+  { id: 'hn-16', order: 16, name: 'Ong', alias: 'Mậu Lâm', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-17', order: 17, name: 'Hạc', alias: 'Trọng Tiên', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-18', order: 18, name: 'Kỳ Lân', alias: 'Thiên Thần', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 62000 },
+  { id: 'hn-18', order: 18, name: 'Kỳ Lân', alias: 'Thiên Thần', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-19', order: 19, name: 'Bướm', alias: 'Cấn Ngọc', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-20', order: 20, name: 'Hòn Núi', alias: 'Trân Châu', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 41000 },
+  { id: 'hn-20', order: 20, name: 'Hòn Núi', alias: 'Trân Châu', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-21', order: 21, name: 'Én', alias: 'Thượng Chiêu', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-22', order: 22, name: 'Bồ Câu', alias: 'Song Đồng', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 19000 },
+  { id: 'hn-22', order: 22, name: 'Bồ Câu', alias: 'Song Đồng', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-23', order: 23, name: 'Khỉ', alias: 'Tam Hoè', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-24', order: 24, name: 'Ếch', alias: 'Hiệp Hải', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 55000 },
+  { id: 'hn-24', order: 24, name: 'Ếch', alias: 'Hiệp Hải', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-25', order: 25, name: 'Quạ', alias: 'Cửu Quan', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-26', order: 26, name: 'Rồng Nằm', alias: 'Thái Bình', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 30000 },
+  { id: 'hn-26', order: 26, name: 'Rồng Nằm', alias: 'Thái Bình', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-27', order: 27, name: 'Rùa', alias: 'Hỏa Diệm', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-28', order: 28, name: 'Gà', alias: 'Nhựt Thăng', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 47000 },
+  { id: 'hn-28', order: 28, name: 'Gà', alias: 'Nhựt Thăng', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-29', order: 29, name: 'Lươn', alias: 'Địa Lươn', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-30', order: 30, name: 'Cá Đỏ', alias: 'Tỉnh Lợi', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 28000 },
+  { id: 'hn-30', order: 30, name: 'Cá Đỏ', alias: 'Tỉnh Lợi', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-31', order: 31, name: 'Tôm', alias: 'Trường Thọ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-32', order: 32, name: 'Rắn', alias: 'Vạn Kim', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 66000 },
+  { id: 'hn-32', order: 32, name: 'Rắn', alias: 'Vạn Kim', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-33', order: 33, name: 'Nhện', alias: 'Thanh Tuyền', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-34', order: 34, name: 'Nai', alias: 'Nguyên Cát', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 35000 },
+  { id: 'hn-34', order: 34, name: 'Nai', alias: 'Nguyên Cát', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
   { id: 'hn-35', order: 35, name: 'Dê', alias: 'Nhứt Phẩm', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
-  { id: 'hn-36', order: 36, name: 'Bà Vãi', alias: 'An Sĩ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 72000 },
+  { id: 'hn-36', order: 36, name: 'Bà Vãi', alias: 'An Sĩ', isEnabled: true, isBanned: false, purchaseLimit: 100000, purchased: 0 },
 ];
 
 // Tạo data cho An Nhơn / Nhơn Phong (40 con) với purchased và limit
-// NOTE: purchased và purchaseCount sẽ được cập nhật từ API session khi có session thực
 const createAnNhonAnimals = () => anNhonAnimals.map(a => ({
   ...a,
   purchaseLimit: 100000,
@@ -155,6 +154,9 @@ const AdminAnimals: React.FC = () => {
     animalsHoaiNhon36.map(a => ({ ...a, banReason: undefined as string | undefined }))
   );
 
+  // Current session ID cho mỗi Thai
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
   // Apply Thai limits to all animals when loaded from API
   useEffect(() => {
     if (limitsLoaded) {
@@ -166,6 +168,45 @@ const AdminAnimals: React.FC = () => {
       setAnimalsHoaiNhon(prev => prev.map(a => ({ ...a, purchaseLimit: thaiLimits['hoai-nhon'] })));
     }
   }, [limitsLoaded, thaiLimits]);
+
+  // Fetch session_animals thực từ API khi Thai thay đổi
+  useEffect(() => {
+    const fetchSessionAnimals = async () => {
+      try {
+        const thaiId = `thai-${selectedThai}`;
+        const response = await getAdminCurrentSession(thaiId);
+        const session = response.session;
+        setCurrentSessionId(session.id);
+
+        if (session.animals && Array.isArray(session.animals)) {
+          // Merge sold_amount, is_banned, ban_reason từ DB vào animals state
+          const mergeData = (prev: any[]) => prev.map(a => {
+            const dbAnimal = session.animals.find((sa: any) => sa.animal_order === a.order);
+            if (dbAnimal) {
+              return {
+                ...a,
+                purchased: dbAnimal.sold_amount || 0,
+                isBanned: dbAnimal.is_banned || false,
+                banReason: dbAnimal.ban_reason || undefined,
+                purchaseLimit: dbAnimal.limit_amount || a.purchaseLimit,
+              };
+            }
+            return a;
+          });
+
+          switch (selectedThai) {
+            case 'an-nhon': setAnimalsAnNhon(mergeData); break;
+            case 'nhon-phong': setAnimalsNhonPhong(mergeData); break;
+            case 'hoai-nhon': setAnimalsHoaiNhon(mergeData); break;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch session animals:', error);
+        setCurrentSessionId(null);
+      }
+    };
+    fetchSessionAnimals();
+  }, [selectedThai]);
 
   const thaiOptions = [
     { id: 'an-nhon', name: 'Thai An Nhơn', color: 'green', animals: 40 },

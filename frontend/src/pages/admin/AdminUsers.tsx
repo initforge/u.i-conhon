@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAdminUsers, updateAdminUser, deleteAdminUser, AdminUser } from '../../services/api';
+import { getAdminUsers, updateAdminUser, deleteAdminUser, AdminUser, AdminUsersAggregate } from '../../services/api';
 import AdminPageWrapper, { AdminCard, StatCard, AdminButton } from '../../components/AdminPageWrapper';
 import SearchableBankDropdown from '../../components/SearchableBankDropdown';
 import Portal from '../../components/Portal';
@@ -28,6 +28,7 @@ const AdminUsers: React.FC = () => {
     // Pagination state
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
+    const [aggregate, setAggregate] = useState<AdminUsersAggregate | null>(null);
     const ITEMS_PER_PAGE = 50;
 
     // Fetch users on mount and when search changes
@@ -39,6 +40,7 @@ const AdminUsers: React.FC = () => {
                 const response = await getAdminUsers({ search: searchTerm || undefined, page, limit: ITEMS_PER_PAGE });
                 setUsers(response.users || []);
                 setTotal(response.total || 0);
+                if (response.aggregate) setAggregate(response.aggregate);
             } catch (err: unknown) {
                 console.error('Error fetching users:', err);
                 setError('Không thể tải danh sách người dùng');
@@ -54,9 +56,10 @@ const AdminUsers: React.FC = () => {
         return () => clearTimeout(timeoutId);
     }, [searchTerm, page]);
 
-    // Calculate stats from loaded users
-    const usersWithOrders = users.filter((u) => u.order_count > 0).length;
-    const totalOrderCount = users.reduce((sum, u) => sum + (u.order_count || 0), 0);
+    // Use aggregate stats from backend (not current page)
+    const statsUsers = aggregate?.total_users ?? total;
+    const statsWithOrders = aggregate?.users_with_orders ?? users.filter((u) => u.order_count > 0).length;
+    const statsOrders = aggregate?.total_orders ?? users.reduce((sum, u) => sum + (u.order_count || 0), 0);
 
     // Handle save user
     const handleSaveUser = async (userId: string) => {
@@ -118,10 +121,10 @@ const AdminUsers: React.FC = () => {
             actions={<AdminButton variant="secondary">📥 Xuất dữ liệu</AdminButton>}
         >
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
-                <StatCard label="Tổng người dùng" value={loading ? '...' : users.length} icon="👤" />
-                <StatCard label="Đã đặt tịch" value={loading ? '...' : usersWithOrders} icon="🛒" />
-                <StatCard label="Tổng đơn hàng" value={loading ? '...' : totalOrderCount} icon="📦" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <StatCard label="Tổng người dùng" value={loading ? '...' : statsUsers} icon="👤" />
+                <StatCard label="Đã đặt tịch" value={loading ? '...' : statsWithOrders} icon="🛒" />
+                <StatCard label="Tổng đơn hàng" value={loading ? '...' : statsOrders} icon="📦" />
             </div>
 
             {/* Search */}
@@ -157,8 +160,8 @@ const AdminUsers: React.FC = () => {
                         <p className="text-sm" style={{ color: '#9a8c7a' }}>Đang tải...</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[500px]">
+                    <div className="overflow-hidden">
+                        <table className="w-full">
                             <thead>
                                 <tr style={{ backgroundColor: '#faf8f5' }}>
                                     <th className="text-left p-3 text-xs font-medium uppercase" style={{ color: '#9a8c7a' }}>Người chơi</th>
@@ -423,19 +426,28 @@ const AdminUsers: React.FC = () => {
                                                     </div>
 
                                                     {/* Thống kê hoạt động */}
-                                                    <div className="grid grid-cols-3 gap-3">
+                                                    <div className="grid grid-cols-2 gap-3">
                                                         <div className="p-3 rounded-lg text-center" style={{ backgroundColor: '#faf8f5' }}>
                                                             <p className="text-xl font-bold" style={{ color: '#991b1b' }}>{user.order_count || 0}</p>
                                                             <p className="text-xs" style={{ color: '#9a8c7a' }}>Tổng đơn</p>
                                                         </div>
-                                                        <div className="p-3 rounded-lg text-center" style={{ backgroundColor: '#ecf5ec' }}>
-                                                            <p className="text-xl font-bold" style={{ color: '#3d7a3d' }}>-</p>
-                                                            <p className="text-xs" style={{ color: '#9a8c7a' }}>Đã TT</p>
-                                                        </div>
                                                         <div className="p-3 rounded-lg text-center" style={{ backgroundColor: '#fef8ec' }}>
-                                                            <p className="text-xl font-bold" style={{ color: '#9a7a2d' }}>-</p>
+                                                            <p className="text-xl font-bold" style={{ color: '#9a7a2d' }}>
+                                                                {Number(user.total_spent || 0).toLocaleString('vi-VN')}đ
+                                                            </p>
                                                             <p className="text-xs" style={{ color: '#9a8c7a' }}>Tổng tiền</p>
                                                         </div>
+                                                    </div>
+
+                                                    {/* Nút xóa (trong view mode) */}
+                                                    <div className="border-t pt-4 mt-4">
+                                                        <button
+                                                            onClick={() => handleDeleteUser(user.id, user.name)}
+                                                            className="w-full py-2 bg-red-100 text-red-700 rounded-lg font-medium hover:bg-red-200 transition border border-red-300"
+                                                        >
+                                                            🗑️ Xóa người chơi
+                                                        </button>
+                                                        <p className="text-xs text-center text-gray-500 mt-2">⚠️ Cẩn thận: Xóa sẽ mất toàn bộ dữ liệu</p>
                                                     </div>
                                                 </>
                                             )}

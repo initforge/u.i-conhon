@@ -249,7 +249,7 @@ const CongDongPage: React.FC = () => {
                                                     <CoNhonBrandIcon size={40} />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-bold text-gray-800">Cổ Nhơn {currentThaiConfig.name}</h3>
+                                                    <h3 className="font-bold text-gray-800">Cổ Nhơn An Nhơn Bình Định</h3>
                                                     <p className="text-sm text-gray-500">
                                                         {new Date(post.created_at).toLocaleDateString('vi-VN')} · {formatTime(post.created_at)}
                                                     </p>

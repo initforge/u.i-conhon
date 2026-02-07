@@ -1,24 +1,17 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CartDrawer from '../components/CartDrawer';
-import { ANIMALS_AN_NHON } from '../constants/animalData';
+import { ANIMALS_AN_NHON, ANIMALS_HOAI_NHON } from '../constants/animalData';
 import { useSocialTasks } from '../contexts/SocialTaskContext';
 import { useThaiConfig } from '../contexts/ThaiConfigContext';
 import { useSystemConfig } from '../contexts/SystemConfigContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getSessionStatus } from '../constants/drawTimes';
-import { getCurrentSession, getSessionAnimals } from '../services/api';
+import { getCurrentSession, getSessionAnimals, createOrder } from '../services/api';
 
-// Generate animals từ central data
-const generateAnimals = () => {
-    return ANIMALS_AN_NHON.map((animal) => ({
-        id: `animal-${animal.order}`,
-        name: animal.name,
-        alias: animal.alias,
-        number: animal.order,
-        liked: false
-    }));
-};
+// Generate Animal objects from central data for a given Thai
+const toAnimals = (list: typeof ANIMALS_AN_NHON): Animal[] =>
+    list.map(a => ({ id: `animal-${a.order}`, name: a.name, alias: a.alias, number: a.order, liked: false }));
 
 interface Animal {
     id: string;
@@ -41,11 +34,12 @@ const thaiOptions = [
 ];
 
 const MuaConVatPage: React.FC = () => {
-    const [allAnimals] = useState<Animal[]>(generateAnimals());
     const [selectedThai, setSelectedThai] = useState<string>(''); // Chưa chọn thai
     const [cart, setCart] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [inputAmounts, setInputAmounts] = useState<{ [key: string]: number }>({});
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
     // Track sold out animals (animal_order -> remaining <= 0)
     const [soldOutAnimals, setSoldOutAnimals] = useState<Set<number>>(new Set());
@@ -124,9 +118,11 @@ const MuaConVatPage: React.FC = () => {
 
     // Lọc danh sách con vật dựa theo Thai được chọn
     const currentThaiOption = thaiOptions.find(t => t.id === selectedThai);
-    const animals = currentThaiOption
-        ? allAnimals.slice(0, currentThaiOption.animals)
-        : [];
+    const animals = useMemo(() => {
+        if (!selectedThai) return [];
+        const source = selectedThai === 'hoai-nhon' ? ANIMALS_HOAI_NHON : ANIMALS_AN_NHON;
+        return toAnimals(source);
+    }, [selectedThai]);
 
     const PRICE_STEP = 10000; // 10,000đ mỗi bước
     const MIN_AMOUNT = 10000;
@@ -196,6 +192,89 @@ const MuaConVatPage: React.FC = () => {
                     ? { ...item, amount: newAmount }
                     : item
             ));
+        }
+    };
+
+    // ========== CHECKOUT ==========
+    const handleCheckout = async () => {
+        if (cart.length === 0 || isCheckingOut) return;
+
+        setIsCheckingOut(true);
+        setCheckoutError(null);
+
+        try {
+            // Group cart items by thaiId
+            const groupsByThai: { [thaiId: string]: CartItem[] } = {};
+            cart.forEach(item => {
+                const tid = item.thaiId || 'unknown';
+                if (!groupsByThai[tid]) groupsByThai[tid] = [];
+                groupsByThai[tid].push(item);
+            });
+
+            // For each Thai group, resolve session and create order
+            const thaiIds = Object.keys(groupsByThai);
+
+            // Currently support single-Thai checkout (most common case)
+            // Multi-Thai would need multiple orders
+            const firstThaiId = thaiIds[0];
+            const firstGroup = groupsByThai[firstThaiId];
+
+            // Get current session for this Thai
+            const sessionData = await getCurrentSession(firstThaiId);
+            if (!sessionData?.session?.id) {
+                throw new Error('Kh\u00f4ng t\u00ecm th\u1ea5y phi\u00ean \u0111ang m\u1edf cho Thai n\u00e0y. Vui l\u00f2ng th\u1eed l\u1ea1i.');
+            }
+
+            const sessionId = sessionData.session.id;
+
+            // Build order items
+            const orderItems = firstGroup.map(item => ({
+                animal_order: item.number,
+                quantity: 1,
+                unit_price: item.amount,
+            }));
+
+            // Create order via API
+            const result = await createOrder({
+                session_id: sessionId,
+                items: orderItems,
+            });
+
+            // If there are more Thai groups, create additional orders
+            for (let i = 1; i < thaiIds.length; i++) {
+                const thaiId = thaiIds[i];
+                const group = groupsByThai[thaiId];
+                const sess = await getCurrentSession(thaiId);
+                if (sess?.session?.id) {
+                    await createOrder({
+                        session_id: sess.session.id,
+                        items: group.map(item => ({
+                            animal_order: item.number,
+                            quantity: 1,
+                            unit_price: item.amount,
+                        })),
+                    });
+                }
+            }
+
+            // Redirect to PayOS payment URL
+            if (result?.order?.payment_url) {
+                // Clear cart after successful order
+                setCart([]);
+                setIsCartOpen(false);
+                window.location.href = result.order.payment_url;
+            } else {
+                // No payment URL but order created
+                setCart([]);
+                setIsCartOpen(false);
+                alert('\u0110\u01a1n h\u00e0ng \u0111\u00e3 \u0111\u01b0\u1ee3c t\u1ea1o! Vui l\u00f2ng ki\u1ec3m tra l\u1ecbch s\u1eed \u0111\u01a1n h\u00e0ng.');
+            }
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Kh\u00f4ng th\u1ec3 t\u1ea1o \u0111\u01a1n h\u00e0ng. Vui l\u00f2ng th\u1eed l\u1ea1i.';
+            setCheckoutError(message);
+            alert(message);
+        } finally {
+            setIsCheckingOut(false);
         }
     };
 
@@ -566,6 +645,8 @@ const MuaConVatPage: React.FC = () => {
                 onRemove={handleRemoveFromCart}
                 onUpdateAmount={handleUpdateCartAmount}
                 totalPrice={totalPrice}
+                onCheckout={handleCheckout}
+                isCheckingOut={isCheckingOut}
             />
         </div >
     );

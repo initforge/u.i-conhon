@@ -23,9 +23,9 @@ const AdminPageWrapper: React.FC<AdminPageWrapperProps> = ({
         <div className="space-y-6">
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
                     <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm transition-transform hover:scale-105 hover:rotate-3 duration-300"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl shadow-sm transition-transform hover:scale-105 hover:rotate-3 duration-300 flex-shrink-0"
                         style={{
                             background: 'linear-gradient(135deg, #ffffff 0%, #FEF2F2 100%)',
                             border: '1px solid #FECACA',
@@ -34,16 +34,16 @@ const AdminPageWrapper: React.FC<AdminPageWrapperProps> = ({
                     >
                         {icon}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <h1
-                            className="text-2xl font-bold tracking-tight"
+                            className="text-lg sm:text-2xl font-bold tracking-tight truncate"
                             style={{ color: '#3d3428', fontFamily: "'Bungee', sans-serif" }}
                         >
                             {title}
                         </h1>
                         {subtitle && (
                             <p
-                                className="text-sm mt-0.5 font-medium"
+                                className="text-xs sm:text-sm mt-0.5 font-medium truncate"
                                 style={{ color: '#9a8c7a' }}
                             >
                                 {subtitle}
@@ -177,8 +177,8 @@ export const AdminTabBar: React.FC<{
                     {tab.count !== undefined && (
                         <span
                             className={`text-xs px-2 py-0.5 rounded-full transition-colors ${activeTab === tab.id
-                                    ? 'bg-red-50 text-red-700'
-                                    : 'bg-gray-200/50 text-gray-500'
+                                ? 'bg-red-50 text-red-700'
+                                : 'bg-gray-200/50 text-gray-500'
                                 }`}
                         >
                             {tab.count}
@@ -230,37 +230,29 @@ export const StatCard: React.FC<{
 }> = ({ label, value, icon, trend, trendValue }) => {
     return (
         <div
-            className="p-5 rounded-xl bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group relative overflow-hidden"
+            className="p-3 sm:p-5 rounded-xl bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group relative overflow-hidden"
             style={{ border: '1px solid #e8e4df' }}
         >
             {/* Decorative background circle */}
             <div className="absolute -right-4 -top-4 w-20 h-20 bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-150"></div>
 
-            <div className="flex items-start justify-between relative z-10">
-                <div>
-                    <p className="text-sm font-medium" style={{ color: '#9a8c7a' }}>{label}</p>
-                    <p className="text-2xl font-bold mt-1 group-hover:text-red-800 transition-colors" style={{ color: '#3d3428' }}>
-                        {value}
+            <div className="relative z-10">
+                <p className="text-xs sm:text-sm font-medium truncate" style={{ color: '#9a8c7a' }}>{label}</p>
+                <p className="text-xl sm:text-2xl font-bold mt-1 group-hover:text-red-800 transition-colors" style={{ color: '#3d3428' }}>
+                    {value}
+                </p>
+                {trend && trendValue && (
+                    <p
+                        className="text-xs mt-2 flex items-center space-x-1 font-medium"
+                        style={{
+                            color: trend === 'up' ? '#166534' : trend === 'down' ? '#991b1b' : '#6b5c4c'
+                        }}
+                    >
+                        <span className="bg-current bg-opacity-10 rounded px-1">
+                            {trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'} {trendValue}
+                        </span>
                     </p>
-                    {trend && trendValue && (
-                        <p
-                            className="text-xs mt-2 flex items-center space-x-1 font-medium"
-                            style={{
-                                color: trend === 'up' ? '#166534' : trend === 'down' ? '#991b1b' : '#6b5c4c'
-                            }}
-                        >
-                            <span className="bg-current bg-opacity-10 rounded px-1">
-                                {trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'} {trendValue}
-                            </span>
-                        </p>
-                    )}
-                </div>
-                <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm transition-transform duration-300 group-hover:rotate-12"
-                    style={{ backgroundColor: '#faf8f5', color: '#991b1b' }}
-                >
-                    {icon}
-                </div>
+                )}
             </div>
         </div>
     );

@@ -33,7 +33,7 @@ router.post('/', requireMXHCompleted, async (req, res) => {
 
         // 1. Check session is still open
         const sessionResult = await client.query(
-            `SELECT id, status, closes_at FROM sessions 
+            `SELECT id, status FROM sessions 
        WHERE id = $1 FOR UPDATE`,
             [session_id]
         );
@@ -162,19 +162,15 @@ router.get('/me', async (req, res) => {
         const { thai_id, status, page = 1, limit = 20 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
-        let baseWhere = 'WHERE o.user_id = $1';
+        let baseWhere = `WHERE o.user_id = $1 AND o.status IN ('paid', 'won', 'lost')`;
         const params = [req.user.id];
         let paramIndex = 2;
 
         if (thai_id) {
+            // Frontend gửi 'an-nhon', DB lưu 'thai-an-nhon' → tự thêm prefix
+            const normalizedThaiId = thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`;
             baseWhere += ` AND s.thai_id = $${paramIndex}`;
-            params.push(thai_id);
-            paramIndex++;
-        }
-
-        if (status) {
-            baseWhere += ` AND o.status = $${paramIndex}`;
-            params.push(status);
+            params.push(normalizedThaiId);
             paramIndex++;
         }
 
@@ -187,11 +183,23 @@ router.get('/me', async (req, res) => {
         );
         const total = parseInt(countResult.rows[0].count);
 
-        // Get paginated data
+        // Get paginated data with items included
         const dataParams = [...params, parseInt(limit), offset];
         const result = await db.query(
             `SELECT o.id, o.total, o.status, o.created_at, o.paid_at,
-                    s.thai_id, s.session_type, s.session_date, s.lunar_label
+                    o.payment_url,
+                    s.thai_id, s.session_type, s.session_date, s.lunar_label,
+                    COALESCE(
+                      (SELECT json_agg(json_build_object(
+                        'animal_order', oi.animal_order,
+                        'animal_name', oi.animal_name,
+                        'quantity', oi.quantity,
+                        'unit_price', oi.unit_price,
+                        'amount', oi.subtotal
+                      ) ORDER BY oi.animal_order)
+                      FROM order_items oi WHERE oi.order_id = o.id),
+                      '[]'::json
+                    ) as items
              FROM orders o
              JOIN sessions s ON o.session_id = s.id
              ${baseWhere}
@@ -252,10 +260,10 @@ router.get('/:id', async (req, res) => {
 // Helper: Get animal name from hardcoded list
 function getAnimalName(order) {
     const animals = [
-        'Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu',
-        'Tuất', 'Hợi', 'Bông', 'Cốc', 'Đèn', 'Dưa', 'Gấu', 'Gối', 'Khăn', 'Kiếm',
-        'Lẵng', 'Lọng', 'Mai', 'Mực', 'Nai', 'Nón', 'Ông', 'Quạt', 'Rồng', 'Rùa',
-        'Sách', 'Trống', 'Voi', 'Vương', 'Dù', 'Cầu', 'Bình', 'Nhạn', 'Tiên', 'Phụng'
+        'Cá Trắng', 'Ốc', 'Ngỗng', 'Công', 'Trùn', 'Cọp', 'Heo', 'Thỏ', 'Trâu', 'Rồng Bay',
+        'Chó', 'Ngựa', 'Voi', 'Mèo', 'Chuột', 'Ong', 'Hạc', 'Kỳ Lân', 'Bướm', 'Hòn Núi',
+        'Én', 'Bồ Câu', 'Khỉ', 'Ếch', 'Quạ', 'Rồng Nằm', 'Rùa', 'Gà', 'Lươn', 'Cá Đỏ',
+        'Tôm', 'Rắn', 'Nhện', 'Nai', 'Dê', 'Bà Vãi', 'Ông Trời', 'Ông Địa', 'Thần Tài', 'Ông Táo'
     ];
     return animals[order - 1] || `Con ${order}`;
 }

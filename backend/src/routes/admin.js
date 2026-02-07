@@ -9,6 +9,19 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper: Normalize session_type from Vietnamese to English (DB format)
+// Frontend may send 'sang'/'chieu'/'toi' but DB stores 'morning'/'afternoon'/'evening'
+const normalizeSessionType = (type) => {
+    const map = { 'sang': 'morning', 'chieu': 'afternoon', 'toi': 'evening' };
+    return map[type] || type;
+};
+
+// Helper: Convert English session_type to Vietnamese key (for profit-loss response)
+const sessionTypeToVietnamese = (type) => {
+    const map = { 'morning': 'sang', 'afternoon': 'chieu', 'evening': 'toi' };
+    return map[type] || type;
+};
+
 // All admin routes require admin role
 router.use(authenticate, requireAdmin);
 
@@ -18,49 +31,93 @@ router.use(authenticate, requireAdmin);
 
 /**
  * GET /admin/stats - Dashboard statistics (SPECS 6.1)
+ * Now properly filters by thai_id, session_type, date
  */
 router.get('/stats', async (req, res) => {
     try {
         const { thai_id, session_type, date } = req.query;
 
-        // Revenue today
-        const revenueResult = await db.query(
-            `SELECT COALESCE(SUM(total), 0) as revenue
-       FROM orders 
-       WHERE paid_at::date = CURRENT_DATE 
-         AND status IN ('paid', 'won', 'lost')`
-        );
-
-        // Total orders all time
-        const totalOrdersResult = await db.query(
-            `SELECT COUNT(*) as total FROM orders WHERE status IN ('paid', 'won', 'lost')`
-        );
-
-        // Orders today
-        const todayOrdersResult = await db.query(
-            `SELECT COUNT(*) as total FROM orders WHERE created_at::date = CURRENT_DATE`
-        );
-
-        // Top 5 animals (most bought)
-        let topQuery = `
-      SELECT oi.animal_order, SUM(oi.quantity) as total_qty, SUM(oi.subtotal) as total_amount
-      FROM order_items oi
-      JOIN orders o ON oi.order_id = o.id
-      WHERE o.status IN ('paid', 'won', 'lost')
-    `;
-        const topParams = [];
+        // Build dynamic filter for session-based queries
+        const sessionFilters = [];
+        const sessionParams = [];
+        let pIdx = 1;
 
         if (thai_id) {
-            topQuery += ` AND o.session_id IN (SELECT id FROM sessions WHERE thai_id = $${topParams.length + 1})`;
-            topParams.push(thai_id);
+            // Support both 'an-nhon' (slug) and 'thai-an-nhon' (id) formats
+            const normalizedId = thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`;
+            sessionFilters.push(`s.thai_id = $${pIdx}`);
+            sessionParams.push(normalizedId);
+            pIdx++;
+        }
+        if (session_type && session_type !== 'all') {
+            sessionFilters.push(`s.session_type = $${pIdx}`);
+            sessionParams.push(normalizeSessionType(session_type));
+            pIdx++;
+        }
+        if (date) {
+            sessionFilters.push(`o.created_at::date = $${pIdx}`);
+            sessionParams.push(date);
+            pIdx++;
         }
 
-        topQuery += ' GROUP BY oi.animal_order ORDER BY total_qty DESC LIMIT 5';
-        const topAnimalsResult = await db.query(topQuery, topParams);
+        const sessionWhereClause = sessionFilters.length > 0
+            ? 'AND ' + sessionFilters.join(' AND ')
+            : '';
 
-        // Bottom 5 animals
-        let bottomQuery = topQuery.replace('DESC', 'ASC');
-        const bottomAnimalsResult = await db.query(bottomQuery, topParams);
+        // Revenue today (filtered by thai/session if specified)
+        const revenueResult = await db.query(
+            `SELECT COALESCE(SUM(o.total), 0) as revenue
+             FROM orders o
+             JOIN sessions s ON o.session_id = s.id
+             WHERE o.paid_at::date = CURRENT_DATE
+               AND o.status IN ('paid', 'won', 'lost')
+               ${sessionWhereClause}`,
+            sessionParams
+        );
+
+        // Total orders all time (filtered)
+        const totalOrdersResult = await db.query(
+            `SELECT COUNT(*) as total
+             FROM orders o
+             JOIN sessions s ON o.session_id = s.id
+             WHERE o.status IN ('paid', 'won', 'lost')
+               ${sessionWhereClause}`,
+            sessionParams
+        );
+
+        // Orders today (filtered)
+        const todayOrdersResult = await db.query(
+            `SELECT COUNT(*) as total
+             FROM orders o
+             JOIN sessions s ON o.session_id = s.id
+             WHERE o.created_at::date = CURRENT_DATE
+               ${sessionWhereClause}`,
+            sessionParams
+        );
+
+        // Top 5 animals (most bought, filtered)
+        const topAnimalsResult = await db.query(
+            `SELECT oi.animal_order, SUM(oi.quantity)::int as total_qty, SUM(oi.subtotal)::int as total_amount
+             FROM order_items oi
+             JOIN orders o ON oi.order_id = o.id
+             JOIN sessions s ON o.session_id = s.id
+             WHERE o.status IN ('paid', 'won', 'lost')
+               ${sessionWhereClause}
+             GROUP BY oi.animal_order ORDER BY total_qty DESC LIMIT 5`,
+            sessionParams
+        );
+
+        // Bottom 5 animals (least bought, filtered)
+        const bottomAnimalsResult = await db.query(
+            `SELECT oi.animal_order, SUM(oi.quantity)::int as total_qty, SUM(oi.subtotal)::int as total_amount
+             FROM order_items oi
+             JOIN orders o ON oi.order_id = o.id
+             JOIN sessions s ON o.session_id = s.id
+             WHERE o.status IN ('paid', 'won', 'lost')
+               ${sessionWhereClause}
+             GROUP BY oi.animal_order ORDER BY total_qty ASC LIMIT 5`,
+            sessionParams
+        );
 
         res.json({
             revenue_today: parseInt(revenueResult.rows[0].revenue),
@@ -72,6 +129,130 @@ router.get('/stats', async (req, res) => {
     } catch (error) {
         console.error('Admin stats error:', error);
         res.status(500).json({ error: 'Không thể lấy thống kê' });
+    }
+});
+
+/**
+ * GET /admin/stats/animals-all - All animals purchase data for BaoCao grid
+ * Returns ALL animals (not just top/bottom 5)
+ */
+router.get('/stats/animals-all', async (req, res) => {
+    try {
+        const { thai_id, session_type, date } = req.query;
+
+        // Build dynamic filter
+        const filters = [];
+        const params = [];
+        let pIdx = 1;
+
+        if (thai_id) {
+            const normalizedId = thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`;
+            filters.push(`s.thai_id = $${pIdx}`);
+            params.push(normalizedId);
+            pIdx++;
+        }
+        if (session_type && session_type !== 'all') {
+            filters.push(`s.session_type = $${pIdx}`);
+            params.push(normalizeSessionType(session_type));
+            pIdx++;
+        }
+        if (date) {
+            filters.push(`o.created_at::date = $${pIdx}`);
+            params.push(date);
+            pIdx++;
+        }
+
+        const whereClause = filters.length > 0
+            ? 'AND ' + filters.join(' AND ')
+            : '';
+
+        const result = await db.query(
+            `SELECT oi.animal_order,
+                    SUM(oi.quantity)::int as total_qty,
+                    SUM(oi.subtotal)::int as total_amount
+             FROM order_items oi
+             JOIN orders o ON oi.order_id = o.id
+             JOIN sessions s ON o.session_id = s.id
+             WHERE o.status IN ('paid', 'won', 'lost')
+               ${whereClause}
+             GROUP BY oi.animal_order
+             ORDER BY oi.animal_order ASC`,
+            params
+        );
+
+        res.json({
+            animals: result.rows
+        });
+    } catch (error) {
+        console.error('Admin stats animals-all error:', error);
+        res.status(500).json({ error: 'Không thể lấy thống kê con vật' });
+    }
+});
+
+/**
+ * GET /admin/stats/animal-orders - Orders for a specific animal (Phase 5)
+ * Query: animal_order (required), thai_id, session_type, date
+ */
+router.get('/stats/animal-orders', async (req, res) => {
+    try {
+        const { animal_order, thai_id, session_type, date } = req.query;
+
+        if (!animal_order) {
+            return res.status(400).json({ error: 'animal_order is required' });
+        }
+
+        const filters = [];
+        const params = [parseInt(animal_order)];
+        let pIdx = 2;
+
+        if (thai_id) {
+            const normalizedId = thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`;
+            filters.push(`s.thai_id = $${pIdx}`);
+            params.push(normalizedId);
+            pIdx++;
+        }
+        if (session_type && session_type !== 'all') {
+            filters.push(`s.session_type = $${pIdx}`);
+            params.push(normalizeSessionType(session_type));
+            pIdx++;
+        }
+        if (date) {
+            filters.push(`o.created_at::date = $${pIdx}`);
+            params.push(date);
+            pIdx++;
+        }
+
+        const whereClause = filters.length > 0
+            ? 'AND ' + filters.join(' AND ')
+            : '';
+
+        const result = await db.query(
+            `SELECT o.id as order_id,
+                    u.name as user_name,
+                    u.phone as user_phone,
+                    oi.quantity,
+                    oi.unit_price,
+                    oi.subtotal,
+                    o.status,
+                    s.session_type,
+                    s.session_date,
+                    o.created_at
+             FROM order_items oi
+             JOIN orders o ON oi.order_id = o.id
+             JOIN sessions s ON o.session_id = s.id
+             JOIN users u ON o.user_id = u.id
+             WHERE oi.animal_order = $1
+               AND o.status IN ('paid', 'won', 'lost')
+               ${whereClause}
+             ORDER BY o.created_at DESC
+             LIMIT 50`,
+            params
+        );
+
+        res.json({ orders: result.rows });
+    } catch (error) {
+        console.error('Admin animal orders error:', error);
+        res.status(500).json({ error: 'Không thể lấy đơn hàng con vật' });
     }
 });
 
@@ -110,10 +291,10 @@ router.get('/sessions', async (req, res) => {
         params.push(parseInt(limit));
         const result = await db.query(
             `SELECT id, thai_id, session_type, session_date, status, 
-                    winning_animal, lunar_label, opens_at, closes_at, created_at
+                    winning_animal, lunar_label, created_at
              FROM sessions 
              ${whereClause}
-             ORDER BY session_date DESC, closes_at DESC
+             ORDER BY session_date DESC, created_at DESC
              LIMIT $${paramIndex}`,
             params
         );
@@ -145,7 +326,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
        LEFT JOIN session_animals sa ON s.id = sa.session_id
        WHERE s.thai_id = $1 AND s.status IN ('open', 'scheduled')
        GROUP BY s.id
-       ORDER BY s.closes_at ASC
+       ORDER BY s.created_at ASC
        LIMIT 1`,
             [thai_id]
         );
@@ -201,7 +382,7 @@ router.get('/orders', async (req, res) => {
         let paramIndex = 1;
 
         if (date) {
-            baseWhere += ` AND s.session_date = $${paramIndex}`;
+            baseWhere += ` AND o.created_at::date = $${paramIndex}`;
             params.push(date);
             paramIndex++;
         }
@@ -214,7 +395,7 @@ router.get('/orders', async (req, res) => {
 
         if (session_type) {
             baseWhere += ` AND s.session_type = $${paramIndex}`;
-            params.push(session_type);
+            params.push(normalizeSessionType(session_type));
             paramIndex++;
         }
 
@@ -325,6 +506,72 @@ router.patch('/orders/:id', async (req, res) => {
 // ================================================
 
 /**
+ * GET /admin/sessions/results - Get lottery results history
+ */
+router.get('/sessions/results', async (req, res) => {
+    try {
+        const { thai_id, year, limit = 100 } = req.query;
+        const params = [];
+        let whereClause = "WHERE status = 'resulted' AND winning_animal IS NOT NULL";
+        let paramIndex = 1;
+
+        if (thai_id) {
+            whereClause += ` AND thai_id = $${paramIndex}`;
+            params.push(thai_id);
+            paramIndex++;
+        }
+
+        if (year) {
+            whereClause += ` AND EXTRACT(YEAR FROM session_date) = $${paramIndex}`;
+            params.push(parseInt(year));
+            paramIndex++;
+        }
+
+        params.push(parseInt(limit));
+        const result = await db.query(
+            `SELECT id, thai_id, session_type, session_date, 
+                    winning_animal, lunar_label, status
+             FROM sessions 
+             ${whereClause}
+             ORDER BY session_date DESC, created_at DESC
+             LIMIT $${paramIndex}`,
+            params
+        );
+
+        res.json({ results: result.rows });
+    } catch (error) {
+        console.error('Get results history error:', error);
+        res.status(500).json({ error: 'Không thể lấy lịch sử kết quả' });
+    }
+});
+
+/**
+ * DELETE /admin/sessions/:id/result - Clear/reset session result
+ */
+router.delete('/sessions/:id/result', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Reset winning_animal and status
+        await db.query(
+            `UPDATE sessions SET winning_animal = NULL, status = 'closed' WHERE id = $1`,
+            [id]
+        );
+
+        // Also reset related orders back to 'paid'
+        await db.query(
+            `UPDATE orders SET status = 'paid' WHERE session_id = $1 AND status IN ('won', 'lost')`,
+            [id]
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Delete result error:', error);
+        res.status(500).json({ error: 'Không thể xóa kết quả' });
+    }
+});
+
+/**
  * POST /admin/sessions/:id/result - Set winning result (SPECS 6.4)
  */
 router.post('/sessions/:id/result', async (req, res) => {
@@ -336,19 +583,36 @@ router.post('/sessions/:id/result', async (req, res) => {
 
         await client.query('BEGIN');
 
+        // Get session info for draw_time calculation
+        const sessionInfo = await client.query(
+            `SELECT thai_id, session_type, session_date FROM sessions WHERE id = $1`, [id]
+        );
+        let drawTime = null;
+        if (sessionInfo.rows.length > 0) {
+            const { thai_id: sid, session_type: stype, session_date: sdate } = sessionInfo.rows[0];
+            const DRAW_TIMES = {
+                'thai-an-nhon': { morning: '11:00', afternoon: '17:00', evening: '21:00' },
+                'thai-nhon-phong': { morning: '11:00', afternoon: '17:00' },
+                'thai-hoai-nhon': { morning: '13:00', afternoon: '19:00' },
+            };
+            const dtStr = DRAW_TIMES[sid]?.[stype] || '23:59';
+            const dateStr = typeof sdate === 'string' ? sdate.split('T')[0] : sdate.toISOString().split('T')[0];
+            drawTime = `${dateStr} ${dtStr}:00`;
+        }
+
         if (is_holiday) {
             // Holiday - no lottery
             await client.query(
-                `UPDATE sessions SET status = 'resulted', lunar_label = $1 WHERE id = $2`,
-                [lunar_label, id]
+                `UPDATE sessions SET status = 'resulted', lunar_label = $1, draw_time = $2 WHERE id = $3`,
+                [lunar_label, drawTime, id]
             );
         } else {
             // Set winning animal
             await client.query(
                 `UPDATE sessions 
-         SET status = 'resulted', winning_animal = $1, lunar_label = $2
-         WHERE id = $3`,
-                [winning_animal, lunar_label, id]
+         SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
+         WHERE id = $4`,
+                [winning_animal, lunar_label, drawTime, id]
             );
 
             // Update order statuses (won/lost)
@@ -371,12 +635,145 @@ router.post('/sessions/:id/result', async (req, res) => {
             );
         }
 
+        // Sync lunar_label to all sessions of same thai_id + date
+        if (lunar_label && sessionInfo.rows.length > 0) {
+            const { thai_id, session_date } = sessionInfo.rows[0];
+            await client.query(
+                `UPDATE sessions SET lunar_label = $1
+                 WHERE thai_id = $2 AND session_date = $3 AND id != $4`,
+                [lunar_label, thai_id, session_date, id]
+            );
+        }
+
         await client.query('COMMIT');
         res.json({ success: true });
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Set result error:', error);
         res.status(500).json({ error: 'Không thể cập nhật kết quả' });
+    } finally {
+        client.release();
+    }
+});
+
+/**
+ * POST /admin/results - Submit lottery result by thai_id + date + slot_label
+ * This API finds or creates the session automatically
+ * Slot labels: "Sáng", "Chiều", "Tối" → mapped to session_type "morning", "afternoon", "evening"
+ */
+router.post('/results', async (req, res) => {
+    const client = await db.getClient();
+
+    try {
+        const { thai_id, date, slot_label, winning_animal, lunar_label, is_holiday } = req.body;
+        console.log('📝 POST /admin/results received:', { thai_id, date, slot_label, winning_animal, lunar_label, is_holiday });
+
+        // Validate required fields
+        if (!thai_id || !date || !slot_label) {
+            return res.status(400).json({ error: 'Thiếu thai_id, date hoặc slot_label' });
+        }
+
+        // Map slot_label to session_type
+        const slotMap = {
+            'Sáng': 'morning',
+            'Chiều': 'afternoon',
+            'Tối': 'evening',
+            'Tối (Tết)': 'evening'
+        };
+        const session_type = slotMap[slot_label];
+        if (!session_type) {
+            return res.status(400).json({ error: `Slot label không hợp lệ: ${slot_label}` });
+        }
+
+        await client.query('BEGIN');
+
+        // Find existing session or create new one
+        let sessionResult = await client.query(
+            `SELECT id FROM sessions 
+             WHERE thai_id = $1 AND session_date = $2 AND session_type = $3`,
+            [thai_id, date, session_type]
+        );
+
+        let sessionId;
+        if (sessionResult.rows.length === 0) {
+            // Create new session
+            const newSession = await client.query(
+                `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
+                 VALUES (gen_random_uuid(), $1, $2, $3, 'scheduled', NOW())
+                 RETURNING id`,
+                [thai_id, session_type, date]
+            );
+            sessionId = newSession.rows[0].id;
+
+            // Auto-populate session_animals for the new session
+            const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
+            await client.query(
+                `INSERT INTO session_animals (session_id, animal_order)
+                 SELECT $1, generate_series(1, $2)`,
+                [sessionId, animalCount]
+            );
+        } else {
+            sessionId = sessionResult.rows[0].id;
+        }
+
+        // Calculate draw_time from SPECS: fixed draw times per Thai + session_type
+        const DRAW_TIMES = {
+            'thai-an-nhon': { morning: '11:00', afternoon: '17:00', evening: '21:00' },
+            'thai-nhon-phong': { morning: '11:00', afternoon: '17:00' },
+            'thai-hoai-nhon': { morning: '13:00', afternoon: '19:00' },
+        };
+        const drawTimeStr = DRAW_TIMES[thai_id]?.[session_type] || '23:59';
+        const drawTime = `${date} ${drawTimeStr}:00`; // e.g. '2026-02-07 17:00:00'
+
+        // Update the session with result
+        if (is_holiday) {
+            await client.query(
+                `UPDATE sessions SET status = 'resulted', lunar_label = $1, draw_time = $2 WHERE id = $3`,
+                [lunar_label, drawTime, sessionId]
+            );
+        } else {
+            await client.query(
+                `UPDATE sessions 
+                 SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
+                 WHERE id = $4`,
+                [winning_animal, lunar_label, drawTime, sessionId]
+            );
+
+            // Update order statuses (won/lost)
+            await client.query(
+                `UPDATE orders SET status = 'won'
+                 WHERE session_id = $1 AND status = 'paid'
+                   AND id IN (
+                     SELECT order_id FROM order_items WHERE animal_order = $2
+                   )`,
+                [sessionId, winning_animal]
+            );
+
+            await client.query(
+                `UPDATE orders SET status = 'lost'
+                 WHERE session_id = $1 AND status = 'paid'
+                   AND id NOT IN (
+                     SELECT order_id FROM order_items WHERE animal_order = $2
+                   )`,
+                [sessionId, winning_animal]
+            );
+        }
+
+        // Sync lunar_label to all sessions of same thai_id + date
+        if (lunar_label) {
+            await client.query(
+                `UPDATE sessions SET lunar_label = $1
+                 WHERE thai_id = $2 AND session_date = $3 AND id != $4`,
+                [lunar_label, thai_id, date, sessionId]
+            );
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, session_id: sessionId });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Submit result error:', error);
+        res.status(500).json({ error: 'Không thể lưu kết quả' });
     } finally {
         client.release();
     }
@@ -462,7 +859,8 @@ router.get('/users', async (req, res) => {
         const result = await db.query(
             `SELECT id, phone, name, zalo, role, created_at,
                     bank_code, bank_account, bank_holder,
-                    (SELECT COUNT(*) FROM orders WHERE user_id = users.id) as order_count
+                    (SELECT COUNT(*) FROM orders WHERE user_id = users.id AND status IN ('paid', 'won', 'lost'))::int as order_count,
+                    COALESCE((SELECT SUM(total) FROM orders WHERE user_id = users.id AND status IN ('paid', 'won', 'lost')), 0)::bigint as total_spent
              FROM users
              ${baseWhere}
              ORDER BY created_at DESC
@@ -470,12 +868,21 @@ router.get('/users', async (req, res) => {
             dataParams
         );
 
+        // Aggregate stats for stat cards (global, not page-specific)
+        const aggregateResult = await db.query(
+            `SELECT
+                (SELECT COUNT(*) FROM users WHERE role = 'user')::int as total_users,
+                (SELECT COUNT(DISTINCT user_id) FROM orders WHERE status IN ('paid', 'won', 'lost'))::int as users_with_orders,
+                (SELECT COUNT(*) FROM orders WHERE status IN ('paid', 'won', 'lost'))::int as total_orders`
+        );
+
         res.json({
             users: result.rows,
             total,
             page: parseInt(page),
             limit: parseInt(limit),
-            hasMore: offset + result.rows.length < total
+            hasMore: offset + result.rows.length < total,
+            aggregate: aggregateResult.rows[0]
         });
     } catch (error) {
         console.error('Admin users error:', error);
@@ -638,27 +1045,54 @@ function extractYoutubeId(input) {
 // NOTE: GET /community/posts consolidated endpoint is at line ~1035
 
 /**
- * PATCH /admin/community/comments/:id/ban - Toggle ban comment
+ * PATCH /admin/community/comments/:id/ban - Ban the USER who made this comment
  */
 router.patch('/community/comments/:id/ban', async (req, res) => {
     try {
         const { id } = req.params;
 
-        const result = await db.query(
-            'UPDATE community_comments SET is_banned = NOT is_banned WHERE id = $1 RETURNING is_banned',
+        // Get user_id from comment
+        const commentResult = await db.query(
+            'SELECT user_id FROM community_comments WHERE id = $1',
             [id]
         );
 
-        if (result.rows.length === 0) {
+        if (commentResult.rows.length === 0) {
             return res.status(404).json({ error: 'Bình luận không tồn tại' });
         }
 
+        const userId = commentResult.rows[0].user_id;
+        if (!userId) {
+            return res.status(400).json({ error: 'Không tìm thấy user của bình luận này' });
+        }
+
+        // Toggle user's comment ban status
+        const result = await db.query(
+            'UPDATE users SET is_comment_banned = NOT is_comment_banned WHERE id = $1 RETURNING is_comment_banned, name, phone',
+            [userId]
+        );
+
+        // If user is now banned, delete all their comments
+        let deletedCount = 0;
+        if (result.rows[0].is_comment_banned) {
+            const deleteResult = await db.query(
+                'DELETE FROM community_comments WHERE user_id = $1',
+                [userId]
+            );
+            deletedCount = deleteResult.rowCount;
+        }
+
         res.json({
-            is_banned: result.rows[0].is_banned,
-            message: result.rows[0].is_banned ? 'Đã cấm bình luận' : 'Đã bỏ cấm bình luận'
+            is_banned: result.rows[0].is_comment_banned,
+            user_name: result.rows[0].name,
+            user_phone: result.rows[0].phone,
+            deleted_comments: deletedCount,
+            message: result.rows[0].is_comment_banned
+                ? `Đã cấm user ${result.rows[0].phone} và xóa ${deletedCount} bình luận`
+                : `Đã bỏ cấm user ${result.rows[0].phone}`
         });
     } catch (error) {
-        console.error('Ban comment error:', error);
+        console.error('Ban user error:', error);
         res.status(500).json({ error: 'Không thể thực hiện' });
     }
 });
@@ -673,6 +1107,102 @@ router.delete('/community/comments/:id', async (req, res) => {
     } catch (error) {
         console.error('Delete comment error:', error);
         res.status(500).json({ error: 'Không thể xóa' });
+    }
+});
+
+/**
+ * DELETE /admin/community/comments/bulk - Delete multiple comments at once
+ */
+router.delete('/community/comments/bulk', async (req, res) => {
+    try {
+        const { ids } = req.body;
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'Danh sách ID không hợp lệ' });
+        }
+
+        const result = await db.query(
+            'DELETE FROM community_comments WHERE id = ANY($1)',
+            [ids]
+        );
+
+        res.json({
+            success: true,
+            deleted: result.rowCount
+        });
+    } catch (error) {
+        console.error('Bulk delete comments error:', error);
+        res.status(500).json({ error: 'Không thể xóa hàng loạt' });
+    }
+});
+
+/**
+ * PATCH /admin/community/comments/bulk-ban - Ban multiple users at once
+ */
+router.patch('/community/comments/bulk-ban', async (req, res) => {
+    try {
+        const { commentIds } = req.body;
+
+        if (!commentIds || !Array.isArray(commentIds) || commentIds.length === 0) {
+            return res.status(400).json({ error: 'Danh sách comment ID không hợp lệ' });
+        }
+
+        // Get unique user IDs from comments
+        const usersResult = await db.query(
+            'SELECT DISTINCT user_id FROM community_comments WHERE id = ANY($1) AND user_id IS NOT NULL',
+            [commentIds]
+        );
+
+        if (usersResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Không tìm thấy user nào' });
+        }
+
+        const userIds = usersResult.rows.map(row => row.user_id);
+
+        // Ban all users
+        await db.query(
+            'UPDATE users SET is_comment_banned = true WHERE id = ANY($1)',
+            [userIds]
+        );
+
+        res.json({
+            success: true,
+            bannedUsers: userIds.length,
+            userIds
+        });
+    } catch (error) {
+        console.error('Bulk ban users error:', error);
+        res.status(500).json({ error: 'Không thể cấm hàng loạt' });
+    }
+});
+
+
+// Get list of banned users (users who are banned from commenting)
+router.get('/community/banned-users', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT phone, name, created_at as banned_at
+            FROM users
+            WHERE is_comment_banned = true
+            ORDER BY created_at DESC
+        `);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching banned users:', error);
+        res.status(500).json({ error: 'Failed to fetch banned users' });
+    }
+});
+
+// Unban a specific user (allow them to comment again)
+router.patch('/community/users/:phone/unban', async (req, res) => {
+    const { phone } = req.params;
+    try {
+        await db.query('UPDATE users SET is_comment_banned = false WHERE phone = $1', [phone]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error unbanning user:', error);
+        res.status(500).json({ error: 'Failed to unban user' });
     }
 });
 
@@ -706,10 +1236,9 @@ router.get('/community/stats', async (req, res) => {
             params
         );
 
-        // Comments count
+        // Comments count - need to join with posts for thai_id filter
         let commentQuery = `
-            SELECT COUNT(*) as total, 
-                   COUNT(*) FILTER (WHERE is_banned = true) as banned
+            SELECT COUNT(*) as total
             FROM community_comments c
             JOIN community_posts p ON c.post_id = p.id
         `;
@@ -718,11 +1247,16 @@ router.get('/community/stats', async (req, res) => {
         }
         const commentsResult = await db.query(commentQuery, params);
 
+        // Banned users count
+        const bannedUsersResult = await db.query(
+            'SELECT COUNT(*) as count FROM users WHERE is_comment_banned = true'
+        );
+
         res.json({
             videos: parseInt(videoResult.rows[0].count),
             likes: parseInt(likesResult.rows[0].total),
             comments: parseInt(commentsResult.rows[0].total),
-            bannedComments: parseInt(commentsResult.rows[0].banned)
+            bannedComments: parseInt(bannedUsersResult.rows[0].count)  // Changed from bannedUsers
         });
     } catch (error) {
         console.error('CMS stats error:', error);
@@ -736,57 +1270,164 @@ router.get('/community/stats', async (req, res) => {
 
 /**
  * GET /admin/profit-loss - Revenue vs Payout by session (for Kết quả xổ page)
+ * Payout ratios: 1:30 standard, 1:70 for Trùn (animal_order=5)
  */
 router.get('/profit-loss', async (req, res) => {
     try {
         const { thai_id, date } = req.query;
         const targetDate = date || new Date().toISOString().split('T')[0];
+        const normalizedThaiId = thai_id
+            ? (thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`)
+            : 'thai-an-nhon';
 
-        // Get sessions for the date
+        // Single efficient query: get sessions + revenue + payout in 2 queries (not N+1)
         const sessionsResult = await db.query(
             `SELECT id, session_type, winning_animal
              FROM sessions 
              WHERE thai_id = $1 AND session_date = $2
              ORDER BY session_type`,
-            [thai_id || 'an-nhon', targetDate]
+            [normalizedThaiId, targetDate]
         );
 
+        if (sessionsResult.rows.length === 0) {
+            return res.json({
+                date: targetDate,
+                thai_id: normalizedThaiId,
+                profitLoss: {}
+            });
+        }
+
+        const sessionIds = sessionsResult.rows.map(s => s.id);
+
+        // Revenue per session (single query)
+        const revenueResult = await db.query(
+            `SELECT session_id, COALESCE(SUM(total), 0)::int as revenue
+             FROM orders 
+             WHERE session_id = ANY($1) AND status IN ('paid', 'won', 'lost')
+             GROUP BY session_id`,
+            [sessionIds]
+        );
+        const revenueMap = {};
+        revenueResult.rows.forEach(r => { revenueMap[r.session_id] = r.revenue; });
+
+        // Payout per session (single query, with correct multiplier)
+        // Standard: subtotal * 30 (1 ăn 30)
+        // Trùn (animal_order=5): subtotal * 70 (1 ăn 70)
+        const payoutResult = await db.query(
+            `SELECT o.session_id,
+                    COALESCE(SUM(
+                        CASE WHEN oi.animal_order = 5 
+                             THEN oi.subtotal * 70 
+                             ELSE oi.subtotal * 30 
+                        END
+                    ), 0)::int as payout
+             FROM order_items oi
+             JOIN orders o ON oi.order_id = o.id
+             JOIN sessions s ON o.session_id = s.id
+             WHERE o.session_id = ANY($1) 
+               AND o.status = 'won' 
+               AND oi.animal_order = s.winning_animal
+             GROUP BY o.session_id`,
+            [sessionIds]
+        );
+        const payoutMap = {};
+        payoutResult.rows.forEach(r => { payoutMap[r.session_id] = r.payout; });
+
+        // Build response
         const profitLoss = {};
-
         for (const session of sessionsResult.rows) {
-            // Revenue = total từ orders paid/won/lost
-            const revenueResult = await db.query(
-                `SELECT COALESCE(SUM(total), 0) as revenue
-                 FROM orders 
-                 WHERE session_id = $1 AND status IN ('paid', 'won', 'lost')`,
-                [session.id]
-            );
-
-            // Payout = total trả thưởng cho orders won
-            const payoutResult = await db.query(
-                `SELECT COALESCE(SUM(oi.subtotal * 9), 0) as payout
-                 FROM order_items oi
-                 JOIN orders o ON oi.order_id = o.id
-                 WHERE o.session_id = $1 AND o.status = 'won' AND oi.animal_order = $2`,
-                [session.id, session.winning_animal]
-            );
-
-            const sessionTypeKey = session.session_type; // 'sang', 'chieu', 'toi', etc.
-            profitLoss[sessionTypeKey] = {
-                revenue: parseInt(revenueResult.rows[0].revenue),
-                payout: parseInt(payoutResult.rows[0].payout),
+            profitLoss[sessionTypeToVietnamese(session.session_type)] = {
+                revenue: revenueMap[session.id] || 0,
+                payout: payoutMap[session.id] || 0,
                 winningAnimal: session.winning_animal
             };
         }
 
         res.json({
             date: targetDate,
-            thai_id: thai_id || 'an-nhon',
+            thai_id: normalizedThaiId,
             profitLoss
         });
     } catch (error) {
         console.error('Profit/Loss stats error:', error);
         res.status(500).json({ error: 'Không thể lấy thống kê' });
+    }
+});
+
+/**
+ * GET /admin/profit-loss/yearly - Yearly profit/loss aggregation
+ * Returns revenue + payout grouped by session_type for the entire year
+ */
+router.get('/profit-loss/yearly', async (req, res) => {
+    try {
+        const { thai_id, year } = req.query;
+        const targetYear = year || new Date().getFullYear();
+        const normalizedThaiId = thai_id
+            ? (thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`)
+            : 'thai-an-nhon';
+
+        // Revenue per session_type for the year
+        const revenueResult = await db.query(
+            `SELECT s.session_type, COALESCE(SUM(o.total), 0)::int as revenue
+             FROM orders o
+             JOIN sessions s ON o.session_id = s.id
+             WHERE s.thai_id = $1
+               AND EXTRACT(YEAR FROM s.session_date) = $2
+               AND o.status IN ('paid', 'won', 'lost')
+             GROUP BY s.session_type
+             ORDER BY s.session_type`,
+            [normalizedThaiId, targetYear]
+        );
+
+        // Payout per session_type for the year (correct multipliers)
+        const payoutResult = await db.query(
+            `SELECT s.session_type,
+                    COALESCE(SUM(
+                        CASE WHEN oi.animal_order = 5 
+                             THEN oi.subtotal * 70 
+                             ELSE oi.subtotal * 30 
+                        END
+                    ), 0)::int as payout
+             FROM order_items oi
+             JOIN orders o ON oi.order_id = o.id
+             JOIN sessions s ON o.session_id = s.id
+             WHERE s.thai_id = $1
+               AND EXTRACT(YEAR FROM s.session_date) = $2
+               AND o.status = 'won'
+               AND oi.animal_order = s.winning_animal
+             GROUP BY s.session_type
+             ORDER BY s.session_type`,
+            [normalizedThaiId, targetYear]
+        );
+
+        // Merge into unified response
+        const profitLoss = {};
+        const revenueMap = {};
+        revenueResult.rows.forEach(r => { revenueMap[r.session_type] = r.revenue; });
+        const payoutMap = {};
+        payoutResult.rows.forEach(r => { payoutMap[r.session_type] = r.payout; });
+
+        // Include all session types that have any data
+        const allSessionTypes = new Set([
+            ...revenueResult.rows.map(r => r.session_type),
+            ...payoutResult.rows.map(r => r.session_type)
+        ]);
+
+        for (const st of allSessionTypes) {
+            profitLoss[sessionTypeToVietnamese(st)] = {
+                revenue: revenueMap[st] || 0,
+                payout: payoutMap[st] || 0
+            };
+        }
+
+        res.json({
+            year: parseInt(targetYear),
+            thai_id: normalizedThaiId,
+            profitLoss
+        });
+    } catch (error) {
+        console.error('Yearly Profit/Loss error:', error);
+        res.status(500).json({ error: 'Không thể lấy thống kê năm' });
     }
 });
 
@@ -1008,8 +1649,7 @@ router.get('/community/posts', async (req, res) => {
         }
 
         const result = await db.query(
-            `SELECT id, thai_id, youtube_id, title, content, like_count, is_pinned, 
-                    is_approved, created_at
+            `SELECT id, thai_id, youtube_id, title, content, like_count, is_pinned, created_at
              FROM community_posts
              ${where}
              ORDER BY is_pinned DESC, created_at DESC`,
@@ -1020,8 +1660,8 @@ router.get('/community/posts', async (req, res) => {
         const postsWithComments = await Promise.all(
             result.rows.map(async (post) => {
                 const commentsResult = await db.query(
-                    `SELECT c.id, c.content, c.is_banned, c.created_at,
-                            u.name as user_name, u.phone as user_phone
+                    `SELECT c.id, c.content, c.created_at, c.user_id,
+                            u.name as user_name, u.phone as user_phone, u.is_comment_banned as is_banned
                      FROM community_comments c
                      LEFT JOIN users u ON c.user_id = u.id
                      WHERE c.post_id = $1
@@ -1064,27 +1704,21 @@ router.get('/community/stats', async (req, res) => {
             params
         );
 
-        // Comments count - need to join with posts for thai_id filter
-        let commentsQuery = `SELECT COUNT(*) as count FROM community_comments`;
-        let bannedQuery = `SELECT COUNT(*) as count FROM community_comments WHERE is_banned = true`;
-
-        if (thai_id) {
-            commentsQuery = `SELECT COUNT(*) as count FROM community_comments c 
-                             JOIN community_posts p ON c.post_id = p.id 
-                             WHERE p.thai_id = $1`;
-            bannedQuery = `SELECT COUNT(*) as count FROM community_comments c 
-                           JOIN community_posts p ON c.post_id = p.id 
-                           WHERE p.thai_id = $1 AND c.is_banned = true`;
-        }
-
+        const commentsQuery = `SELECT COUNT(*) as count FROM community_comments c 
+                               JOIN community_posts p ON c.post_id = p.id 
+                               ${thai_id ? 'WHERE p.thai_id = $1' : ''}`;
         const commentsResult = await db.query(commentsQuery, params);
-        const bannedResult = await db.query(bannedQuery, params);
+
+        // Banned users count
+        const bannedResult = await db.query(
+            'SELECT COUNT(*) as count FROM users WHERE is_comment_banned = true'
+        );
 
         res.json({
             videos: parseInt(videosResult.rows[0]?.count || 0),
             likes: parseInt(likesResult.rows[0]?.count || 0),
             comments: parseInt(commentsResult.rows[0]?.count || 0),
-            bannedComments: parseInt(bannedResult.rows[0]?.count || 0)
+            bannedUsers: parseInt(bannedResult.rows[0]?.count || 0)
         });
     } catch (error) {
         console.error('Get CMS stats error:', error);
@@ -1108,8 +1742,8 @@ router.post('/community/posts', async (req, res) => {
         const youtube_id = youtubeMatch ? youtubeMatch[1] : youtube_url;
 
         const result = await db.query(
-            `INSERT INTO community_posts (thai_id, youtube_id, title, content, is_pinned, is_approved)
-             VALUES ($1, $2, $3, $4, $5, true)
+            `INSERT INTO community_posts (thai_id, youtube_id, title, content, is_pinned)
+             VALUES ($1, $2, $3, $4, $5)
              RETURNING *`,
             [thai_id, youtube_id, title, content || '', is_pinned]
         );
@@ -1140,34 +1774,7 @@ router.delete('/community/posts/:id', async (req, res) => {
     }
 });
 
-/**
- * PATCH /admin/community/comments/:id/ban - Toggle ban status
- */
-router.patch('/community/comments/:id/ban', async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const result = await db.query(
-            `UPDATE community_comments 
-             SET is_banned = NOT is_banned 
-             WHERE id = $1 
-             RETURNING is_banned`,
-            [id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Không tìm thấy bình luận' });
-        }
-
-        res.json({
-            is_banned: result.rows[0].is_banned,
-            message: result.rows[0].is_banned ? 'Đã cấm bình luận' : 'Đã bỏ cấm'
-        });
-    } catch (error) {
-        console.error('Ban comment error:', error);
-        res.status(500).json({ error: 'Không thể thực hiện' });
-    }
-});
+// NOTE: Ban endpoint moved to line ~640 (consolidated)
 
 /**
  * DELETE /admin/community/comments/:id - Delete a comment

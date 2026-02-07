@@ -8,12 +8,15 @@ import {
     deleteAdminPost as apiDeletePost,
     toggleBanComment,
     deleteAdminComment,
+    getBannedUsers,
+    unbanUser,
     AdminCMSPost,
-    AdminCMSStats
+    AdminCMSStats,
+    BannedUser
 } from '../../services/api';
 
 const thaiConfig = {
-    'all': { name: 'Tất cả', icon: '📋', color: 'gray' },
+    'all': { name: 'Cổ Nhơn An Nhơn Bình Định', icon: '📋', color: 'gray' },
     'an-nhon': { name: 'An Nhơn', icon: '🎯', color: 'red' },
     'nhon-phong': { name: 'Nhơn Phong', icon: '🏆', color: 'blue' },
     'hoai-nhon': { name: 'Hoài Nhơn', icon: '🎲', color: 'green' }
@@ -23,13 +26,15 @@ const AdminCMS: React.FC = () => {
     const [posts, setPosts] = useState<AdminCMSPost[]>([]);
     const [stats, setStats] = useState<AdminCMSStats>({ videos: 0, likes: 0, comments: 0, bannedComments: 0 });
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'video' | 'binh-luan'>('video');
+    const [activeTab, setActiveTab] = useState<'video' | 'binh-luan' | 'nguoi-bi-cam'>('video');
     const [selectedThai, setSelectedThai] = useState<'all' | 'an-nhon' | 'nhon-phong' | 'hoai-nhon'>('all');
     const [selectedPost, setSelectedPost] = useState<string | null>(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [commentToDelete, setCommentToDelete] = useState<{ postId: string; commentId: string } | null>(null);
     const [showVideoForm, setShowVideoForm] = useState(false);
     const [newVideo, setNewVideo] = useState({ title: '', content: '', videoUrl: '' });
+    const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
+    const [bannedUsers, setBannedUsers] = useState<BannedUser[]>([]);
 
     // Fetch data from API
     const fetchData = useCallback(async () => {
@@ -53,9 +58,27 @@ const AdminCMS: React.FC = () => {
         }
     }, [selectedThai]);
 
+    // Fetch banned users
+    const fetchBannedUsers = useCallback(async () => {
+        try {
+            const data = await getBannedUsers();
+            setBannedUsers(data);
+        } catch (error) {
+            console.error('Failed to fetch banned users:', error);
+        }
+    }, []);
+
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+        fetchBannedUsers(); // Always fetch banned users on mount
+    }, [fetchData, fetchBannedUsers]);
+
+    // Fetch banned users when switching to banned tab
+    useEffect(() => {
+        if (activeTab === 'nguoi-bi-cam') {
+            fetchBannedUsers();
+        }
+    }, [activeTab, fetchBannedUsers]);
 
     // Computed values
     const filteredPosts = posts;
@@ -88,23 +111,109 @@ const AdminCMS: React.FC = () => {
 
     const confirmDeleteComment = async () => {
         if (commentToDelete) {
+            // Optimistic update
+            setPosts(prev => prev.map(post =>
+                post.id === commentToDelete.postId
+                    ? { ...post, comments: post.comments.filter(c => c.id !== commentToDelete.commentId) }
+                    : post
+            ));
             try {
                 await deleteAdminComment(commentToDelete.commentId);
-                fetchData(); // Refresh data
+                selectedComments.delete(commentToDelete.commentId);
+                setSelectedComments(new Set(selectedComments));
             } catch (error) {
                 console.error('Failed to delete comment:', error);
+                fetchData(); // Rollback on error
             }
             setShowDeleteModal(false);
             setCommentToDelete(null);
         }
     };
 
-    const handleToggleBan = async (postId: string, commentId: string) => {
+    const handleToggleBan = async (_postId: string, commentId: string) => {
         try {
             await toggleBanComment(commentId);
-            fetchData(); // Refresh data
+            // Refresh all data to sync ban status across all comments from same user
+            await fetchData();
+            await fetchBannedUsers();
         } catch (error) {
             console.error('Failed to toggle ban:', error);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        const ids = Array.from(selectedComments);
+        if (ids.length === 0) return;
+        if (!confirm(`Xóa ${ids.length} bình luận?`)) return;
+
+        // Optimistic update
+        setPosts(prev => prev.map(post => ({
+            ...post,
+            comments: post.comments.filter(c => !ids.includes(c.id))
+        })));
+
+        try {
+            const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+            const token = localStorage.getItem('conhon_token');
+            await fetch(`${API_BASE}/admin/community/comments/bulk`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ ids })
+            });
+            setSelectedComments(new Set());
+        } catch (error) {
+            console.error('Bulk delete failed:', error);
+            fetchData(); // Rollback
+        }
+    };
+
+    const handleBulkBan = async () => {
+        const commentIds = Array.from(selectedComments);
+        if (commentIds.length === 0) return;
+        if (!confirm(`Cấm ${commentIds.length} users?`)) return;
+
+        try {
+            const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+            const token = localStorage.getItem('conhon_token');
+            await fetch(`${API_BASE}/admin/community/comments/bulk-ban`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ commentIds })
+            });
+            setSelectedComments(new Set());
+            fetchData();
+        } catch (error) {
+            console.error('Bulk ban failed:', error);
+        }
+    };
+
+    // Unban user by phone number
+    const handleUnbanUser = async (userPhone: string) => {
+        try {
+            await unbanUser(userPhone);
+            fetchBannedUsers(); // Refresh banned users list
+            fetchData(); // Refresh main data
+        } catch (error) {
+            console.error('Failed to unban user:', error);
+        }
+    };
+
+    const toggleSelectComment = (id: string) => {
+        const newSet = new Set(selectedComments);
+        if (newSet.has(id)) {
+            newSet.delete(id);
+        } else {
+            newSet.add(id);
+        }
+        setSelectedComments(newSet);
+    };
+
+    const toggleSelectAll = () => {
+        const allCommentIds = filteredPosts.flatMap(p => p.comments.map(c => c.id));
+        if (selectedComments.size === allCommentIds.length) {
+            setSelectedComments(new Set());
+        } else {
+            setSelectedComments(new Set(allCommentIds));
         }
     };
 
@@ -129,17 +238,17 @@ const AdminCMS: React.FC = () => {
     }
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="bg-gradient-to-r from-red-600 to-orange-500 rounded-2xl p-6 text-white shadow-lg">
-                <h1 className="text-2xl font-bold mb-2">📺 Quản lý cộng đồng</h1>
-                <p className="text-red-100">Quản lý video, bình luận và nội dung cộng đồng</p>
+            <div className="bg-gradient-to-r from-red-600 to-orange-500 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg">
+                <h1 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2">📺 Quản lý cộng đồng</h1>
+                <p className="text-sm sm:text-base text-red-100">Quản lý video, bình luận và nội dung cộng đồng</p>
             </div>
 
             {/* Thai Selector - 3 Mini Tabs */}
-            <div className="bg-white rounded-xl shadow-md p-4">
-                <p className="text-sm text-gray-500 mb-3">Chọn Thai để quản lý:</p>
-                <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">Chọn Thai để quản lý:</p>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {(['an-nhon', 'nhon-phong', 'hoai-nhon'] as const).map(thaiId => {
                         const config = thaiConfig[thaiId];
                         const isSelected = selectedThai === thaiId;
@@ -148,18 +257,18 @@ const AdminCMS: React.FC = () => {
                             <button
                                 key={thaiId}
                                 onClick={() => setSelectedThai(thaiId)}
-                                className={`p-4 rounded-xl border-2 transition-all ${isSelected
+                                className={`p-2 sm:p-4 rounded-xl border-2 transition-all ${isSelected
                                     ? `border-${config.color}-500 bg-${config.color}-50 shadow-lg`
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
                                     }`}
                             >
-                                <div className="mb-2 flex justify-center">
-                                    <ThaiIcon thaiId={thaiId} size={40} />
+                                <div className="mb-1 sm:mb-2 flex justify-center">
+                                    <ThaiIcon thaiId={thaiId} size={28} />
                                 </div>
-                                <p className={`font-bold ${isSelected ? `text-${config.color}-700` : 'text-gray-800'}`}>
+                                <p className={`text-xs sm:text-base font-bold ${isSelected ? `text-${config.color}-700` : 'text-gray-800'}`}>
                                     {config.name}
                                 </p>
-                                <p className="text-sm text-gray-500">{thaiPosts.length} bài viết</p>
+                                <p className="text-[10px] sm:text-sm text-gray-500">{thaiPosts.length} bài</p>
                             </button>
                         );
                     })}
@@ -167,41 +276,41 @@ const AdminCMS: React.FC = () => {
             </div>
 
             {/* Stats cho Thai đang chọn */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl p-4 shadow-sm border flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                        <VideoIcon size={28} />
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="bg-white rounded-xl p-2 sm:p-4 shadow-sm border flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+                        <VideoIcon size={18} />
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold text-gray-800">{filteredPosts.filter(p => p.youtube_id).length}</p>
-                        <p className="text-sm text-gray-500">Video</p>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
-                        <CommentIcon size={28} />
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold text-gray-800">{totalComments}</p>
-                        <p className="text-sm text-gray-500">Bình luận</p>
+                    <div className="min-w-0">
+                        <p className="text-lg sm:text-xl font-bold text-gray-800">{filteredPosts.filter(p => p.youtube_id).length}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500 truncate">Video</p>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
-                        <BanIcon size={28} />
+                <div className="bg-white rounded-xl p-2 sm:p-4 shadow-sm border flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 flex-shrink-0">
+                        <CommentIcon size={18} />
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold text-gray-800">{bannedComments}</p>
-                        <p className="text-sm text-gray-500">Đang cấm</p>
+                    <div className="min-w-0">
+                        <p className="text-lg sm:text-xl font-bold text-gray-800">{totalComments}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500 truncate">Bình luận</p>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-pink-600">
-                        <HeartIcon size={28} />
+                <div className="bg-white rounded-xl p-2 sm:p-4 shadow-sm border flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center text-red-600 flex-shrink-0">
+                        <BanIcon size={18} />
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold text-gray-800">{totalLikes}</p>
-                        <p className="text-sm text-gray-500">Lượt thích</p>
+                    <div className="min-w-0">
+                        <p className="text-lg sm:text-xl font-bold text-gray-800">{bannedComments}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500 truncate">Đang cấm</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-xl p-2 sm:p-4 shadow-sm border flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-pink-100 rounded-lg flex items-center justify-center text-pink-600 flex-shrink-0">
+                        <HeartIcon size={18} />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-lg sm:text-xl font-bold text-gray-800">{totalLikes}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500 truncate">Lượt thích</p>
                     </div>
                 </div>
             </div>
@@ -209,36 +318,45 @@ const AdminCMS: React.FC = () => {
             {/* Main Content Tabs */}
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
                 {/* Tab Header với tên Thai */}
-                <div className="border-b bg-gray-50 px-4 py-2">
-                    <span className="text-xl font-bold">{currentThaiConfig.icon} {currentThaiConfig.name}</span>
+                <div className="border-b bg-gray-50 px-3 sm:px-4 py-2">
+                    <span className="text-sm sm:text-xl font-bold truncate block">{currentThaiConfig.icon} {currentThaiConfig.name}</span>
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="border-b overflow-x-auto">
-                    <div className="flex min-w-max">
+                <div className="border-b">
+                    <div className="flex">
                         <button
                             onClick={() => setActiveTab('video')}
-                            className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${activeTab === 'video'
+                            className={`flex-1 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors text-center ${activeTab === 'video'
                                 ? 'text-red-600 border-b-2 border-red-600 bg-red-50'
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
-                            📺 Video ({filteredPosts.filter(p => p.youtube_id).length})
+                            📺 <span className="hidden sm:inline">Video </span>({filteredPosts.filter(p => p.youtube_id).length})
                         </button>
                         <button
                             onClick={() => setActiveTab('binh-luan')}
-                            className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${activeTab === 'binh-luan'
+                            className={`flex-1 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors text-center ${activeTab === 'binh-luan'
                                 ? 'text-red-600 border-b-2 border-red-600 bg-red-50'
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
-                            💬 Bình luận ({totalComments})
+                            💬 <span className="hidden sm:inline">Bình luận </span>({totalComments})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('nguoi-bi-cam')}
+                            className={`flex-1 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors text-center ${activeTab === 'nguoi-bi-cam'
+                                ? 'text-red-600 border-b-2 border-red-600 bg-red-50'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                }`}
+                        >
+                            🚫 <span className="hidden sm:inline">Cấm </span>({bannedUsers.length})
                         </button>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-3 sm:p-6">
                     {activeTab === 'video' ? (
                         // Video Tab - Full Layout như cũ
                         <div className="space-y-6">
@@ -427,7 +545,7 @@ const AdminCMS: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    ) : (
+                    ) : activeTab === 'binh-luan' ? (
                         // All Comments Tab
                         <div className="space-y-3">
                             <div className="mb-4">
@@ -490,7 +608,49 @@ const AdminCMS: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    )}
+                    ) : activeTab === 'nguoi-bi-cam' ? (
+                        // Banned Users Tab
+                        <div className="space-y-3">
+                            <div className="mb-4">
+                                <p className="text-gray-600 text-sm">Danh sách người chơi đang bị cấm bình luận</p>
+                            </div>
+                            {bannedUsers.map(user => (
+                                <div
+                                    key={user.phone}
+                                    className="flex items-start space-x-3 p-4 rounded-lg bg-red-50 border border-red-200"
+                                >
+                                    <div className="w-10 h-10 bg-red-200 rounded-full flex items-center justify-center text-lg flex-shrink-0">
+                                        🚫
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <span className="font-semibold text-gray-800">{user.name || 'Người chơi'}</span>
+                                            <span className="text-red-600 text-sm font-medium bg-red-100 px-2 py-0.5 rounded">
+                                                📞 {user.phone}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-gray-500">
+                                            Cấm từ: {new Date(user.banned_at).toLocaleDateString('vi-VN')}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center space-x-2 flex-shrink-0">
+                                        <button
+                                            onClick={() => handleUnbanUser(user.phone)}
+                                            className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium"
+                                        >
+                                            ✅ Bỏ cấm
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            {bannedUsers.length === 0 && (
+                                <div className="text-center py-12">
+                                    <EmptyIcon size={64} className="mx-auto text-gray-300 mb-4" />
+                                    <p className="text-gray-500">Không có người chơi nào bị cấm</p>
+                                </div>
+                            )}
+                        </div>
+                    ) : null}
                 </div>
             </div>
 

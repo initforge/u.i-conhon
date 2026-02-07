@@ -1,15 +1,13 @@
 import React from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 /**
- * HoaDonPage - Legacy page, redirects to InvoicePage
- * Real invoice functionality is in InvoicePage which uses getOrderDetail API
+ * HoaDonPage - Order detail page
+ * Redirects to LichSuPage since detailed order view is handled there
  */
 const HoaDonPage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-
-    // Redirect to the real invoice page
-    return <Navigate to={`/invoice/${id || ''}`} replace />;
+    // Redirect to order history page
+    return <Navigate to="/user/lich-su" replace />;
 };
 
 export default HoaDonPage;

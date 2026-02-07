@@ -55,7 +55,7 @@ const requireAdmin = (req, res, next) => {
  * Check if user completed MXH tasks (SPECS 4.4)
  */
 const requireMXHCompleted = (req, res, next) => {
-    const requiredTasks = ['follow-fb', 'sub-youtube', 'like-post', 'share-post'];
+    const requiredTasks = ['task-1', 'task-2', 'task-3', 'task-4', 'task-5', 'task-6'];
     const completedTasks = req.user?.completed_tasks || [];
 
     const allCompleted = requiredTasks.every(task => completedTasks.includes(task));

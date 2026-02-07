@@ -29,6 +29,11 @@
 - **Sẵn sàng rebuild database** nếu thực sự cần thiết để hệ thống chạy ngon hơn
 - **Đưa ra các phương án rõ ràng** khi cần thay đổi DB (thêm cột, bảng, trigger, index...)
 - **Nói rõ phương án nào tối ưu hơn** và giải thích chi tiết
+- **Khi thêm cột mới**:
+  - Xem xét các cột cũ có còn cần dùng không
+  - Nếu không cần → Refactor schema, xóa cột thừa
+  - Sync lại với database đang chạy (local hoặc production)
+  - Document lại thay đổi trong migration hoặc schema.sql
 
 ### ⚠️ QUAN TRỌNG: Không Tự Ý Thêm Features
 - **KHÔNG được tự ý thêm routes, pages, hoặc features mới** mà chưa được user đồng ý

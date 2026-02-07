@@ -264,10 +264,10 @@ const AdminOrders: React.FC = () => {
               Lọc theo Thai
             </label>
             <div className="overflow-x-auto">
-              <div className="flex gap-2 p-1 bg-amber-50 rounded-xl min-w-max">
+              <div className="flex gap-1 sm:gap-2 p-1 bg-amber-50 rounded-xl min-w-max">
                 <button
                   onClick={() => setSelectedThai('all')}
-                  className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${selectedThai === 'all'
+                  className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all whitespace-nowrap ${selectedThai === 'all'
                     ? 'bg-white shadow-md text-amber-700'
                     : 'text-amber-600 hover:bg-amber-100'
                     }`}
@@ -278,12 +278,12 @@ const AdminOrders: React.FC = () => {
                   <button
                     key={thai.id}
                     onClick={() => setSelectedThai(thai.id)}
-                    className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${selectedThai === thai.id
+                    className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all whitespace-nowrap ${selectedThai === thai.id
                       ? 'bg-white shadow-md text-amber-700'
                       : 'text-amber-600 hover:bg-amber-100'
                       }`}
                   >
-                    {thai.slug === 'an-nhon' ? 'An Nhơn' : thai.slug === 'nhon-phong' ? 'Nhơn Phong' : 'Hoài Nhơn'}
+                    {thai.name}
                   </button>
                 ))}
               </div>
@@ -307,10 +307,10 @@ const AdminOrders: React.FC = () => {
           <label className="block text-xs font-medium mb-2" style={{ color: '#9a8c7a' }}>
             Lọc theo buổi
           </label>
-          <div className="flex flex-wrap gap-2 p-1 bg-purple-50 rounded-xl">
+          <div className="flex flex-wrap gap-1 sm:gap-2 p-1 bg-purple-50 rounded-xl">
             <button
               onClick={() => setSelectedSession('all')}
-              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'all'
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all ${selectedSession === 'all'
                 ? 'bg-white shadow-md text-purple-700'
                 : 'text-purple-600 hover:bg-purple-100'
                 }`}
@@ -319,7 +319,7 @@ const AdminOrders: React.FC = () => {
             </button>
             <button
               onClick={() => setSelectedSession('morning')}
-              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'morning'
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all ${selectedSession === 'morning'
                 ? 'bg-white shadow-md text-purple-700'
                 : 'text-purple-600 hover:bg-purple-100'
                 }`}
@@ -328,7 +328,7 @@ const AdminOrders: React.FC = () => {
             </button>
             <button
               onClick={() => setSelectedSession('afternoon')}
-              className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'afternoon'
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all ${selectedSession === 'afternoon'
                 ? 'bg-white shadow-md text-purple-700'
                 : 'text-purple-600 hover:bg-purple-100'
                 }`}
@@ -339,7 +339,7 @@ const AdminOrders: React.FC = () => {
             {selectedThai === 'thai-an-nhon' && (
               <button
                 onClick={() => setSelectedSession('evening')}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm transition-all ${selectedSession === 'evening'
+                className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all ${selectedSession === 'evening'
                   ? 'bg-white shadow-md text-purple-700'
                   : 'text-purple-600 hover:bg-purple-100'
                   }`}
@@ -370,7 +370,7 @@ const AdminOrders: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
+            <table className="w-full">
               <thead>
                 <tr style={{ backgroundColor: '#faf8f5' }}>
                   <th className="text-left p-3 text-xs font-medium uppercase hidden lg:table-cell" style={{ color: '#9a8c7a' }}>ID</th>

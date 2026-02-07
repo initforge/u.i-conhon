@@ -20,6 +20,8 @@ import ChonThaiPage from './pages/ChonThaiPage'
 // User pages (require login - wrapped in UserLayout)
 import MuaConVatPage from './pages/MuaConVatPage'
 import ThanhToanPage from './pages/ThanhToanPage'
+import PaymentSuccessPage from './pages/PaymentSuccessPage'
+import PaymentCancelPage from './pages/PaymentCancelPage'
 import HoaDonPage from './pages/HoaDonPage'
 import KetQuaPage from './pages/KetQuaPage'
 import CongDongPage from './pages/CongDongPage'
@@ -66,6 +68,8 @@ function App() {
                     <Route index element={<Navigate to="/user/mua-con-vat" replace />} />
                     <Route path="mua-con-vat" element={<MuaConVatPage />} />
                     <Route path="thanh-toan" element={<ThanhToanPage />} />
+                    <Route path="thanh-toan/success" element={<PaymentSuccessPage />} />
+                    <Route path="thanh-toan/cancel" element={<PaymentCancelPage />} />
                     <Route path="hoa-don/:orderId" element={<HoaDonPage />} />
                     <Route path="ket-qua" element={<KetQuaPage />} />
                     <Route path="cong-dong" element={<CongDongPage />} />

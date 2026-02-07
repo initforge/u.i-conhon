@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 interface CartItem {
     id: string;
@@ -18,6 +17,8 @@ interface CartDrawerProps {
     onRemove: (id: string) => void;
     onUpdateAmount: (id: string, newAmount: number) => void;
     totalPrice: number;
+    onCheckout: () => void;
+    isCheckingOut?: boolean;
 }
 
 const PRICE_STEP = 10000;
@@ -29,7 +30,7 @@ const thaiColors: { [key: string]: { bg: string; border: string; text: string } 
     'thai-hoai-nhon': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
 };
 
-const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemove, onUpdateAmount, totalPrice }) => {
+const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemove, onUpdateAmount, totalPrice, onCheckout, isCheckingOut }) => {
     if (!isOpen) return null;
 
     // Nhóm items theo Thai
@@ -170,12 +171,23 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items, onRemov
                         >
                             Mua thêm
                         </button>
-                        <Link
-                            to="/user/thanh-toan"
-                            className="flex-1 py-3 bg-red-600 text-white text-center rounded-lg font-semibold hover:bg-red-700"
+                        <button
+                            onClick={onCheckout}
+                            disabled={isCheckingOut || items.length === 0}
+                            className={`flex-1 py-3 text-white text-center rounded-lg font-semibold transition-all ${isCheckingOut || items.length === 0
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-red-600 hover:bg-red-700'
+                                }`}
                         >
-                            Thanh toán
-                        </Link>
+                            {isCheckingOut ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                    Đang xử lý...
+                                </span>
+                            ) : (
+                                'Thanh toán'
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>

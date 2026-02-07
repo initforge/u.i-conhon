@@ -264,6 +264,7 @@ export interface Order {
     session_type?: string;
     session_date?: string;
     lunar_label?: string;
+    items?: OrderItem[];
 }
 
 export interface OrderItem {
@@ -273,6 +274,7 @@ export interface OrderItem {
     quantity: number;
     unit_price: number;
     subtotal: number;
+    amount?: number;
 }
 
 export interface CommunityPost {
@@ -295,9 +297,50 @@ export interface Comment {
 
 // ============ ADMIN ============
 
-export async function getAdminStats(thaiId?: string) {
-    const params = thaiId ? `?thai_id=${thaiId}` : '';
-    return apiRequest<AdminStats>(`/admin/stats${params}`);
+export async function getAdminStats(thaiId?: string, sessionType?: string, date?: string) {
+    const params = new URLSearchParams();
+    if (thaiId) params.append('thai_id', thaiId);
+    if (sessionType && sessionType !== 'all') params.append('session_type', sessionType);
+    if (date) params.append('date', date);
+    const queryString = params.toString();
+    return apiRequest<AdminStats>(`/admin/stats${queryString ? `?${queryString}` : ''}`);
+}
+
+export interface AnimalPurchaseData {
+    animal_order: number;
+    total_qty: number;
+    total_amount: number;
+}
+
+export async function getAdminAnimalStats(thaiId?: string, sessionType?: string, date?: string) {
+    const params = new URLSearchParams();
+    if (thaiId) params.append('thai_id', thaiId);
+    if (sessionType && sessionType !== 'all') params.append('session_type', sessionType);
+    if (date) params.append('date', date);
+    const queryString = params.toString();
+    return apiRequest<{ animals: AnimalPurchaseData[] }>(`/admin/stats/animals-all${queryString ? `?${queryString}` : ''}`);
+}
+
+export interface AnimalOrderDetail {
+    order_id: string;
+    user_name: string;
+    user_phone: string;
+    quantity: number;
+    unit_price: number;
+    subtotal: number;
+    status: string;
+    session_type: string;
+    session_date: string;
+    created_at: string;
+}
+
+export async function getAdminAnimalOrders(animalOrder: number, thaiId?: string, sessionType?: string, date?: string) {
+    const params = new URLSearchParams();
+    params.append('animal_order', String(animalOrder));
+    if (thaiId) params.append('thai_id', thaiId);
+    if (sessionType && sessionType !== 'all') params.append('session_type', sessionType);
+    if (date) params.append('date', date);
+    return apiRequest<{ orders: AnimalOrderDetail[] }>(`/admin/stats/animal-orders?${params}`);
 }
 
 export async function getAdminOrders(filters?: {
@@ -322,12 +365,31 @@ export async function getAdminOrderDetail(orderId: string) {
     return apiRequest<{ order: AdminOrderDetail; items: AdminOrderItem[] }>(`/admin/orders/${orderId}`);
 }
 
+// Lấy session hiện tại kèm session_animals (sold_amount, is_banned, ban_reason)
+export async function getAdminCurrentSession(thaiId: string) {
+    return apiRequest<{ session: { id: string; thai_id: string; status: string; animals: Array<{ animal_order: number; limit_amount: number; sold_amount: number; is_banned: boolean; ban_reason: string | null }> } }>(`/admin/sessions/current/${thaiId}`);
+}
+
+// Cập nhật limit/ban cho 1 con vật trong session
+export async function updateAdminSessionAnimal(data: { session_id: string; animal_order: number; limit_amount?: number; is_banned?: boolean; ban_reason?: string }) {
+    return apiRequest<{ success: boolean }>('/admin/session-animals', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+}
+
+export interface AdminUsersAggregate {
+    total_users: number;
+    users_with_orders: number;
+    total_orders: number;
+}
+
 export async function getAdminUsers(options?: { search?: string; page?: number; limit?: number }) {
     const params = new URLSearchParams();
     if (options?.search) params.append('search', options.search);
     if (options?.page) params.append('page', String(options.page));
     if (options?.limit) params.append('limit', String(options.limit));
-    return apiRequest<{ users: AdminUser[]; total: number; page: number; limit: number; hasMore: boolean }>(`/admin/users?${params}`);
+    return apiRequest<{ users: AdminUser[]; total: number; page: number; limit: number; hasMore: boolean; aggregate: AdminUsersAggregate }>(`/admin/users?${params}`);
 }
 
 export async function updateAdminUser(userId: string, data: Partial<AdminUser>) {
@@ -376,6 +438,28 @@ export async function createAdminCauThai(data: {
     });
 }
 
+// Upload cau thai image file to server, returns the public URL
+export async function uploadCauThaiImage(file: File): Promise<{ imageUrl: string; filename: string }> {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch(`${API_BASE}/upload/cau-thai`, {
+        method: 'POST',
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+}
+
 export async function updateAdminCauThai(id: string, data: { is_active?: boolean; description?: string }) {
     return apiRequest<{ cauThai: AdminCauThai }>(`/admin/cau-thai/${id}`, {
         method: 'PATCH',
@@ -422,6 +506,21 @@ export async function setSessionResult(sessionId: string, data: {
     });
 }
 
+// New simplified API for submitting lottery results
+export async function submitLotteryResult(data: {
+    thai_id: string;
+    date: string;
+    slot_label: string;
+    winning_animal?: number;
+    lunar_label?: string;
+    is_holiday?: boolean;
+}) {
+    return apiRequest<{ success: boolean; session_id: string }>(`/admin/results`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
 // ============ ADMIN TYPES ============
 
 export interface AdminOrder {
@@ -462,6 +561,7 @@ export interface AdminUser {
     role: string;
     created_at: string;
     order_count: number;
+    total_spent: number;
     bank_code?: string;
     bank_account?: string;
     bank_holder?: string;
@@ -483,7 +583,9 @@ export interface SessionResult {
     session_type: string;
     session_date: string;
     lunar_label?: string;
-    winning_animal: number;
+    winning_animal: number | null; // null when pending (draw_time not passed) or holiday
+    pending?: boolean; // true when result entered but draw_time hasn't passed yet
+    draw_time?: string;
     cau_thai?: string;
     result_at: string;
     result_image?: string;
@@ -596,6 +698,24 @@ export async function getAdminProfitLoss(thaiId?: string, date?: string) {
     return apiRequest<AdminProfitLoss>(`/admin/profit-loss?${params}`);
 }
 
+export interface AdminYearlyProfitLoss {
+    year: number;
+    thai_id: string;
+    profitLoss: {
+        sang?: ProfitLossData;
+        trua?: ProfitLossData;
+        chieu?: ProfitLossData;
+        toi?: ProfitLossData;
+    };
+}
+
+export async function getAdminYearlyProfitLoss(thaiId?: string, year?: number) {
+    const params = new URLSearchParams();
+    if (thaiId) params.append('thai_id', thaiId);
+    if (year) params.append('year', String(year));
+    return apiRequest<AdminYearlyProfitLoss>(`/admin/profit-loss/yearly?${params}`);
+}
+
 // ============ THAI LIMITS ============
 
 export type ThaiLimits = Record<string, number>;
@@ -627,5 +747,51 @@ export async function saveAdminThaiSwitches(switches: Partial<ThaiSwitches>) {
     return apiRequest<{ success: boolean; switches: ThaiSwitches }>('/sessions/switches', {
         method: 'PUT',
         body: JSON.stringify(switches),
+    });
+}
+
+// ============ BANNED USERS (Admin CMS) ============
+
+export interface BannedUser {
+    phone: string;
+    name: string;
+    banned_at: string;
+}
+
+export async function getBannedUsers() {
+    return apiRequest<BannedUser[]>('/admin/community/banned-users');
+}
+
+export async function unbanUser(phone: string) {
+    return apiRequest<{ success: boolean }>(`/admin/community/users/${phone}/unban`, {
+        method: 'PATCH',
+    });
+}
+
+// ============ LOTTERY RESULTS (Admin) ============
+
+export interface LotteryResult {
+    id: string;
+    thai_id: string;
+    session_type: string;
+    session_date: string;
+    winning_animal: number | null; // Can be null when session is holiday/off
+    lunar_label?: string;
+    status: string;
+}
+
+export async function getResultsHistory(params?: { thai_id?: string; year?: number; limit?: number }) {
+    const query = new URLSearchParams();
+    if (params?.thai_id) query.append('thai_id', params.thai_id);
+    if (params?.year) query.append('year', params.year.toString());
+    if (params?.limit) query.append('limit', params.limit.toString());
+
+    const queryString = query.toString();
+    return apiRequest<{ results: LotteryResult[] }>(`/admin/sessions/results${queryString ? `?${queryString}` : ''}`);
+}
+
+export async function deleteSessionResult(sessionId: string) {
+    return apiRequest<{ success: boolean }>(`/admin/sessions/${sessionId}/result`, {
+        method: 'DELETE',
     });
 }

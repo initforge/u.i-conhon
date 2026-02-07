@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Thai, THAIS as DEFAULT_THAIS } from '../types';
+import { sharedSSE } from '../services/sharedSSE';
 
 interface ThaiConfigContextType {
     thais: Thai[];
@@ -60,11 +61,9 @@ export const ThaiConfigProvider: React.FC<ThaiConfigProviderProps> = ({ children
         fetchThais();
     }, [fetchThais]);
 
-    // SSE: Listen for real-time Thai config updates from server
+    // SSE: Listen for real-time Thai config updates via shared SSE service
     useEffect(() => {
-        const eventSource = new EventSource(`${API_BASE}/sse/switches`);
-
-        eventSource.addEventListener('thai_config_update', (event) => {
+        const unsubscribe = sharedSSE.subscribe('thai_config_update', (event) => {
             try {
                 const data = JSON.parse(event.data);
                 console.log('SSE thai_config_update received:', data);
@@ -76,14 +75,7 @@ export const ThaiConfigProvider: React.FC<ThaiConfigProviderProps> = ({ children
             }
         });
 
-        eventSource.onerror = (error) => {
-            console.error('ThaiConfig SSE connection error:', error);
-            // EventSource will auto-reconnect
-        };
-
-        return () => {
-            eventSource.close();
-        };
+        return unsubscribe;
     }, []);
 
     // Update a single Thai config (admin only)
