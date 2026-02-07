@@ -600,6 +600,7 @@ export interface CauThaiItem {
     description?: string;
     created_at: string;
     is_active: boolean;
+    khung_id?: string;
 }
 
 // ============ ADMIN CMS ============

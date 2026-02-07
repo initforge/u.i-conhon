@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
         params.push(parseInt(limit) || 10);
 
         const result = await db.query(
-            `SELECT id, thai_id, image_url, description, created_at, is_active
+            `SELECT id, thai_id, image_url, description, created_at, is_active, khung_id
              FROM cau_thai_images 
              ${whereClause}
              ORDER BY created_at DESC

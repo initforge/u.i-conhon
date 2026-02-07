@@ -10,7 +10,7 @@ const HomePage: React.FC = () => {
   const [selectedThai, setSelectedThai] = useState('an-nhon');
   const [selectedKhung, setSelectedKhung] = useState('khung-1');
   const [now, setNow] = useState(new Date());
-  const [currentCauThaiIndex, setCurrentCauThaiIndex] = useState(0);
+
 
   // Khung giờ cho từng Thai
   const khungOptions: Record<string, { id: string; name: string; time: string }[]> = {
@@ -714,7 +714,6 @@ const HomePage: React.FC = () => {
                   value={selectedYear}
                   onChange={(e) => {
                     setSelectedYear(Number(e.target.value));
-                    setCurrentCauThaiIndex(0); // Reset index khi đổi năm
                   }}
                   className="px-4 py-2 bg-red-700 text-white rounded-lg font-bold cursor-pointer hover:bg-red-800 transition-colors"
                 >
@@ -738,7 +737,6 @@ const HomePage: React.FC = () => {
                     onClick={() => {
                       setSelectedThai(thai.id);
                       setSelectedKhung('khung-1');
-                      setCurrentCauThaiIndex(0);
                     }}
                     className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${selectedThai === thai.id
                       ? 'bg-tet-red-700 text-white shadow-md'
@@ -759,7 +757,6 @@ const HomePage: React.FC = () => {
                     key={khung.id}
                     onClick={() => {
                       setSelectedKhung(khung.id);
-                      setCurrentCauThaiIndex(0);
                     }}
                     className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${selectedKhung === khung.id
                       ? 'bg-amber-600 text-white shadow-md'
@@ -774,98 +771,75 @@ const HomePage: React.FC = () => {
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 items-center">
-              {/* Left: Cau Thai Image from API + Navigation */}
+              {/* Left: Cau Thai Image - Single active image for selected khung */}
               <div className="lg:col-span-2 relative text-center">
                 <div className="relative mx-auto" style={{ width: '100%', maxWidth: '600px' }}>
-                  {/* Navigation Buttons */}
-                  <button
-                    onClick={() => setCurrentCauThaiIndex(prev => prev - 1)}
-                    disabled={currentCauThaiIndex <= 0}
-                    className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${currentCauThaiIndex > 0
-                      ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
-                      : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
-                      }`}
-                    style={{ left: '-15px' }}
-                    title="Câu thai mới hơn"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    onClick={() => setCurrentCauThaiIndex(prev => prev + 1)}
-                    disabled={currentCauThaiIndex >= cauThaiImages.length - 1}
-                    className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${currentCauThaiIndex < cauThaiImages.length - 1
-                      ? 'bg-white/90 text-red-700 shadow-lg hover:bg-white hover:scale-110'
-                      : 'bg-gray-300/50 text-gray-400 cursor-not-allowed'
-                      }`}
-                    style={{ right: '-15px' }}
-                    title="Câu thai cũ hơn"
-                  >
-                    ›
-                  </button>
-
-                  {cauThaiImages.length > 0 && cauThaiImages[currentCauThaiIndex] ? (
-                    <div>
-                      <img
-                        src={cauThaiImages[currentCauThaiIndex].image_url}
-                        alt={cauThaiImages[currentCauThaiIndex].description || 'Câu thai'}
-                        className="w-full h-auto object-contain rounded-lg shadow-lg"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/assets/decorations/bg-cau-thai-co-nhon.png';
-                        }}
-                      />
-                      {cauThaiImages[currentCauThaiIndex].description && (
-                        <p className="mt-3 text-sm font-medium" style={{ color: '#b2012f' }}>
-                          {cauThaiImages[currentCauThaiIndex].description}
-                        </p>
-                      )}
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(cauThaiImages[currentCauThaiIndex].created_at).toLocaleDateString('vi-VN')}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <img
-                        src="/assets/decorations/bg-cau-thai-co-nhon.png"
-                        alt="Câu thai"
-                        className="w-full h-auto object-contain"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center px-4 md:px-8">
-                        <div className="text-center w-full">
-                          {loadingCauThai ? (
-                            <p className="text-yellow-300 text-lg font-medium">⏳ Đang tải...</p>
-                          ) : (
-                            <>
-                              <p className="text-yellow-300 text-lg font-medium mb-2">📭 Chưa có câu thai</p>
-                              <p className="text-white/80 text-sm">Năm {selectedYear} chưa có dữ liệu câu thai</p>
-                            </>
+                  {(() => {
+                    const activeImage = cauThaiImages.find(
+                      img => img.is_active && (img.khung_id || 'khung-1') === selectedKhung
+                    );
+                    if (activeImage) {
+                      return (
+                        <div>
+                          <img
+                            src={activeImage.image_url}
+                            alt={activeImage.description || 'Câu thai'}
+                            className="w-full h-auto object-contain rounded-lg shadow-lg"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/assets/decorations/bg-cau-thai-co-nhon.png';
+                            }}
+                          />
+                          {activeImage.description && (
+                            <p className="mt-3 text-sm font-medium" style={{ color: '#b2012f' }}>
+                              {activeImage.description}
+                            </p>
                           )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(activeImage.created_at).toLocaleDateString('vi-VN')}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="relative">
+                        <img
+                          src="/assets/decorations/bg-cau-thai-co-nhon.png"
+                          alt="Câu thai"
+                          className="w-full h-auto object-contain"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center px-4 md:px-8">
+                          <div className="text-center w-full">
+                            {loadingCauThai ? (
+                              <p className="text-yellow-300 text-lg font-medium">⏳ Đang tải...</p>
+                            ) : (
+                              <>
+                                <p className="text-yellow-300 text-lg font-medium mb-2">📭 Chưa có câu thai</p>
+                                <p className="text-white/80 text-sm">Khung này chưa có ảnh câu thai</p>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
-                {/* Indicator dots */}
-                {cauThaiImages.length > 1 && (
-                  <div className="flex justify-center gap-2 mt-4">
-                    {cauThaiImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentCauThaiIndex(idx)}
-                        className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentCauThaiIndex
-                          ? 'bg-red-600 scale-125'
-                          : 'bg-gray-300 hover:bg-gray-400'
-                          }`}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Right: Countdown and Info */}
               <div className="text-center">
-                <p className="mb-2" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}><strong>Đóng tịch lúc</strong></p>
-                <p className="text-font mb-4 text-4xl md:text-6xl" style={{ fontWeight: 500, color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>17h</p>
-                <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>Còn lại: <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>0 giờ 0 phút 0 giây</span></p>
+                {(() => {
+                  const currentKhung = currentKhungOptions.find(k => k.id === selectedKhung);
+                  const drawTime = currentKhung?.time || '17:00';
+                  const countdown = getHomepageCountdown(drawTime);
+                  const [dH, dM] = drawTime.split(':');
+                  return (
+                    <>
+                      <p className="mb-2" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}><strong>Đóng tịch lúc</strong></p>
+                      <p className="text-font mb-4 text-4xl md:text-6xl" style={{ fontWeight: 500, color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{parseInt(dH)}h{dM !== '00' ? dM : ''}</p>
+                      <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>Còn lại: <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{countdown || 'Đã đóng tịch'}</span></p>
+                    </>
+                  );
+                })()}
                 <div className="mb-4">
                   <p className="font-bold mb-1" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
                     <strong>Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}</strong>
