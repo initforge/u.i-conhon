@@ -814,7 +814,11 @@ const HomePage: React.FC = () => {
                             ) : (
                               <>
                                 <p className="text-yellow-300 text-lg font-medium mb-2">📭 Chưa có câu thai</p>
-                                <p className="text-white/80 text-sm">Khung này chưa có ảnh câu thai</p>
+                                <p className="text-white/80 text-sm">
+                                  {selectedKhung === 'khung-3'
+                                    ? 'Khung tối chỉ mở trong các ngày Tết'
+                                    : 'Khung này chưa có ảnh câu thai'}
+                                </p>
                               </>
                             )}
                           </div>
