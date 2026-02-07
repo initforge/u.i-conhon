@@ -64,7 +64,7 @@ const HomePage: React.FC = () => {
     const fetchCauThai = async () => {
       setLoadingCauThai(true);
       try {
-        const response = await getCauThai({ thaiId: selectedThai, year: selectedYear, limit: 10 });
+        const response = await getCauThai({ thaiId: `thai-${selectedThai}`, year: selectedYear, limit: 10 });
         setCauThaiImages(response.cauThais || []);
       } catch (error) {
         console.error('Failed to fetch cau thai:', error);
