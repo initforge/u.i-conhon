@@ -10,6 +10,14 @@ const payosService = require('../services/payos');
 const router = express.Router();
 
 /**
+ * GET /webhook/payos - PayOS URL verification
+ * PayOS sends GET to verify webhook URL is active
+ */
+router.get('/payos', (req, res) => {
+    res.json({ success: true, message: 'Webhook is active' });
+});
+
+/**
  * POST /webhook/payos - PayOS payment webhook (SPECS 7.3)
  * Idempotent: Chỉ xử lý nếu status = 'pending'
  */
