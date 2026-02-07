@@ -61,7 +61,7 @@ jobs:
         run: |
           echo "⏳ Waiting for services to start..."
           sleep 15
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.VPS_HOST }}/health || echo "000")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.VPS_HOST }}:3000/health || echo "000")
           if [ "$HTTP_CODE" = "200" ]; then
             echo "✅ Health check passed (HTTP $HTTP_CODE)"
           else
