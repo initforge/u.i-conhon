@@ -10,7 +10,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-conhon_secret_2026}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U conhon" ]
       interval: 5s
