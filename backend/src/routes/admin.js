@@ -1842,11 +1842,13 @@ router.post('/cau-thai', async (req, res) => {
             return res.status(400).json({ error: 'Thiếu thông tin thai_id hoặc image_url' });
         }
 
+        const year = new Date().getFullYear();
+
         const result = await db.query(
-            `INSERT INTO cau_thai_images (thai_id, image_url, description, khung_id, is_active)
-             VALUES ($1, $2, $3, $4, false)
+            `INSERT INTO cau_thai_images (thai_id, image_url, description, khung_id, year, is_active)
+             VALUES ($1, $2, $3, $4, $5, false)
              RETURNING *`,
-            [thai_id, image_url, description || '', khung_id || 'khung-1']
+            [thai_id, image_url, description || '', khung_id || 'khung-1', year]
         );
 
         res.status(201).json({ cauThai: result.rows[0] });
