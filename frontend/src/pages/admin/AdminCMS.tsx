@@ -440,6 +440,16 @@ const AdminCMS: React.FC = () => {
                                                 <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                                                     {(post.comments || []).length} bình luận
                                                 </span>
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm('Bạn có chắc muốn xoá video này? Hành động này không thể hoàn tác.')) {
+                                                            handleDeletePost(post.id);
+                                                        }
+                                                    }}
+                                                    className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200 transition-colors"
+                                                >
+                                                    🗑️ Xoá
+                                                </button>
                                             </div>
                                         </div>
 
