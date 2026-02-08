@@ -117,7 +117,8 @@ const KetQuaPage: React.FC = () => {
   const [now, setNow] = useState(new Date());
 
   const years = getAvailableYears(4);
-  const todayStr = now.toISOString().split('T')[0];
+  // Use local date (not UTC) — toISOString() returns UTC which can be wrong timezone
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   // Tick every second for countdown
   useEffect(() => {
@@ -130,11 +131,11 @@ const KetQuaPage: React.FC = () => {
     try {
       setLoading(true);
       if (selectedThai === 'all') {
-        const data = await getSessionResults({ limit: 100 });
+        const data = await getSessionResults({ year: selectedYear, limit: 100 });
         setAllResults(processResultsAll(data.results || [], todayStr));
         return data.results || [];
       } else {
-        const data = await getSessionResults({ thaiId: selectedThai, limit: 50 });
+        const data = await getSessionResults({ thaiId: selectedThai, year: selectedYear, limit: 50 });
         setSingleResults(processResultsSingle(data.results || [], todayStr));
         return data.results || [];
       }

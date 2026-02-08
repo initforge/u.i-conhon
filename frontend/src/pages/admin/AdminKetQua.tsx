@@ -74,7 +74,7 @@ const AdminKetQua: React.FC = () => {
   const [editingKetQua, setEditingKetQua] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     thaiId: THAIS[0]?.id || '',
-    date: new Date().toISOString().split('T')[0],
+    date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
     lunarLabel: '',
     winningAnimalIds: [] as string[],
     imageUrl: '',
@@ -224,7 +224,7 @@ const AdminKetQua: React.FC = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
         const thaiId = thaiTabs.find(t => t.id === selectedThai)?.thaiId || 'thai-an-nhon';
         const res = await getAdminSessions({ thai_id: thaiId, date: today });
         setTodaySessions(res.sessions || []);
@@ -310,7 +310,7 @@ const AdminKetQua: React.FC = () => {
     // Reset form — keep lunarLabel for same day (admin enters once, applies to all khung)
     setFormData(prev => ({
       thaiId: THAIS[0]?.id || '',
-      date: new Date().toISOString().split('T')[0],
+      date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
       lunarLabel: prev.lunarLabel,
       winningAnimalIds: [],
       imageUrl: '',
@@ -582,7 +582,7 @@ const AdminKetQua: React.FC = () => {
                     setEditingKetQua(null);
                     setFormData({
                       thaiId: THAIS[0]?.id || '',
-                      date: new Date().toISOString().split('T')[0],
+                      date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
                       lunarLabel: '',
                       winningAnimalIds: [],
                       imageUrl: '',

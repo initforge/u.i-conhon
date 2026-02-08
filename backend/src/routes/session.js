@@ -188,12 +188,12 @@ router.get('/current', async (req, res) => {
 
 /**
  * GET /sessions/results - Get lottery results (SPECS 5.x)
- * Query params: thai_id (optional), date (optional), limit (default 10)
+ * Query params: thai_id (optional), date (optional), year (optional), limit (default 10)
  * IMPORTANT: Only returns results where draw_time has passed (hide early results)
  */
 router.get('/results', async (req, res) => {
     try {
-        const { thai_id, date, limit = 10 } = req.query;
+        const { thai_id, date, year, limit = 10 } = req.query;
         const params = [];
         // Include all resulted sessions; pending ones get winning_animal masked
         let whereClause = "WHERE status = 'resulted' AND winning_animal IS NOT NULL";
@@ -208,6 +208,11 @@ router.get('/results', async (req, res) => {
         if (date) {
             params.push(date);
             whereClause += ` AND session_date = $${params.length}`;
+        }
+
+        if (year) {
+            params.push(parseInt(year));
+            whereClause += ` AND EXTRACT(YEAR FROM session_date) = $${params.length}`;
         }
 
         params.push(parseInt(limit) || 10);

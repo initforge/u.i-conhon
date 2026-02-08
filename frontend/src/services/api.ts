@@ -100,10 +100,11 @@ export async function getSessionAnimals(sessionId: string) {
     return apiRequest<{ animals: SessionAnimal[] }>(`/sessions/${sessionId}/animals`);
 }
 
-export async function getSessionResults(options?: { thaiId?: string; date?: string; limit?: number }) {
+export async function getSessionResults(options?: { thaiId?: string; date?: string; year?: number; limit?: number }) {
     const params = new URLSearchParams();
     if (options?.thaiId) params.append('thai_id', options.thaiId);
     if (options?.date) params.append('date', options.date);
+    if (options?.year) params.append('year', options.year.toString());
     if (options?.limit) params.append('limit', options.limit.toString());
     return apiRequest<{ results: SessionResult[]; count: number }>(`/sessions/results?${params}`);
 }

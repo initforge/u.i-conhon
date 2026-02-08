@@ -143,7 +143,8 @@ const HomePage: React.FC = () => {
     'hoai-nhon': { morning: '13:00', afternoon: '19:00' },
   };
 
-  const todayStr = now.toISOString().split('T')[0];
+  // Use local date (not UTC) — toISOString() returns UTC which can be wrong timezone
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const currentDrawTimes = thaiDrawTimes[selectedThai] || thaiDrawTimes['an-nhon'];
 
   // Transform API results to display format - NO FALLBACK, empty if no data
