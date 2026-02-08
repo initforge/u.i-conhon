@@ -162,7 +162,7 @@ router.get('/me', async (req, res) => {
         const { thai_id, status, page = 1, limit = 20 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
-        let baseWhere = `WHERE o.user_id = $1 AND o.status IN ('paid', 'won', 'lost')`;
+        let baseWhere = `WHERE o.user_id = $1 AND o.status IN ('pending', 'paid', 'won', 'lost', 'expired')`;
         const params = [req.user.id];
         let paramIndex = 2;
 

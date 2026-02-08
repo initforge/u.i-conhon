@@ -88,7 +88,7 @@ async function getCurrentSessionType(thaiId) {
 
 /**
  * GET /sessions/current - Get current open session for a Thai (SPECS 5.1)
- * Now correctly identifies the session based on current time + timeSlots config.
+ * Auto-creates session if none exists for current time slot.
  */
 router.get('/current', async (req, res) => {
     try {
@@ -111,7 +111,7 @@ router.get('/current', async (req, res) => {
             });
         }
 
-        const result = await db.query(
+        let result = await db.query(
             `SELECT id, thai_id, session_type, session_date, lunar_label,
               status, created_at
        FROM sessions 
@@ -122,10 +122,60 @@ router.get('/current', async (req, res) => {
             [thai_id, currentSessionType]
         );
 
+        // Auto-create session if none exists (lazy creation)
+        if (result.rows.length === 0) {
+            console.log(`🔄 Auto-creating session: ${thai_id} / ${currentSessionType} / today`);
+            const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
+
+            const client = await db.getClient();
+            try {
+                await client.query('BEGIN');
+
+                // Insert session (ON CONFLICT DO NOTHING for race condition safety)
+                const insertResult = await client.query(
+                    `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
+                     VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, 'open', NOW())
+                     ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
+                     RETURNING id`,
+                    [thai_id, currentSessionType]
+                );
+
+                if (insertResult.rows.length > 0) {
+                    const newSessionId = insertResult.rows[0].id;
+                    // Auto-populate session_animals with default limits
+                    await client.query(
+                        `INSERT INTO session_animals (session_id, animal_order)
+                         SELECT $1, generate_series(1, $2)`,
+                        [newSessionId, animalCount]
+                    );
+                    console.log(`✅ Session auto-created: ${newSessionId} (${animalCount} animals)`);
+                }
+
+                await client.query('COMMIT');
+            } catch (err) {
+                await client.query('ROLLBACK');
+                console.error('Auto-create session error:', err);
+            } finally {
+                client.release();
+            }
+
+            // Re-query to get the session (either just created or created by another request)
+            result = await db.query(
+                `SELECT id, thai_id, session_type, session_date, lunar_label,
+                  status, created_at
+           FROM sessions 
+           WHERE thai_id = $1 AND status IN ('open', 'scheduled')
+             AND session_date = CURRENT_DATE
+             AND session_type = $2
+           LIMIT 1`,
+                [thai_id, currentSessionType]
+            );
+        }
+
         if (result.rows.length === 0) {
             return res.status(404).json({
                 error: 'Không có phiên nào đang mở',
-                message: `Khung ${currentSessionType} chưa được tạo phiên. Admin cần mở phiên trước.`
+                message: 'Không thể tạo phiên. Vui lòng thử lại.'
             });
         }
 

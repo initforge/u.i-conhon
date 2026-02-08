@@ -106,7 +106,7 @@ async function rollbackOrderLimits(orderId) {
         for (const item of itemsResult.rows) {
             await db.query(
                 `UPDATE session_animals 
-         SET sold_amount = sold_amount - $1
+         SET sold_amount = GREATEST(sold_amount - $1, 0)
          WHERE session_id = $2 AND animal_order = $3`,
                 [item.subtotal, sessionId, item.animal_order]
             );
@@ -119,3 +119,4 @@ async function rollbackOrderLimits(orderId) {
 }
 
 module.exports = router;
+module.exports.rollbackOrderLimits = rollbackOrderLimits;

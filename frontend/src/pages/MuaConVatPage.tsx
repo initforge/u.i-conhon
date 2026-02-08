@@ -161,18 +161,25 @@ const MuaConVatPage: React.FC = () => {
         const thaiId = `thai-${selectedThai}`;
         const thaiName = currentThaiOption.name;
 
-        // Unique key = animalId + thaiId để hỗ trợ mua nhiều Thai
+        // Block multi-Thai: nếu cart có items từ Thai khác → clear
+        const existingThaiInCart = cart.length > 0 ? cart[0].thaiId : null;
+        let currentCart = cart;
+        if (existingThaiInCart && existingThaiInCart !== thaiId) {
+            currentCart = [];
+        }
+
+        // Unique key = animalId + thaiId
         const cartItemKey = `${animal.id}-${thaiId}`;
-        const existingItem = cart.find(item => `${item.id}-${item.thaiId}` === cartItemKey);
+        const existingItem = currentCart.find(item => `${item.id}-${item.thaiId}` === cartItemKey);
 
         if (existingItem) {
-            setCart(cart.map(item =>
+            setCart(currentCart.map(item =>
                 `${item.id}-${item.thaiId}` === cartItemKey
                     ? { ...item, amount: item.amount + amount }
                     : item
             ));
         } else {
-            setCart([...cart, { ...animal, amount, thaiId, thaiName }]);
+            setCart([...currentCart, { ...animal, amount, thaiId, thaiName }]);
         }
         // Reset input after adding
         setInputAmounts(prev => ({ ...prev, [animal.id]: 0 }));
@@ -203,32 +210,19 @@ const MuaConVatPage: React.FC = () => {
         setCheckoutError(null);
 
         try {
-            // Group cart items by thaiId
-            const groupsByThai: { [thaiId: string]: CartItem[] } = {};
-            cart.forEach(item => {
-                const tid = item.thaiId || 'unknown';
-                if (!groupsByThai[tid]) groupsByThai[tid] = [];
-                groupsByThai[tid].push(item);
-            });
-
-            // For each Thai group, resolve session and create order
-            const thaiIds = Object.keys(groupsByThai);
-
-            // Currently support single-Thai checkout (most common case)
-            // Multi-Thai would need multiple orders
-            const firstThaiId = thaiIds[0];
-            const firstGroup = groupsByThai[firstThaiId];
+            // All cart items belong to same Thai (enforced by handleAddToCart)
+            const thaiId = cart[0].thaiId || 'unknown';
 
             // Get current session for this Thai
-            const sessionData = await getCurrentSession(firstThaiId);
+            const sessionData = await getCurrentSession(thaiId);
             if (!sessionData?.session?.id) {
-                throw new Error('Kh\u00f4ng t\u00ecm th\u1ea5y phi\u00ean \u0111ang m\u1edf cho Thai n\u00e0y. Vui l\u00f2ng th\u1eed l\u1ea1i.');
+                throw new Error('Không tìm thấy phiên đang mở cho Thai này. Vui lòng thử lại.');
             }
 
             const sessionId = sessionData.session.id;
 
             // Build order items
-            const orderItems = firstGroup.map(item => ({
+            const orderItems = cart.map(item => ({
                 animal_order: item.number,
                 quantity: 1,
                 unit_price: item.amount,
@@ -240,37 +234,18 @@ const MuaConVatPage: React.FC = () => {
                 items: orderItems,
             });
 
-            // If there are more Thai groups, create additional orders
-            for (let i = 1; i < thaiIds.length; i++) {
-                const thaiId = thaiIds[i];
-                const group = groupsByThai[thaiId];
-                const sess = await getCurrentSession(thaiId);
-                if (sess?.session?.id) {
-                    await createOrder({
-                        session_id: sess.session.id,
-                        items: group.map(item => ({
-                            animal_order: item.number,
-                            quantity: 1,
-                            unit_price: item.amount,
-                        })),
-                    });
-                }
-            }
-
             // Redirect to PayOS payment URL
             if (result?.order?.payment_url) {
-                // Clear cart after successful order
                 setCart([]);
                 setIsCartOpen(false);
                 window.location.href = result.order.payment_url;
             } else {
-                // No payment URL but order created
                 setCart([]);
                 setIsCartOpen(false);
-                alert('\u0110\u01a1n h\u00e0ng \u0111\u00e3 \u0111\u01b0\u1ee3c t\u1ea1o! Vui l\u00f2ng ki\u1ec3m tra l\u1ecbch s\u1eed \u0111\u01a1n h\u00e0ng.');
+                alert('Đơn hàng đã được tạo! Vui lòng kiểm tra lịch sử đơn hàng.');
             }
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : 'Kh\u00f4ng th\u1ec3 t\u1ea1o \u0111\u01a1n h\u00e0ng. Vui l\u00f2ng th\u1eed l\u1ea1i.';
+            const message = error instanceof Error ? error.message : 'Không thể tạo đơn hàng. Vui lòng thử lại.';
             setCheckoutError(message);
             alert(message);
         } finally {

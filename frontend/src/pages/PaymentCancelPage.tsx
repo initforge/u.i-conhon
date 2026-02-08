@@ -46,8 +46,8 @@ const PaymentCancelPage: React.FC = () => {
 
                     <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-left">
                         <p className="text-sm text-yellow-800">
-                            <strong>💡 Lưu ý:</strong> Giới hạn con vật đã được hoàn lại.
-                            Bạn có thể thanh toán lại bất kỳ lúc nào.
+                            <strong>💡 Lưu ý:</strong> Đơn hàng chưa thanh toán sẽ tự hết hạn sau 15 phút.
+                            Hạn mức con vật sẽ được hoàn lại tự động khi đơn hết hạn.
                         </p>
                     </div>
 

@@ -157,6 +157,45 @@ app.listen(PORT, () => {
 
     // Initialize Redis
     initRedis();
+
+    // ================================================
+    // Expired Order Cleanup (runs every 60 seconds)
+    // Finds pending orders past payment_expires, sets to 'expired',
+    // rolls back sold_amount for each order item.
+    // ================================================
+    const { rollbackOrderLimits } = require('./routes/webhook');
+    const { cache } = require('./services/redis');
+
+    setInterval(async () => {
+        try {
+            const db = require('./services/database');
+            const expiredOrders = await db.query(
+                `SELECT id, session_id FROM orders 
+                 WHERE status = 'pending' AND payment_expires < NOW()`
+            );
+
+            if (expiredOrders.rows.length === 0) return;
+
+            console.log(`🧹 Cleaning up ${expiredOrders.rows.length} expired orders`);
+
+            for (const order of expiredOrders.rows) {
+                await db.query(
+                    `UPDATE orders SET status = 'expired' WHERE id = $1`,
+                    [order.id]
+                );
+                await rollbackOrderLimits(order.id);
+
+                // Invalidate cache for the session
+                if (order.session_id) {
+                    await cache.del(`session_animals:${order.session_id}`);
+                }
+            }
+
+            console.log(`✅ Expired ${expiredOrders.rows.length} orders, sold_amount rolled back`);
+        } catch (error) {
+            console.error('Expired order cleanup error:', error);
+        }
+    }, 60 * 1000); // Every 60 seconds
 });
 
 module.exports = app;

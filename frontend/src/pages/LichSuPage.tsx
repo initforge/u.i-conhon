@@ -75,8 +75,14 @@ const LichSuPage: React.FC = () => {
         if (status === 'lost') {
             return <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Không trúng</span>;
         }
-        // paid là mặc định, không cần badge
-        return null;
+        if (status === 'pending') {
+            return <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">⏳ Chờ thanh toán</span>;
+        }
+        if (status === 'expired') {
+            return <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">Hết hạn</span>;
+        }
+        // paid là mặc định
+        return <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Đã thanh toán</span>;
     };
 
     const formatDate = (dateStr: string) => {
@@ -155,9 +161,9 @@ const LichSuPage: React.FC = () => {
             {!loading && orders.length > 0 && (
                 <div className="space-y-4">
                     {orders.map(order => (
-                        <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div key={order.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden ${order.status === 'pending' ? 'border-yellow-300' : order.status === 'expired' ? 'border-red-200' : 'border-gray-100'}`}>
                             {/* Order header */}
-                            <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-b">
+                            <div className={`px-4 py-3 flex items-center justify-between border-b ${order.status === 'pending' ? 'bg-yellow-50' : 'bg-gray-50'}`}>
                                 <div className="flex items-center gap-3">
                                     <span className="font-mono text-sm text-gray-600">#{order.id.slice(-8)}</span>
                                     {getStatusBadge(order.status)}
@@ -179,6 +185,16 @@ const LichSuPage: React.FC = () => {
                                         {formatMoney(order.total)}đ
                                     </p>
                                 </div>
+
+                                {/* Pending order: show payment button */}
+                                {order.status === 'pending' && order.payment_url && (
+                                    <a
+                                        href={order.payment_url}
+                                        className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition mb-3"
+                                    >
+                                        💳 Thanh toán ngay
+                                    </a>
+                                )}
 
                                 {/* Expand/collapse order items */}
                                 {order.items && order.items.length > 0 && (
