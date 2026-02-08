@@ -33,6 +33,12 @@ router.post('/payos', async (req, res) => {
 
         const { orderCode, code, desc } = data;
 
+        // Handle PayOS test webhook (orderCode: 123)
+        if (String(orderCode) === '123') {
+            console.log('PayOS test webhook received');
+            return res.json({ success: true, message: 'Test webhook received' });
+        }
+
         // Find order by payment_code
         const orderResult = await db.query(
             'SELECT id, status FROM orders WHERE payment_code = $1',
@@ -41,7 +47,7 @@ router.post('/payos', async (req, res) => {
 
         if (orderResult.rows.length === 0) {
             console.warn('Order not found for orderCode:', orderCode);
-            return res.status(404).json({ error: 'Order not found' });
+            return res.status(200).json({ success: true, message: 'Order not found (ignored)' });
         }
 
         const order = orderResult.rows[0];
