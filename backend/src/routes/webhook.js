@@ -65,6 +65,10 @@ router.post('/payos', async (req, res) => {
                 [order.id]
             );
             console.log('Order paid:', order.id);
+
+            // Push SSE event to listening clients
+            const { pushOrderStatus } = require('../services/orderSse');
+            pushOrderStatus(order.id, 'paid');
         } else {
             // Payment failed/cancelled
             await db.query(
@@ -75,6 +79,10 @@ router.post('/payos', async (req, res) => {
 
             // Rollback sold_amount
             await rollbackOrderLimits(order.id);
+
+            // Push SSE event to listening clients
+            const { pushOrderStatus } = require('../services/orderSse');
+            pushOrderStatus(order.id, 'cancelled');
         }
 
         res.json({ success: true });

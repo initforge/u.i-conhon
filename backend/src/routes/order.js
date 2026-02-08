@@ -319,4 +319,57 @@ function getAnimalName(order) {
     return animals[order - 1] || `Con ${order}`;
 }
 
+/**
+ * GET /orders/:id/status/stream - SSE stream for order status updates
+ * Client subscribes and receives real-time status changes (paid/cancelled/expired)
+ */
+router.get('/:id/status/stream', async (req, res) => {
+    const { id } = req.params;
+
+    // Verify order belongs to user
+    const orderResult = await db.query(
+        'SELECT id, status FROM orders WHERE id = $1 AND user_id = $2',
+        [id, req.user.id]
+    );
+
+    if (orderResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const order = orderResult.rows[0];
+
+    // If already terminal, just return the status immediately (no need to stream)
+    if (['paid', 'cancelled', 'expired', 'won', 'lost'].includes(order.status)) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.write(`event: order_status\ndata: ${JSON.stringify({ orderId: id, status: order.status })}\n\n`);
+        return res.end();
+    }
+
+    // Set up SSE
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    // Send initial status
+    res.write(`event: order_status\ndata: ${JSON.stringify({ orderId: id, status: order.status })}\n\n`);
+
+    // Subscribe to updates
+    const { subscribe, unsubscribe } = require('../services/orderSse');
+    subscribe(id, res);
+
+    // Heartbeat every 30s to keep connection alive
+    const heartbeat = setInterval(() => {
+        try { res.write(': heartbeat\n\n'); } catch { clearInterval(heartbeat); }
+    }, 30000);
+
+    // Cleanup on disconnect
+    req.on('close', () => {
+        clearInterval(heartbeat);
+        unsubscribe(id, res);
+    });
+});
+
 module.exports = router;

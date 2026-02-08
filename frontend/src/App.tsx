@@ -22,6 +22,7 @@ import MuaConVatPage from './pages/MuaConVatPage'
 import ThanhToanPage from './pages/ThanhToanPage'
 import PaymentSuccessPage from './pages/PaymentSuccessPage'
 import PaymentCancelPage from './pages/PaymentCancelPage'
+import PaymentWaitingPage from './pages/PaymentWaitingPage'
 import HoaDonPage from './pages/HoaDonPage'
 import KetQuaPage from './pages/KetQuaPage'
 import CongDongPage from './pages/CongDongPage'
@@ -70,6 +71,7 @@ function App() {
                     <Route path="thanh-toan" element={<ThanhToanPage />} />
                     <Route path="thanh-toan/success" element={<PaymentSuccessPage />} />
                     <Route path="thanh-toan/cancel" element={<PaymentCancelPage />} />
+                    <Route path="thanh-toan/:orderId" element={<PaymentWaitingPage />} />
                     <Route path="hoa-don/:orderId" element={<HoaDonPage />} />
                     <Route path="ket-qua" element={<KetQuaPage />} />
                     <Route path="cong-dong" element={<CongDongPage />} />

@@ -226,15 +226,13 @@ const LichSuPage: React.FC = () => {
                                                     {cd.expired ? '⏰ Đơn hàng đã hết hạn thanh toán' : `⏱️ Còn ${cd.text} để thanh toán`}
                                                 </div>
                                             )}
-                                            {order.payment_url && (!cd || !cd.expired) && (
-                                                <a
-                                                    href={order.payment_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                            {(!cd || !cd.expired) && (
+                                                <Link
+                                                    to={`/user/thanh-toan/${order.id}`}
                                                     className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition"
                                                 >
                                                     💳 Thanh toán ngay
-                                                </a>
+                                                </Link>
                                             )}
                                             <button
                                                 onClick={() => handleCancel(order.id)}

@@ -234,11 +234,11 @@ const MuaConVatPage: React.FC = () => {
                 items: orderItems,
             });
 
-            // Redirect to PayOS payment URL
-            if (result?.order?.payment_url) {
+            // Redirect to intermediate payment page
+            if (result?.order?.id) {
                 setCart([]);
                 setIsCartOpen(false);
-                window.location.href = result.order.payment_url;
+                navigate(`/user/thanh-toan/${result.order.id}`);
             } else {
                 setCart([]);
                 setIsCartOpen(false);
