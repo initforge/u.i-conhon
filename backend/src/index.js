@@ -165,12 +165,13 @@ app.listen(PORT, () => {
     // ================================================
     const { rollbackOrderLimits } = require('./routes/webhook');
     const { cache } = require('./services/redis');
+    const { cancelPaymentLink } = require('./services/payos');
 
     setInterval(async () => {
         try {
             const db = require('./services/database');
             const expiredOrders = await db.query(
-                `SELECT id, session_id FROM orders 
+                `SELECT id, session_id, payment_code FROM orders 
                  WHERE status = 'pending' AND payment_expires < NOW()`
             );
 
@@ -179,6 +180,11 @@ app.listen(PORT, () => {
             console.log(`🧹 Cleaning up ${expiredOrders.rows.length} expired orders`);
 
             for (const order of expiredOrders.rows) {
+                // Cancel PayOS link first (prevents late payment)
+                if (order.payment_code) {
+                    await cancelPaymentLink(order.payment_code);
+                }
+
                 await db.query(
                     `UPDATE orders SET status = 'expired' WHERE id = $1`,
                     [order.id]
@@ -191,7 +197,7 @@ app.listen(PORT, () => {
                 }
             }
 
-            console.log(`✅ Expired ${expiredOrders.rows.length} orders, sold_amount rolled back`);
+            console.log(`✅ Expired ${expiredOrders.rows.length} orders, PayOS cancelled, sold_amount rolled back`);
         } catch (error) {
             console.error('Expired order cleanup error:', error);
         }

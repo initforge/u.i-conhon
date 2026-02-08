@@ -106,9 +106,34 @@ async function getPaymentStatus(orderCode) {
     }
 }
 
+/**
+ * Cancel payment link - prevents customer from paying on expired order
+ */
+async function cancelPaymentLink(orderCode) {
+    try {
+        const response = await axios.post(
+            `${PAYOS_API_URL}/v2/payment-requests/${orderCode}/cancel`,
+            { cancellationReason: 'Đơn hàng hết hạn thanh toán' },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-client-id': PAYOS_CLIENT_ID,
+                    'x-api-key': PAYOS_API_KEY,
+                },
+            }
+        );
+        console.log(`✅ PayOS link cancelled for orderCode: ${orderCode}`);
+        return response.data;
+    } catch (error) {
+        // Don't throw - cancellation failure shouldn't block order expiry
+        console.error('PayOS cancelPaymentLink error:', error.response?.data || error.message);
+    }
+}
+
 module.exports = {
     createPaymentLink,
     verifyWebhookSignature,
     getPaymentStatus,
+    cancelPaymentLink,
     createSignature,
 };
