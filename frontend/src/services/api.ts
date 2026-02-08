@@ -373,8 +373,10 @@ export async function getAdminOrderDetail(orderId: string) {
 }
 
 // Lấy session hiện tại kèm session_animals (sold_amount, is_banned, ban_reason)
-export async function getAdminCurrentSession(thaiId: string) {
-    return apiRequest<{ session: { id: string; thai_id: string; status: string; animals: Array<{ animal_order: number; limit_amount: number; sold_amount: number; is_banned: boolean; ban_reason: string | null }> } }>(`/admin/sessions/current/${thaiId}`);
+// khungIndex: 0=morning, 1=afternoon, 2=evening. Admin can fetch any khung regardless of current time.
+export async function getAdminCurrentSession(thaiId: string, khungIndex?: number) {
+    const query = khungIndex !== undefined ? `?khung=${khungIndex}` : '';
+    return apiRequest<{ session: { id: string; thai_id: string; status: string; animals: Array<{ animal_order: number; limit_amount: number; sold_amount: number; is_banned: boolean; ban_reason: string | null }> } }>(`/admin/sessions/current/${thaiId}${query}`);
 }
 
 // Cập nhật limit/ban cho 1 con vật trong session

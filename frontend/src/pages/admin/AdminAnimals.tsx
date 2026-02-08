@@ -169,12 +169,12 @@ const AdminAnimals: React.FC = () => {
     }
   }, [limitsLoaded, thaiLimits]);
 
-  // Fetch session_animals thực từ API khi Thai thay đổi
+  // Fetch session_animals thực từ API khi Thai/Khung thay đổi
   useEffect(() => {
     const fetchSessionAnimals = async () => {
       try {
         const thaiId = `thai-${selectedThai}`;
-        const response = await getAdminCurrentSession(thaiId);
+        const response = await getAdminCurrentSession(thaiId, selectedKhungIndex);
         const session = response.session;
         setCurrentSessionId(session.id);
 
@@ -206,7 +206,7 @@ const AdminAnimals: React.FC = () => {
       }
     };
     fetchSessionAnimals();
-  }, [selectedThai]);
+  }, [selectedThai, selectedKhungIndex]);
 
   const thaiOptions = [
     { id: 'an-nhon', name: 'Thai An Nhơn', color: 'green', animals: 40 },

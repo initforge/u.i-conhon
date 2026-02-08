@@ -359,12 +359,31 @@ router.get('/sessions', async (req, res) => {
 
 /**
  * GET /admin/sessions/current/:thai_id - Current session for Thai (SPECS 6.2)
- * Auto-creates session if none exists (same as user endpoint).
+ * Accepts ?khung=0|1|2 to specify which session_type (morning/afternoon/evening).
+ * Auto-creates session if none exists. Admin can access at any time.
  */
 router.get('/sessions/current/:thai_id', async (req, res) => {
     try {
         const { thai_id } = req.params;
+        const { khung } = req.query;
 
+        // Map khung index to session_type
+        const SLOT_SESSION_TYPES = ['morning', 'afternoon', 'evening'];
+        let sessionType;
+
+        if (khung !== undefined && khung !== null) {
+            const khungIdx = parseInt(khung);
+            sessionType = SLOT_SESSION_TYPES[khungIdx] || 'morning';
+        } else {
+            // Fallback: auto-detect from current time
+            const { getCurrentSessionType } = require('./session');
+            sessionType = await getCurrentSessionType(thai_id);
+            if (!sessionType) {
+                sessionType = 'morning'; // Default to morning if outside all windows
+            }
+        }
+
+        // Query for existing session of this type today
         let result = await db.query(
             `SELECT s.*, 
               json_agg(json_build_object(
@@ -383,27 +402,21 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
          WHERE o.session_id = (
            SELECT id FROM sessions 
            WHERE thai_id = $1 AND status IN ('open', 'scheduled')
-           ORDER BY created_at ASC LIMIT 1
+             AND session_date = CURRENT_DATE AND session_type = $2
+           LIMIT 1
          ) AND o.status = 'paid'
          GROUP BY oi.animal_order
        ) paid ON sa.animal_order = paid.animal_order
        WHERE s.thai_id = $1 AND s.status IN ('open', 'scheduled')
+         AND s.session_date = CURRENT_DATE AND s.session_type = $2
        GROUP BY s.id
-       ORDER BY s.created_at ASC
        LIMIT 1`,
-            [thai_id]
+            [thai_id, sessionType]
         );
 
-        // Auto-create session if none exists (lazy creation for admin)
+        // Auto-create session if none exists
         if (result.rows.length === 0) {
-            const { getCurrentSessionType } = require('./session');
-            const currentSessionType = await getCurrentSessionType(thai_id);
-
-            if (!currentSessionType) {
-                return res.status(404).json({ error: 'Không có phiên nào (ngoài khung giờ)' });
-            }
-
-            console.log(`🔄 Admin: Auto-creating session: ${thai_id} / ${currentSessionType} / today`);
+            console.log(`🔄 Admin: Auto-creating session: ${thai_id} / ${sessionType} / today`);
             const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
 
             const client = await db.getClient();
@@ -414,7 +427,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                      VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, 'open', NOW())
                      ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
                      RETURNING id`,
-                    [thai_id, currentSessionType]
+                    [thai_id, sessionType]
                 );
 
                 if (insertResult.rows.length > 0) {
@@ -434,7 +447,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                 client.release();
             }
 
-            // Re-query with full JOIN
+            // Re-query
             result = await db.query(
                 `SELECT s.*, 
                   json_agg(json_build_object(
@@ -447,15 +460,15 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                FROM sessions s
                LEFT JOIN session_animals sa ON s.id = sa.session_id
                WHERE s.thai_id = $1 AND s.status IN ('open', 'scheduled')
+                 AND s.session_date = CURRENT_DATE AND s.session_type = $2
                GROUP BY s.id
-               ORDER BY s.created_at ASC
                LIMIT 1`,
-                [thai_id]
+                [thai_id, sessionType]
             );
         }
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Không có phiên nào' });
+            return res.status(404).json({ error: 'Không thể tạo phiên' });
         }
 
         res.json({ session: result.rows[0] });
