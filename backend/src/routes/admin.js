@@ -257,6 +257,56 @@ router.get('/stats/animal-orders', async (req, res) => {
 });
 
 // ================================================
+// Lunar Dates (global per-day lunar label)
+// ================================================
+
+/**
+ * GET /admin/lunar-date/:date - Get lunar label for a date
+ */
+router.get('/lunar-date/:date', async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT lunar_label FROM lunar_dates WHERE date = $1',
+            [req.params.date]
+        );
+        res.json({ lunar_label: result.rows[0]?.lunar_label || '' });
+    } catch (error) {
+        console.error('Get lunar date error:', error);
+        res.status(500).json({ error: 'Lỗi server' });
+    }
+});
+
+/**
+ * PUT /admin/lunar-date - Set lunar label for a date (all Thais, all khung)
+ */
+router.put('/lunar-date', async (req, res) => {
+    try {
+        const { date, lunar_label } = req.body;
+        if (!date || !lunar_label) {
+            return res.status(400).json({ error: 'Cần ngày và nhãn âm lịch' });
+        }
+
+        await db.query(
+            `INSERT INTO lunar_dates (date, lunar_label, updated_at)
+             VALUES ($1, $2, NOW())
+             ON CONFLICT (date) DO UPDATE SET lunar_label = $2, updated_at = NOW()`,
+            [date, lunar_label]
+        );
+
+        // Also sync to all sessions on that date (backward compat)
+        await db.query(
+            `UPDATE sessions SET lunar_label = $1 WHERE session_date = $2`,
+            [lunar_label, date]
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Set lunar date error:', error);
+        res.status(500).json({ error: 'Lỗi server' });
+    }
+});
+
+// ================================================
 // 6.2 Session Animals Management
 // ================================================
 

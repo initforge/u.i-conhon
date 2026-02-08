@@ -3,7 +3,7 @@ import { THAIS, KetQua, getAnimalsByThai } from '../../types';
 import { useThaiConfig } from '../../contexts/ThaiConfigContext';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getAvailableYears } from '../../utils/yearUtils';
-import { ProfitLossData, getAdminSessions, AdminSession, getResultsHistory, deleteSessionResult, LotteryResult, submitLotteryResult, getAdminYearlyProfitLoss } from '../../services/api';
+import { ProfitLossData, getAdminSessions, AdminSession, getResultsHistory, deleteSessionResult, LotteryResult, submitLotteryResult, getAdminYearlyProfitLoss, getLunarDate, setLunarDate } from '../../services/api';
 
 // Mapping bộ phận cá thể cho An Nhơn / Nhơn Phong (theo đồ hình nhơn)
 const bodyPartMapping: Record<number, { bodyPart: string; column: string }> = {
@@ -233,11 +233,6 @@ const AdminKetQua: React.FC = () => {
         if (openSession) {
           setSelectedSessionId(openSession.id);
         }
-        // Auto-fill lunar_label from any existing session on the same date
-        const existingLunar = res.sessions?.find(s => s.lunar_label && s.lunar_label.trim() !== '');
-        if (existingLunar && existingLunar.lunar_label) {
-          setFormData(prev => ({ ...prev, lunarLabel: existingLunar.lunar_label! }));
-        }
       } catch (error) {
         console.error('Failed to fetch sessions:', error);
         setTodaySessions([]);
@@ -245,6 +240,21 @@ const AdminKetQua: React.FC = () => {
     };
     fetchSessions();
   }, [selectedThai]);
+
+  // Fetch lunar_label from global lunar_dates table (per date, not per session)
+  useEffect(() => {
+    const fetchLunar = async () => {
+      try {
+        const res = await getLunarDate(formData.date);
+        if (res.lunar_label) {
+          setFormData(prev => ({ ...prev, lunarLabel: res.lunar_label }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch lunar date:', error);
+      }
+    };
+    if (formData.date) fetchLunar();
+  }, [formData.date]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -486,6 +496,11 @@ const AdminKetQua: React.FC = () => {
                 type="text"
                 value={formData.lunarLabel}
                 onChange={(e) => setFormData({ ...formData, lunarLabel: e.target.value })}
+                onBlur={() => {
+                  if (formData.lunarLabel.trim() && formData.date) {
+                    setLunarDate(formData.date, formData.lunarLabel.trim()).catch(console.error);
+                  }
+                }}
                 placeholder="VD: Mùng 3, 25 tháng Chạp, 30 Tết..."
                 className="w-full px-3 py-2.5 rounded-lg focus:outline-none"
                 style={{ border: '1px solid #e8e4df', backgroundColor: '#fffbeb' }}

@@ -487,6 +487,18 @@ export interface AdminSession {
     closes_at: string;
 }
 
+// Lunar dates (global per-day)
+export async function getLunarDate(date: string) {
+    return apiRequest<{ lunar_label: string }>(`/admin/lunar-date/${date}`);
+}
+
+export async function setLunarDate(date: string, lunar_label: string) {
+    return apiRequest<{ success: boolean }>('/admin/lunar-date', {
+        method: 'PUT',
+        body: JSON.stringify({ date, lunar_label }),
+    });
+}
+
 export async function getAdminSessions(options?: { thai_id?: string; date?: string; status?: string }) {
     const params = new URLSearchParams();
     if (options?.thai_id) params.append('thai_id', options.thai_id);
