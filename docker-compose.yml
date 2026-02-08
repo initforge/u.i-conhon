@@ -8,6 +8,8 @@ services:
       POSTGRES_DB: conhon
       POSTGRES_USER: conhon
       POSTGRES_PASSWORD: ${DB_PASSWORD:-conhon_secret_2026}
+      TZ: Asia/Ho_Chi_Minh
+    command: postgres -c timezone=Asia/Ho_Chi_Minh
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
