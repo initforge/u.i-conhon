@@ -45,6 +45,7 @@ services:
     restart: always
     environment:
       NODE_ENV: production
+      TZ: Asia/Ho_Chi_Minh
       PORT: 8000
       DATABASE_URL: postgresql://conhon:${DB_PASSWORD:-conhon_secret_2026}@db:5432/conhon
       REDIS_URL: redis://redis:6379
