@@ -1,0 +1,69 @@
+# CI/CD Pipeline - Auto Deploy to VPS
+# Push to ready-production → Auto deploy to production VPS
+
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - ready-production
+
+env:
+  DEPLOY_PATH: /opt/conhon
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add VPS to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            set -e
+            cd /opt/conhon
+
+            echo "📥 Pulling latest code..."
+            git pull origin ready-production
+
+            echo "🛑 Stopping system nginx/apache (free port 80)..."
+            systemctl stop nginx 2>/dev/null || true
+            systemctl disable nginx 2>/dev/null || true
+            systemctl stop apache2 2>/dev/null || true
+            systemctl disable apache2 2>/dev/null || true
+
+            echo "🔨 Building containers..."
+            docker compose build --no-cache
+
+            echo "🔄 Restarting services..."
+            docker compose up -d
+
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
+
+            echo "✅ Deploy completed at $(date)"
+          ENDSSH
+
+      - name: Health Check
+        run: |
+          echo "⏳ Waiting for services to start..."
+          sleep 15
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.VPS_HOST }}:3000/health || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Health check passed (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️ Health check returned HTTP $HTTP_CODE (services may still be starting)"
+          fi

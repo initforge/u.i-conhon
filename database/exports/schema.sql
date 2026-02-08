@@ -1,0 +1,460 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict T2L7QbMACHlFlQtyohVodHMWv3taZWc49x7iffBQ2HVHOck0VkPPJgMm5ZIuxYc
+
+-- Dumped from database version 15.15
+-- Dumped by pg_dump version 15.15
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
+--
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: cau_thai_images; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.cau_thai_images (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    thai_id character varying(20) NOT NULL,
+    year integer NOT NULL,
+    image_url character varying(500),
+    title character varying(200),
+    lunar_label character varying(100),
+    is_featured boolean DEFAULT false,
+    created_at timestamp without time zone DEFAULT now(),
+    khung_id character varying(20) DEFAULT 'khung-1'::character varying,
+    is_active boolean DEFAULT false,
+    description character varying(500)
+);
+
+
+--
+-- Name: community_comments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.community_comments (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    post_id uuid,
+    user_id uuid,
+    user_name character varying(100),
+    user_phone character varying(20),
+    content text,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+--
+-- Name: community_posts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.community_posts (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    thai_id character varying(20),
+    youtube_id character varying(20),
+    title character varying(200),
+    content text,
+    like_count integer DEFAULT 0,
+    is_pinned boolean DEFAULT false,
+    is_approved boolean DEFAULT true,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+--
+-- Name: order_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.order_items (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    order_id uuid,
+    animal_order integer NOT NULL,
+    animal_name character varying(50),
+    quantity integer NOT NULL,
+    unit_price integer NOT NULL,
+    subtotal bigint NOT NULL
+);
+
+
+--
+-- Name: orders; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.orders (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    session_id uuid,
+    user_id uuid,
+    total bigint NOT NULL,
+    status character varying(20) DEFAULT 'pending'::character varying,
+    payment_code character varying(50),
+    payment_url character varying(500),
+    payment_expires timestamp without time zone,
+    created_at timestamp without time zone DEFAULT now(),
+    paid_at timestamp without time zone,
+    CONSTRAINT orders_status_check CHECK (((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('paid'::character varying)::text, ('won'::character varying)::text, ('lost'::character varying)::text, ('cancelled'::character varying)::text, ('expired'::character varying)::text])))
+);
+
+
+--
+-- Name: post_likes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.post_likes (
+    post_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+--
+-- Name: session_animals; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.session_animals (
+    session_id uuid NOT NULL,
+    animal_order integer NOT NULL,
+    limit_amount bigint DEFAULT 5000000,
+    sold_amount bigint DEFAULT 0,
+    is_banned boolean DEFAULT false,
+    ban_reason character varying(200),
+    CONSTRAINT session_animals_animal_order_check CHECK (((animal_order >= 1) AND (animal_order <= 40)))
+);
+
+
+--
+-- Name: sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sessions (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    thai_id character varying(20) NOT NULL,
+    session_type character varying(20) NOT NULL,
+    session_date date NOT NULL,
+    lunar_label character varying(50),
+    status character varying(20) DEFAULT 'scheduled'::character varying,
+    winning_animal integer,
+    cau_thai text,
+    created_at timestamp without time zone DEFAULT now(),
+    draw_time timestamp without time zone,
+    CONSTRAINT sessions_session_type_check CHECK (((session_type)::text = ANY (ARRAY[('morning'::character varying)::text, ('afternoon'::character varying)::text, ('evening'::character varying)::text]))),
+    CONSTRAINT sessions_status_check CHECK (((status)::text = ANY (ARRAY[('scheduled'::character varying)::text, ('open'::character varying)::text, ('closed'::character varying)::text, ('resulted'::character varying)::text])))
+);
+
+
+--
+-- Name: settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.settings (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    key character varying(100) NOT NULL,
+    value jsonb,
+    updated_at timestamp without time zone DEFAULT now()
+);
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.users (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    phone character varying(15) NOT NULL,
+    password_hash character varying(255) NOT NULL,
+    name character varying(100),
+    zalo character varying(100),
+    bank_code character varying(20),
+    bank_account character varying(30),
+    bank_holder character varying(100),
+    role character varying(10) DEFAULT 'user'::character varying,
+    completed_tasks text[] DEFAULT '{}'::text[],
+    created_at timestamp without time zone DEFAULT now(),
+    is_comment_banned boolean DEFAULT false,
+    CONSTRAINT users_role_check CHECK (((role)::text = ANY (ARRAY[('user'::character varying)::text, ('admin'::character varying)::text])))
+);
+
+
+--
+-- Name: cau_thai_images cau_thai_images_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cau_thai_images
+    ADD CONSTRAINT cau_thai_images_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: community_comments community_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.community_comments
+    ADD CONSTRAINT community_comments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: community_posts community_posts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.community_posts
+    ADD CONSTRAINT community_posts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: order_items order_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_likes post_likes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_likes
+    ADD CONSTRAINT post_likes_pkey PRIMARY KEY (post_id, user_id);
+
+
+--
+-- Name: session_animals session_animals_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.session_animals
+    ADD CONSTRAINT session_animals_pkey PRIMARY KEY (session_id, animal_order);
+
+
+--
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sessions sessions_thai_id_session_date_session_type_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT sessions_thai_id_session_date_session_type_key UNIQUE (thai_id, session_date, session_type);
+
+
+--
+-- Name: settings settings_key_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.settings
+    ADD CONSTRAINT settings_key_key UNIQUE (key);
+
+
+--
+-- Name: settings settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.settings
+    ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_phone_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_phone_key UNIQUE (phone);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_cau_thai_thai_year; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_cau_thai_thai_year ON public.cau_thai_images USING btree (thai_id, year);
+
+
+--
+-- Name: idx_community_comments_post; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_community_comments_post ON public.community_comments USING btree (post_id);
+
+
+--
+-- Name: idx_community_posts_thai; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_community_posts_thai ON public.community_posts USING btree (thai_id);
+
+
+--
+-- Name: idx_order_items_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_order_items_order ON public.order_items USING btree (order_id);
+
+
+--
+-- Name: idx_orders_session; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_orders_session ON public.orders USING btree (session_id);
+
+
+--
+-- Name: idx_orders_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_orders_status ON public.orders USING btree (status);
+
+
+--
+-- Name: idx_orders_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_orders_user ON public.orders USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: idx_sessions_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sessions_date ON public.sessions USING btree (session_date);
+
+
+--
+-- Name: idx_sessions_live; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sessions_live ON public.sessions USING btree (thai_id, status) WHERE ((status)::text = ANY (ARRAY[('open'::character varying)::text, ('scheduled'::character varying)::text]));
+
+
+--
+-- Name: idx_users_phone; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_users_phone ON public.users USING btree (phone);
+
+
+--
+-- Name: community_comments community_comments_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.community_comments
+    ADD CONSTRAINT community_comments_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.community_posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: community_comments community_comments_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.community_comments
+    ADD CONSTRAINT community_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: order_items order_items_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id) ON DELETE CASCADE;
+
+
+--
+-- Name: orders orders_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.sessions(id);
+
+
+--
+-- Name: orders orders_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: post_likes post_likes_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_likes
+    ADD CONSTRAINT post_likes_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.community_posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_likes post_likes_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_likes
+    ADD CONSTRAINT post_likes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: session_animals session_animals_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.session_animals
+    ADD CONSTRAINT session_animals_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.sessions(id) ON DELETE CASCADE;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict T2L7QbMACHlFlQtyohVodHMWv3taZWc49x7iffBQ2HVHOck0VkPPJgMm5ZIuxYc
+
