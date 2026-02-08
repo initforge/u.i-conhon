@@ -187,7 +187,7 @@ router.get('/me', async (req, res) => {
         const dataParams = [...params, parseInt(limit), offset];
         const result = await db.query(
             `SELECT o.id, o.total, o.status, o.created_at, o.paid_at,
-                    o.payment_url,
+                    o.payment_url, o.payment_expires,
                     s.thai_id, s.session_type, s.session_date, s.lunar_label,
                     COALESCE(
                       (SELECT json_agg(json_build_object(
@@ -254,6 +254,57 @@ router.get('/:id', async (req, res) => {
     } catch (error) {
         console.error('Get order error:', error);
         res.status(500).json({ error: 'Không thể lấy thông tin đơn hàng' });
+    }
+});
+
+/**
+ * POST /orders/:id/cancel - Cancel a pending order
+ * Marks order as expired, cancels PayOS link, rolls back sold_amount
+ */
+router.post('/:id/cancel', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Get order (must be owned by user and pending)
+        const orderResult = await db.query(
+            `SELECT id, status, payment_code, session_id FROM orders WHERE id = $1 AND user_id = $2`,
+            [id, req.user.id]
+        );
+
+        if (orderResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Đơn hàng không tồn tại' });
+        }
+
+        const order = orderResult.rows[0];
+        if (order.status !== 'pending') {
+            return res.status(400).json({ error: 'Chỉ có thể hủy đơn đang chờ thanh toán' });
+        }
+
+        // Cancel PayOS link
+        if (order.payment_code) {
+            await payosService.cancelPaymentLink(order.payment_code);
+        }
+
+        // Mark as expired
+        await db.query(
+            `UPDATE orders SET status = 'expired' WHERE id = $1`,
+            [order.id]
+        );
+
+        // Rollback sold_amount
+        const { rollbackOrderLimits } = require('./webhook');
+        await rollbackOrderLimits(order.id);
+
+        // Invalidate cache
+        const { cache } = require('../services/redis');
+        if (order.session_id) {
+            await cache.del(`session_animals:${order.session_id}`);
+        }
+
+        res.json({ success: true, message: 'Đơn hàng đã được hủy' });
+    } catch (error) {
+        console.error('Cancel order error:', error);
+        res.status(500).json({ error: 'Không thể hủy đơn hàng' });
     }
 });
 

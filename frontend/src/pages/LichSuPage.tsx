@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getMyOrders, Order } from '../services/api';
+import { getMyOrders, cancelOrder, Order } from '../services/api';
 import { getAnimalName } from '../types';
 
 // Thai names constant
@@ -28,6 +28,36 @@ const LichSuPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+    const [now, setNow] = useState(Date.now());
+
+    // Tick every second for countdown
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const getCountdown = (expiresAt?: string) => {
+        if (!expiresAt) return null;
+        const diff = new Date(expiresAt).getTime() - now;
+        if (diff <= 0) return { expired: true, text: 'Hết hạn' };
+        const mins = Math.floor(diff / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        return { expired: false, text: `${mins}:${secs.toString().padStart(2, '0')}` };
+    };
+
+    const handleCancel = async (orderId: string) => {
+        if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
+        try {
+            await cancelOrder(orderId);
+            // Refetch orders
+            const thaiId = filterThai !== 'all' ? filterThai : undefined;
+            const response = await getMyOrders({ thaiId });
+            setOrders(response.orders || []);
+        } catch (err) {
+            console.error('Cancel error:', err);
+            alert('Không thể hủy đơn hàng');
+        }
+    };
 
     // Fetch orders from API
     useEffect(() => {
@@ -186,15 +216,33 @@ const LichSuPage: React.FC = () => {
                                     </p>
                                 </div>
 
-                                {/* Pending order: show payment button */}
-                                {order.status === 'pending' && order.payment_url && (
-                                    <a
-                                        href={order.payment_url}
-                                        className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition mb-3"
-                                    >
-                                        💳 Thanh toán ngay
-                                    </a>
-                                )}
+                                {/* Pending order: show countdown + payment button */}
+                                {order.status === 'pending' && (() => {
+                                    const cd = getCountdown(order.payment_expires);
+                                    return (
+                                        <div className="mb-3 space-y-2">
+                                            {cd && (
+                                                <div className={`text-center py-1.5 rounded-lg text-sm font-medium ${cd.expired ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-700'}`}>
+                                                    {cd.expired ? '⏰ Đơn hàng đã hết hạn thanh toán' : `⏱️ Còn ${cd.text} để thanh toán`}
+                                                </div>
+                                            )}
+                                            {order.payment_url && (!cd || !cd.expired) && (
+                                                <a
+                                                    href={order.payment_url}
+                                                    className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition"
+                                                >
+                                                    💳 Thanh toán ngay
+                                                </a>
+                                            )}
+                                            <button
+                                                onClick={() => handleCancel(order.id)}
+                                                className="block w-full text-center py-2 border border-red-200 text-red-500 rounded-lg font-medium hover:bg-red-50 transition text-sm"
+                                            >
+                                                ✕ Hủy đơn hàng
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
 
                                 {/* Expand/collapse order items */}
                                 {order.items && order.items.length > 0 && (

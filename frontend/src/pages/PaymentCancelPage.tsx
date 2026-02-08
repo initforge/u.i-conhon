@@ -1,14 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { cancelOrder } from '../services/api';
 
 /**
  * PaymentCancelPage — shown after PayOS redirects back on cancelled/failed payment
  * URL: /user/thanh-toan/cancel?orderId=xxx
+ * Automatically cancels the order in the backend (marks expired + cancels PayOS link)
  */
 const PaymentCancelPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get('orderId');
     const [countdown, setCountdown] = useState(10);
+    const [cancelStatus, setCancelStatus] = useState<'cancelling' | 'cancelled' | 'error'>('cancelling');
+
+    // Cancel the order in the backend
+    useEffect(() => {
+        if (!orderId) return;
+        const doCancel = async () => {
+            try {
+                await cancelOrder(orderId);
+                setCancelStatus('cancelled');
+            } catch (error) {
+                console.error('Cancel order error:', error);
+                setCancelStatus('error');
+            }
+        };
+        doCancel();
+    }, [orderId]);
 
     // Auto-redirect after 10s
     useEffect(() => {
@@ -33,7 +51,11 @@ const PaymentCancelPage: React.FC = () => {
                         <span className="text-5xl">❌</span>
                     </div>
                     <h1 className="text-2xl font-bold text-white">Thanh toán bị hủy</h1>
-                    <p className="text-red-100 mt-2">Đơn hàng chưa được thanh toán</p>
+                    <p className="text-red-100 mt-2">
+                        {cancelStatus === 'cancelling' ? 'Đang hủy đơn hàng...' :
+                            cancelStatus === 'cancelled' ? 'Đơn hàng đã được hủy' :
+                                'Đơn hàng chưa được thanh toán'}
+                    </p>
                 </div>
 
                 <div className="p-6 space-y-4">
@@ -44,10 +66,10 @@ const PaymentCancelPage: React.FC = () => {
                         </div>
                     )}
 
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-left">
-                        <p className="text-sm text-yellow-800">
-                            <strong>💡 Lưu ý:</strong> Đơn hàng chưa thanh toán sẽ tự hết hạn sau 15 phút.
-                            Hạn mức con vật sẽ được hoàn lại tự động khi đơn hết hạn.
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-left">
+                        <p className="text-sm text-green-800">
+                            <strong>✅ Đơn hàng đã được hủy.</strong> Hạn mức con vật đã được hoàn lại.
+                            Bạn có thể đặt lại đơn mới bất cứ lúc nào.
                         </p>
                     </div>
 

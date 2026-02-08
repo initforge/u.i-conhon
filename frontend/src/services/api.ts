@@ -147,6 +147,12 @@ export async function getOrderDetail(orderId: string) {
     return apiRequest<{ order: Order; items: OrderItem[] }>(`/orders/${orderId}`);
 }
 
+export async function cancelOrder(orderId: string) {
+    return apiRequest<{ success: boolean; message: string }>(`/orders/${orderId}/cancel`, {
+        method: 'POST',
+    });
+}
+
 // ============ COMMUNITY ============
 
 export async function getCommunityPosts(options?: { thaiId?: string; page?: number; limit?: number }) {
@@ -260,6 +266,7 @@ export interface Order {
     payment_code?: string;
     created_at: string;
     paid_at?: string;
+    payment_expires?: string;
     thai_id?: string;
     session_type?: string;
     session_date?: string;
