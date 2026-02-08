@@ -124,8 +124,8 @@ const PaymentWaitingPage: React.FC = () => {
         const totalSeconds = Math.floor(diff / 1000);
         const mins = Math.floor(totalSeconds / 60);
         const secs = totalSeconds % 60;
-        // 15 min = 900s total
-        const percent = Math.min(100, (totalSeconds / 900) * 100);
+        // 5 min = 300s total
+        const percent = Math.min(100, (totalSeconds / 300) * 100);
         return { expired: false, mins, secs, text: `${mins}:${secs.toString().padStart(2, '0')}`, percent };
     };
 

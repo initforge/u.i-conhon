@@ -93,7 +93,7 @@ router.post('/', requireMXHCompleted, async (req, res) => {
         // 3. Create order
         const orderResult = await client.query(
             `INSERT INTO orders (session_id, user_id, total, status, payment_expires)
-       VALUES ($1, $2, $3, 'pending', NOW() + INTERVAL '15 minutes')
+       VALUES ($1, $2, $3, 'pending', NOW() + INTERVAL '5 minutes')
        RETURNING id`,
             [session_id, req.user.id, total]
         );
