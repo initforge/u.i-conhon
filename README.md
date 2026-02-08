@@ -12,9 +12,26 @@
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react&logoColor=black" />
   <img src="https://img.shields.io/badge/postgres-15-4169E1?logo=postgresql&logoColor=white" />
   <img src="https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/deploy-production-brightgreen" />
   <img src="https://img.shields.io/badge/license-proprietary-red" />
 </p>
+
+---
+
+## Mục lục
+
+- [TL;DR](#tldr)
+- [Quickstart](#quickstart)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [API Examples](#api-examples)
+- [Makefile Commands](#makefile-commands)
+- [Quality & Engineering](#quality--engineering)
+- [Decision Log](#decision-log)
+- [Env Variables](#env-variables)
+- [Deployment](#deployment)
+- [Roadmap](#roadmap)
 
 ---
 
@@ -22,13 +39,13 @@
 
 Ứng dụng full-stack phục vụ **đặt tịch** (mua con vật) cho 3 thai vùng Bình Định — An Nhơn, Nhơn Phong, Hoài Nhơn.
 
-- 🛒 **Đặt tịch** — Chọn con → thanh toán QR qua PayOS → xác nhận webhook tự động
-- 📊 **Kết quả real-time** — SSE push kết quả xổ, hiển thị đúng giờ theo khung
-- 🖼️ **Câu thai** — Admin upload ảnh theo thai + khung giờ, homepage tự hiển thị ảnh active
-- 👨‍💼 **Admin CMS** — Dashboard, quản lý hạn mức, đơn hàng, cộng đồng, báo cáo doanh thu
-- 🔒 **Session-centric** — Mọi dữ liệu xoay quanh phiên (thai × ngày × khung giờ)
+- 🛒 **Đặt tịch** — Chọn con → thanh toán QR qua PayOS → webhook xác nhận tự động
+- 📊 **Real-time** — SSE push kết quả xổ + cập nhật hạn mức live
+- 🖼️ **Câu thai** — Admin upload ảnh theo thai + khung giờ, homepage tự filter hiển thị
+- 👨‍💼 **Admin CMS** — Dashboard, hạn mức, đơn hàng, cộng đồng, báo cáo doanh thu
+- 🔒 **Session-centric** — Mọi dữ liệu xoay quanh Session = `{thai_id, date, session_type}`
 
-**Tech**: React 18 · Express.js · PostgreSQL 15 · Redis 7 · PayOS · Docker Compose
+**Tech**: React 18 · TypeScript · Express.js · PostgreSQL 15 · Redis 7 · PayOS · Docker Compose
 
 🔗 **Production**: `https://conhonannhonbinhdinh.vn`
 
@@ -39,14 +56,12 @@
 ### Docker (khuyên dùng)
 
 ```bash
-git clone -b ready-production https://github.com/initforge/vhdg-conhon.git
+git clone https://github.com/initforge/vhdg-conhon.git
 cd vhdg-conhon
 
-cp .env.production .env        # Sửa .env: DB_PASSWORD, JWT_SECRET, PAYOS keys
-docker compose up --build -d   # 4 containers: frontend, backend, db, redis
-
-# Init database
-docker exec -i conhon-db psql -U conhon -d conhon < database/schema.sql
+cp .env.example .env                   # Sửa: DB_PASSWORD, JWT_SECRET, PAYOS keys
+docker compose up --build -d           # 4 containers: frontend, backend, db, redis
+make init-db                           # Khởi tạo database schema
 ```
 
 Mở **http://localhost:3000** → xong.
@@ -56,12 +71,11 @@ Mở **http://localhost:3000** → xong.
 ```bash
 # Terminal 1 — Backend
 cd backend && npm install
-cp ../.env.production .env     # Sửa DATABASE_URL cho local
-npm run dev                    # → http://localhost:8000
+npm run dev                            # → http://localhost:8000
 
 # Terminal 2 — Frontend
 cd frontend && npm install
-npm run dev                    # → http://localhost:5173
+npm run dev                            # → http://localhost:5173
 ```
 
 **Yêu cầu**: Node ≥ 18 · PostgreSQL 15 · Redis 7
@@ -70,18 +84,18 @@ npm run dev                    # → http://localhost:5173
 
 ## Features
 
-| Tính năng | Chi tiết |
-|-----------|----------|
-| **Đặt tịch + QR Payment** | Chọn con → tạo order → PayOS QR → webhook xác nhận tự động |
-| **Atomic hạn mức** | `SELECT ... FOR UPDATE` — race condition–proof, rollback khi huỷ |
-| **Real-time SSE** | Push kết quả xổ, cập nhật hạn mức live, không cần polling |
-| **Idempotent webhook** | PayOS callback xử lý đúng 1 lần, skip nếu đã processed |
-| **Session-centric model** | Mỗi phiên = thai + ngày + khung giờ — isolation hoàn toàn |
-| **Admin CMS** | Dashboard, quản lý 40 con/phiên, đơn hàng, cộng đồng, báo cáo |
-| **Câu thai dynamic** | Upload ảnh theo thai + khung, toggle hiển thị, homepage filter tự động |
-| **Dynamic config** | Master switch, bảo trì, bật/tắt thai — ThaiConfigContext toàn app |
-| **Rate limiting** | Redis-backed, theo IP + endpoint |
-| **Responsive** | Mobile-first, TailwindCSS, hoạt động mượt 360px–2K |
+| Tính năng | Implement |
+|-----------|-----------|
+| **QR Payment** | PayOS webhook → idempotent handler (`routes/webhook.js`) |
+| **Atomic hạn mức** | `SELECT ... FOR UPDATE` — race condition–proof (`routes/order.js`) |
+| **Real-time SSE** | Push kết quả + hạn mức, auto-reconnect (`routes/sse.js`) |
+| **Session-centric** | UNIQUE(thai_id, date, type), FK → orders → items |
+| **Admin CMS** | 43 endpoints, 11 admin pages, ban/bulk actions |
+| **Câu thai dynamic** | Upload ảnh + khung_id + is_active, homepage filter |
+| **Dynamic config** | Settings JSONB, master switch, Tết mode, Thai toggles |
+| **Rate limiting** | Redis-backed (`middleware/rateLimiter.js`) |
+| **Like dedup** | `post_likes` table PK(post_id, user_id), server-side |
+| **Comment ban** | `users.is_comment_banned`, admin bulk actions |
 
 ---
 
@@ -90,11 +104,11 @@ npm run dev                    # → http://localhost:5173
 ```mermaid
 graph TB
     subgraph Client
-        B[Browser / Mobile]
+        B["Browser / Mobile"]
     end
 
     subgraph "System Nginx"
-        N[":80 → 301 HTTPS<br/>:443 → SSL Termination"]
+        N[":80 → 301 HTTPS<br/>:443 SSL Termination"]
     end
 
     subgraph "Docker Compose"
@@ -105,25 +119,25 @@ graph TB
             API["Express.js :8000<br/>REST + SSE"]
         end
         subgraph Data
-            DB["PostgreSQL 15"]
-            RD["Redis 7"]
+            DB["PostgreSQL 15<br/>9 tables, 12 indexes"]
+            RD["Redis 7<br/>rate-limit, cache"]
         end
     end
 
     subgraph External
-        PO["PayOS<br/>Payment Gateway"]
+        PO["PayOS Gateway"]
     end
 
     B -->|HTTPS| N
     N -->|proxy_pass| FE
-    FE -->|/api/*| API
+    FE -->|"/api/*"| API
     API --> DB
     API --> RD
     API <-->|Webhook| PO
     API -.->|SSE stream| FE
 ```
 
-### Luồng đặt tịch (core flow)
+### Core flow: Đặt tịch → Thanh toán
 
 ```mermaid
 sequenceDiagram
@@ -135,45 +149,40 @@ sequenceDiagram
 
     U->>FE: Chọn con + số lượng
     FE->>API: POST /orders
-    API->>DB: BEGIN → SELECT FOR UPDATE (kiểm hạn mức)
-    DB-->>API: OK (còn slot)
-    API->>DB: INSERT order + UPDATE sold_amount → COMMIT
+    API->>DB: BEGIN → SELECT FOR UPDATE (check hạn mức)
+    DB-->>API: OK
+    API->>DB: UPDATE sold_amount + INSERT order → COMMIT
     API->>PO: Tạo payment link
-    PO-->>API: QR URL + orderCode
-    API-->>FE: Payment link
-    FE->>U: Hiện QR code
+    PO-->>API: QR URL
+    API-->>FE: paymentUrl
+    FE->>U: Hiện QR
 
-    Note over PO: User quét QR thanh toán
+    Note over PO: User quét QR
 
-    PO->>API: POST /webhook/payos (callback)
-    API->>DB: UPDATE order → status = 'paid'
+    PO->>API: POST /webhook/payos
+    API->>API: Check order.status !== 'pending' → skip
+    API->>DB: UPDATE order.status = 'paid'
     API-->>PO: 200 OK
-    API->>FE: SSE push update
+    API->>FE: SSE push
 ```
 
 ---
 
 ## Tech Stack
 
-| Layer | Công nghệ | Lý do chọn |
-|-------|-----------|-----------|
-| **Frontend** | React 18 + TypeScript + Vite | Type-safe, HMR nhanh, tree-shaking |
-| **Styling** | TailwindCSS | Utility-first, responsive nhanh |
-| **State** | React Context + useReducer | Đủ dùng, không cần Redux overhead |
-| **Backend** | Express.js | Lightweight, middleware ecosystem |
-| **Database** | PostgreSQL 15 | ACID, UUID PK, row-level locking |
-| **Cache** | Redis 7 | Rate-limit counter, session cache |
-| **Real-time** | SSE (Server-Sent Events) | Đơn giản hơn WebSocket cho 1-way push |
-| **Payment** | PayOS | QR nội địa, webhook-based, phí thấp |
-| **Upload** | Multer + static serve | Đơn giản, không cần S3 cho scale hiện tại |
-| **Auth** | JWT (access + middleware) | Stateless, verify nhanh |
-| **Infra** | Docker Compose | 1 lệnh deploy, reproducible |
+| Layer | Tech | Lý do |
+|-------|------|-------|
+| **Frontend** | React 18 + TypeScript + Vite | Type-safe, HMR, tree-shaking |
+| **Styling** | TailwindCSS | Utility-first, responsive |
+| **State** | Context + useReducer | Đủ dùng, không Redux overhead |
+| **Backend** | Express.js | Nhẹ, middleware ecosystem |
+| **DB** | PostgreSQL 15 | ACID, row-level lock, UUID PK, CHECK constraints |
+| **Cache** | Redis 7 | Rate-limit, session cache |
+| **Real-time** | SSE | 1-way push, đơn giản hơn WebSocket |
+| **Payment** | PayOS | QR nội địa, webhook-based |
+| **Auth** | JWT | Stateless verify |
+| **Infra** | Docker Compose | 1 lệnh deploy, 4 containers |
 | **SSL** | Let's Encrypt + Certbot | Free, auto-renew |
-
-**Tại sao không dùng X?**
-- **Không WebSocket** → SSE đủ cho 1-way push (kết quả, hạn mức). Ít phức tạp hơn.
-- **Không S3** → Image upload ít, local volume + Nginx serve đủ nhanh.
-- **Không Redux** → ThaiConfigContext + AuthContext xử lý đủ state cần share.
 
 ---
 
@@ -184,42 +193,29 @@ conhon-production/
 │
 ├── frontend/                       # React SPA
 │   ├── src/
-│   │   ├── pages/                  # Route-level pages
-│   │   │   ├── HomePage.tsx        # Landing + câu thai + countdown
-│   │   │   ├── admin/              # 7 admin tabs (Dashboard, ConVat, KetQua, ...)
-│   │   │   └── user/               # 6 user tabs (MuaConVat, ThanhToan, ...)
-│   │   ├── components/             # Shared UI (AnimalCard, Modal, ...)
+│   │   ├── pages/                  # 16 user pages + 11 admin pages
+│   │   ├── components/             # Shared UI (icons, modals, cards)
 │   │   ├── contexts/               # AuthContext, ThaiConfigContext
 │   │   ├── services/api.ts         # Axios client, typed interfaces
-│   │   └── constants/              # ANIMALS[], GAME_CONFIG, THAI_*
-│   ├── nginx.conf                  # SPA routing + API proxy
+│   │   └── constants/              # ANIMAL_DATA, drawTimes, gameConfig
+│   ├── nginx.conf                  # SPA routing + /api proxy + /uploads
 │   └── Dockerfile                  # Multi-stage: npm build → nginx
 │
 ├── backend/                        # Express.js API
 │   ├── src/
-│   │   ├── routes/
-│   │   │   ├── admin.js            # Admin CRUD (sessions, orders, users, ...)
-│   │   │   ├── order.js            # Đặt tịch + PayOS integration
-│   │   │   ├── session.js          # Phiên: open/close, animal limits
-│   │   │   ├── cau-thai.js         # Câu thai images API
-│   │   │   └── webhook.js          # PayOS payment callback
-│   │   ├── services/
-│   │   │   ├── database.js         # pg Pool, query helper
-│   │   │   ├── redis.js            # ioredis client
-│   │   │   ├── payos.js            # PayOS SDK wrapper
-│   │   │   └── sse.js              # SSE broadcast service
-│   │   └── middleware/
-│   │       ├── auth.js             # JWT verify + role check
-│   │       └── rateLimiter.js      # Redis-backed rate limit
+│   │   ├── routes/                 # 11 route files, 60+ endpoints
+│   │   ├── services/               # database.js, redis.js, payos.js, sse.js
+│   │   └── middleware/             # auth.js (JWT), rateLimiter.js
 │   └── Dockerfile
 │
-├── database/
-│   ├── schema.sql                  # 8 tables, indexes, constraints
-│   └── exports/data.sql            # Production snapshot
+├── database/exports/
+│   ├── schema.sql                  # 9 tables, 12 indexes, FK constraints
+│   └── data.sql                    # Production snapshot
 │
-├── docker-compose.yml              # 4 services orchestration
-├── .env.production                 # Env template (secrets redacted)
-├── SPECS.md                        # Đặc tả hệ thống (1400+ dòng)
+├── docker-compose.yml              # 4 services
+├── Makefile                        # 15 commands (make help)
+├── .env.example                    # Template (secrets redacted)
+├── SPECS.md                        # Đặc tả hệ thống (khớp 100% code)
 └── VPS_SETUP.md                    # Triển khai + vận hành VPS
 ```
 
@@ -227,7 +223,10 @@ conhon-production/
 
 ## API Examples
 
+> Docker: qua `localhost:3000/api/...` · Local dev: trực tiếp `localhost:8000/...`
+
 ### Đăng nhập
+
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -240,7 +239,8 @@ curl -X POST http://localhost:3000/api/auth/login \
 }
 ```
 
-### Đặt tịch (tạo order)
+### Đặt tịch
+
 ```bash
 curl -X POST http://localhost:3000/api/orders \
   -H "Authorization: Bearer <token>" \
@@ -260,7 +260,8 @@ curl -X POST http://localhost:3000/api/orders \
 }
 ```
 
-### Lấy kết quả xổ
+### Kết quả xổ
+
 ```bash
 curl "http://localhost:3000/api/sessions/results?thai_id=thai-an-nhon&date=2026-02-08"
 ```
@@ -268,10 +269,10 @@ curl "http://localhost:3000/api/sessions/results?thai_id=thai-an-nhon&date=2026-
 {
   "results": [
     {
-      "session_type": "sang",
-      "draw_time": "11:00",
+      "session_type": "morning",
+      "draw_time": "2026-02-08T11:00:00",
       "winning_animal": 7,
-      "animal_name": "Ngựa"
+      "lunar_label": "Mùng 9 Tết"
     }
   ]
 }
@@ -279,57 +280,100 @@ curl "http://localhost:3000/api/sessions/results?thai_id=thai-an-nhon&date=2026-
 
 ---
 
+## Makefile Commands
+
+```bash
+make help          # Xem tất cả lệnh
+make up            # Khởi chạy containers
+make build         # Build lại + chạy
+make down          # Dừng containers
+make deploy        # Pull code mới + rebuild
+make init-db       # Khởi tạo database
+make backup-db     # Backup SQL
+make shell-db      # Truy cập PostgreSQL
+make logs          # Xem tất cả logs
+make logs-be       # Logs backend
+make status        # Trạng thái containers
+```
+
+---
+
 ## Quality & Engineering
 
-| Hạng mục | Chi tiết |
-|----------|----------|
-| **Type safety** | TypeScript strict mode (frontend), typed API interfaces |
-| **Auth** | JWT + middleware role-based (`user`, `admin`) |
-| **Data integrity** | `SELECT ... FOR UPDATE` atomic locking, FK constraints, UNIQUE indexes |
-| **Idempotency** | Webhook xử lý 1 lần — check `order.status !== 'pending'` |
-| **Security** | Helmet headers, CORS whitelist, bcrypt password, rate-limit Redis |
-| **Error handling** | Centralized error middleware, graceful DB rollback |
-| **Real-time** | SSE with auto-reconnect, heartbeat keepalive |
-| **Validation** | Input validation + sanitization trước mọi DB query |
-| **Containerized** | Docker Compose — reproducible deploy, health checks |
-| **SSL** | Let's Encrypt + auto-renew cron |
+| Hạng mục | Evidence |
+|----------|---------|
+| **Type safety** | TypeScript strict, typed interfaces (`services/api.ts`) |
+| **Auth** | JWT + role middleware (`middleware/auth.js`) |
+| **Data integrity** | `SELECT FOR UPDATE`, FK constraints, CHECK constraints, UNIQUE indexes |
+| **Idempotency** | Webhook check `order.status !== 'pending'` (`routes/webhook.js`) |
+| **Security** | bcrypt passwords, CORS whitelist, rate-limit Redis (`middleware/rateLimiter.js`) |
+| **Real-time** | SSE auto-reconnect + heartbeat (`routes/sse.js`) |
+| **DB safety** | ON DELETE CASCADE, partial index `idx_sessions_live` |
+| **Like dedup** | Server-side `post_likes` PK instead of LocalStorage |
+| **Health checks** | Docker Compose: `pg_isready`, `redis-cli ping` |
+| **Containerized** | 4 services, named volumes, healthcheck dependencies |
+
+---
+
+## Decision Log
+
+| Quyết định | Lý do |
+|-----------|-------|
+| **SSE thay vì WebSocket** | 1-way push đủ dùng (kết quả, hạn mức). Ít setup, tự reconnect browser-native. |
+| **PostgreSQL thay vì MongoDB** | Relational data (orders → items → sessions), ACID cần cho hạn mức atomic, row-level lock. |
+| **Redis cho rate-limit** | Atomic counter per IP, expire tự động, không cần persistent. |
+| **Multer + local volume thay vì S3** | Ảnh câu thai ít (vài chục/mùa), local serve đủ nhanh, tiết kiệm chi phí. |
+| **post_likes bảng thay LocalStorage** | Server-side dedup chính xác, không bị bypass bằng xoá cache. |
+| **VARCHAR + CHECK thay ENUM** | PostgreSQL ALTER TYPE ENUM phức tạp khi migration. VARCHAR + CHECK linh hoạt hơn. |
 
 ---
 
 ## Env Variables
 
 ```bash
-# Database
-DB_PASSWORD=               # PostgreSQL password
-
-# Auth
-JWT_SECRET=                # Random 64-char string
-
-# Payment
-PAYOS_CLIENT_ID=           # Từ https://my.payos.vn
-PAYOS_API_KEY=             # PayOS API key
-PAYOS_CHECKSUM_KEY=        # Webhook signature verify
-
-# App
-NODE_ENV=production
-PORT=8000
-FRONTEND_URL=https://conhonannhonbinhdinh.vn
-VITE_API_URL=/api
+# Copy template
+cp .env.example .env
 ```
+
+| Biến | Mô tả |
+|------|-------|
+| `DB_PASSWORD` | PostgreSQL password |
+| `JWT_SECRET` | Random 64-char (`openssl rand -hex 32`) |
+| `PAYOS_CLIENT_ID` | Từ https://my.payos.vn |
+| `PAYOS_API_KEY` | PayOS API key |
+| `PAYOS_CHECKSUM_KEY` | Webhook signature verify |
+| `FRONTEND_URL` | Domain production |
+| `NODE_ENV` | `production` |
+| `VITE_API_URL` | `/api` |
+
+---
+
+## Deployment
+
+Xem chi tiết: **[VPS_SETUP.md](./VPS_SETUP.md)**
+
+```bash
+make deploy        # = git pull + docker compose up --build -d
+```
+
+| Thông tin | Giá trị |
+|-----------|---------|
+| VPS | Ubuntu 22.04, `36.50.26.70` |
+| Domain | `conhonannhonbinhdinh.vn` |
+| Thư mục | `/opt/conhon` |
+| SSL | Let's Encrypt, auto-renew cron |
 
 ---
 
 ## Roadmap
 
-- [ ] Notification push (Zalo OA / SMS) khi có kết quả
-- [ ] Audit log — ghi lại mọi thao tác admin
+- [ ] Push notification (Zalo OA / SMS) khi có kết quả
+- [ ] Audit log — ghi lại thao tác admin
 - [ ] Export báo cáo Excel/PDF
-- [ ] Multi-tenant — mở rộng cho các vùng khác
-- [ ] Rate limiting per user (không chỉ per IP)
-- [ ] Monitoring + alerting (Prometheus + Grafana)
+- [ ] CI/CD pipeline (GitHub Actions: lint → test → deploy)
+- [ ] Monitoring (Prometheus + Grafana)
+- [ ] Rate-limit per user (không chỉ per IP)
 
 ---
 
-## License
-
-Proprietary — © 2026 Cổ Nhơn, An Nhơn, Bình Định.
+**© 2026 Cổ Nhơn — An Nhơn, Bình Định**
