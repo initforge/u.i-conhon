@@ -359,12 +359,13 @@ router.get('/sessions', async (req, res) => {
 
 /**
  * GET /admin/sessions/current/:thai_id - Current session for Thai (SPECS 6.2)
+ * Auto-creates session if none exists (same as user endpoint).
  */
 router.get('/sessions/current/:thai_id', async (req, res) => {
     try {
         const { thai_id } = req.params;
 
-        const result = await db.query(
+        let result = await db.query(
             `SELECT s.*, 
               json_agg(json_build_object(
                 'animal_order', sa.animal_order,
@@ -392,6 +393,66 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
        LIMIT 1`,
             [thai_id]
         );
+
+        // Auto-create session if none exists (lazy creation for admin)
+        if (result.rows.length === 0) {
+            const { getCurrentSessionType } = require('./session');
+            const currentSessionType = await getCurrentSessionType(thai_id);
+
+            if (!currentSessionType) {
+                return res.status(404).json({ error: 'Không có phiên nào (ngoài khung giờ)' });
+            }
+
+            console.log(`🔄 Admin: Auto-creating session: ${thai_id} / ${currentSessionType} / today`);
+            const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
+
+            const client = await db.getClient();
+            try {
+                await client.query('BEGIN');
+                const insertResult = await client.query(
+                    `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
+                     VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, 'open', NOW())
+                     ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
+                     RETURNING id`,
+                    [thai_id, currentSessionType]
+                );
+
+                if (insertResult.rows.length > 0) {
+                    const newSessionId = insertResult.rows[0].id;
+                    await client.query(
+                        `INSERT INTO session_animals (session_id, animal_order)
+                         SELECT $1, generate_series(1, $2)`,
+                        [newSessionId, animalCount]
+                    );
+                    console.log(`✅ Admin session auto-created: ${newSessionId} (${animalCount} animals)`);
+                }
+                await client.query('COMMIT');
+            } catch (err) {
+                await client.query('ROLLBACK');
+                console.error('Admin auto-create session error:', err);
+            } finally {
+                client.release();
+            }
+
+            // Re-query with full JOIN
+            result = await db.query(
+                `SELECT s.*, 
+                  json_agg(json_build_object(
+                    'animal_order', sa.animal_order,
+                    'limit_amount', sa.limit_amount,
+                    'sold_amount', 0,
+                    'is_banned', sa.is_banned,
+                    'ban_reason', sa.ban_reason
+                  ) ORDER BY sa.animal_order) as animals
+               FROM sessions s
+               LEFT JOIN session_animals sa ON s.id = sa.session_id
+               WHERE s.thai_id = $1 AND s.status IN ('open', 'scheduled')
+               GROUP BY s.id
+               ORDER BY s.created_at ASC
+               LIMIT 1`,
+                [thai_id]
+            );
+        }
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Không có phiên nào' });
