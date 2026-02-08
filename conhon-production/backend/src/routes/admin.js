@@ -740,7 +740,8 @@ router.get('/community/stats', async (req, res) => {
 router.get('/profit-loss', async (req, res) => {
     try {
         const { thai_id, date } = req.query;
-        const targetDate = date || new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const targetDate = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
         // Get sessions for the date
         const sessionsResult = await db.query(
