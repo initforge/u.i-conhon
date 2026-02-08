@@ -318,12 +318,23 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
               json_agg(json_build_object(
                 'animal_order', sa.animal_order,
                 'limit_amount', sa.limit_amount,
-                'sold_amount', sa.sold_amount,
+                'sold_amount', COALESCE(paid.paid_amount, 0),
                 'is_banned', sa.is_banned,
                 'ban_reason', sa.ban_reason
               ) ORDER BY sa.animal_order) as animals
        FROM sessions s
        LEFT JOIN session_animals sa ON s.id = sa.session_id
+       LEFT JOIN (
+         SELECT oi.animal_order, SUM(oi.subtotal) as paid_amount
+         FROM order_items oi
+         JOIN orders o ON oi.order_id = o.id
+         WHERE o.session_id = (
+           SELECT id FROM sessions 
+           WHERE thai_id = $1 AND status IN ('open', 'scheduled')
+           ORDER BY created_at ASC LIMIT 1
+         ) AND o.status = 'paid'
+         GROUP BY oi.animal_order
+       ) paid ON sa.animal_order = paid.animal_order
        WHERE s.thai_id = $1 AND s.status IN ('open', 'scheduled')
        GROUP BY s.id
        ORDER BY s.created_at ASC

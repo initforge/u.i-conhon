@@ -3,7 +3,7 @@ import { anNhonAnimals } from '../../types';
 import { useThaiConfig } from '../../contexts/ThaiConfigContext';
 import AdminPageWrapper from '../../components/AdminPageWrapper';
 import Portal from '../../components/Portal';
-import { getThaiLimits, saveThaiLimits, getAdminCurrentSession } from '../../services/api';
+import { getThaiLimits, saveThaiLimits, getAdminCurrentSession, updateAdminSessionAnimal } from '../../services/api';
 
 // Data cho Hoài Nhơn (36 con) - Thêm purchaseCount (đơn hàng)
 const animalsHoaiNhon36 = [
@@ -256,14 +256,27 @@ const AdminAnimals: React.FC = () => {
     setCurrentAnimals(updatedAnimals);
   };
 
-  const toggleBan = (id: string, reason?: string) => {
+  const toggleBan = async (id: string, reason?: string) => {
     const animal = animals.find((a) => a.id === id);
-    if (!animal) return;
+    if (!animal || !currentSessionId) return;
 
-    if (animal.isBanned) {
-      updateAnimal(id, { isBanned: false, banReason: undefined });
-    } else {
-      updateAnimal(id, { isBanned: true, banReason: reason || 'Không có lý do' });
+    const newBanned = !animal.isBanned;
+    const banReason = newBanned ? (reason || 'Không có lý do') : undefined;
+
+    try {
+      // Call API to persist ban to database
+      await updateAdminSessionAnimal({
+        session_id: currentSessionId,
+        animal_order: animal.order,
+        is_banned: newBanned,
+        ban_reason: banReason || '',
+      });
+
+      // Update local state after successful API call
+      updateAnimal(id, { isBanned: newBanned, banReason });
+    } catch (error) {
+      console.error('Failed to toggle ban:', error);
+      alert('❌ Lỗi khi cập nhật trạng thái cấm. Vui lòng thử lại.');
     }
   };
 
