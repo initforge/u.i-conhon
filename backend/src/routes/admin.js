@@ -85,12 +85,13 @@ router.get('/stats', async (req, res) => {
             sessionParams
         );
 
-        // Orders today (filtered)
+        // Orders today (filtered) - only successful orders
         const todayOrdersResult = await db.query(
             `SELECT COUNT(*) as total
              FROM orders o
              JOIN sessions s ON o.session_id = s.id
              WHERE o.created_at::date = CURRENT_DATE
+               AND o.status IN ('paid', 'won', 'lost')
                ${sessionWhereClause}`,
             sessionParams
         );
