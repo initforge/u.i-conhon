@@ -383,7 +383,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
             }
         }
 
-        // Query for existing session of this type today
+        // Query for existing session of this type today (ANY status - admin can access anytime)
         let result = await db.query(
             `SELECT s.*, 
               json_agg(json_build_object(
@@ -401,13 +401,13 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
          JOIN orders o ON oi.order_id = o.id
          WHERE o.session_id = (
            SELECT id FROM sessions 
-           WHERE thai_id = $1 AND status IN ('open', 'scheduled')
+           WHERE thai_id = $1
              AND session_date = CURRENT_DATE AND session_type = $2
            LIMIT 1
          ) AND o.status = 'paid'
          GROUP BY oi.animal_order
        ) paid ON sa.animal_order = paid.animal_order
-       WHERE s.thai_id = $1 AND s.status IN ('open', 'scheduled')
+       WHERE s.thai_id = $1
          AND s.session_date = CURRENT_DATE AND s.session_type = $2
        GROUP BY s.id
        LIMIT 1`,
@@ -447,7 +447,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                 client.release();
             }
 
-            // Re-query
+            // Re-query (no status filter)
             result = await db.query(
                 `SELECT s.*, 
                   json_agg(json_build_object(
@@ -459,7 +459,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                   ) ORDER BY sa.animal_order) as animals
                FROM sessions s
                LEFT JOIN session_animals sa ON s.id = sa.session_id
-               WHERE s.thai_id = $1 AND s.status IN ('open', 'scheduled')
+               WHERE s.thai_id = $1
                  AND s.session_date = CURRENT_DATE AND s.session_type = $2
                GROUP BY s.id
                LIMIT 1`,
@@ -477,6 +477,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
         res.status(500).json({ error: 'Lỗi server' });
     }
 });
+
 
 /**
  * PATCH /admin/session-animals - Update animal limits/ban (SPECS 6.2)
