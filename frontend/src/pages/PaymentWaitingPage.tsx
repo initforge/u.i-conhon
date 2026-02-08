@@ -145,12 +145,16 @@ const PaymentWaitingPage: React.FC = () => {
 
     const countdown = getCountdown();
 
-    // Auto-expire when countdown hits 0
+    // Auto-expire AND cancel PayOS link when countdown hits 0
     useEffect(() => {
-        if (countdown?.expired && status === 'pending') {
+        if (countdown?.expired && status === 'pending' && orderId) {
             setStatus('expired');
+            // Actually cancel the order + PayOS link on the backend
+            cancelOrder(orderId).catch(err => {
+                console.error('Auto-cancel on expiry failed:', err);
+            });
         }
-    }, [countdown?.expired, status]);
+    }, [countdown?.expired, status, orderId]);
 
     if (loading) {
         return (
