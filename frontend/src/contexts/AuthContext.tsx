@@ -21,7 +21,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (phone: string, password: string) => Promise<User | null>;
-  register: (data: { phone: string; password: string; name: string; zalo: string }) => Promise<{ success: boolean; error?: string }>;
+  register: (data: { phone: string; password: string; name: string; zalo: string; bank_code?: string; bank_account?: string; bank_holder?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 
   // Real API register
-  const register = async (data: { phone: string; password: string; name: string; zalo: string }): Promise<{ success: boolean; error?: string }> => {
+  const register = async (data: { phone: string; password: string; name: string; zalo: string; bank_code?: string; bank_account?: string; bank_holder?: string }): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',

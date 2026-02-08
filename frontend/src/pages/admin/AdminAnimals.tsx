@@ -216,12 +216,30 @@ const AdminAnimals: React.FC = () => {
 
   // Save thai limits to backend
   const handleSaveLimits = async () => {
+    if (!currentSessionId) {
+      alert('❌ Chưa có phiên hoạt động. Không thể lưu.');
+      return;
+    }
     setIsSaving(true);
     try {
+      // 1. Save global Thai limits
       await saveThaiLimits(thaiLimits);
+
+      // 2. Save per-animal limits to DB
+      const savePromises = animals.map(animal =>
+        updateAdminSessionAnimal({
+          session_id: currentSessionId,
+          animal_order: animal.order,
+          limit_amount: animal.purchaseLimit,
+          is_banned: animal.isBanned,
+          ban_reason: animal.banReason || '',
+        })
+      );
+      await Promise.all(savePromises);
+
       alert('✅ Đã lưu hạn mức thành công!');
     } catch (error) {
-      console.error('Failed to save thai limits:', error);
+      console.error('Failed to save limits:', error);
       alert('❌ Lỗi khi lưu hạn mức. Vui lòng thử lại.');
     } finally {
       setIsSaving(false);

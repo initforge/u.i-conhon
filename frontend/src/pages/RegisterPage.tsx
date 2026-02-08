@@ -71,6 +71,9 @@ const RegisterPage: React.FC = () => {
                 password: formData.password,
                 name: formData.name,
                 zalo: formData.zaloName,
+                bank_code: formData.bankCode,
+                bank_account: formData.bankAccount,
+                bank_holder: formData.bankAccountName,
             });
 
             if (result.success) {

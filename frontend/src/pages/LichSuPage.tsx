@@ -229,6 +229,8 @@ const LichSuPage: React.FC = () => {
                                             {order.payment_url && (!cd || !cd.expired) && (
                                                 <a
                                                     href={order.payment_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     className="block w-full text-center py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition"
                                                 >
                                                     💳 Thanh toán ngay

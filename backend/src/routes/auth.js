@@ -18,7 +18,7 @@ const JWT_EXPIRES_IN = '7d';
  */
 router.post('/register', async (req, res) => {
     try {
-        const { phone, password, name, zalo } = req.body;
+        const { phone, password, name, zalo, bank_code, bank_account, bank_holder } = req.body;
 
         // Validation
         if (!phone || !password || !name || !zalo) {
@@ -46,12 +46,12 @@ router.post('/register', async (req, res) => {
         // Hash password
         const password_hash = await bcrypt.hash(password, 10);
 
-        // Insert user
+        // Insert user (with optional bank info)
         const result = await db.query(
-            `INSERT INTO users (phone, password_hash, name, zalo) 
-       VALUES ($1, $2, $3, $4) 
-       RETURNING id, phone, name, role, completed_tasks`,
-            [phone, password_hash, name, zalo]
+            `INSERT INTO users (phone, password_hash, name, zalo, bank_code, bank_account, bank_holder) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+       RETURNING id, phone, name, role, completed_tasks, bank_code, bank_account, bank_holder`,
+            [phone, password_hash, name, zalo, bank_code || null, bank_account || null, bank_holder || null]
         );
 
         const user = result.rows[0];
@@ -70,6 +70,9 @@ router.post('/register', async (req, res) => {
                 phone: user.phone,
                 name: user.name,
                 role: user.role,
+                bank_code: user.bank_code,
+                bank_account: user.bank_account,
+                bank_holder: user.bank_holder,
                 completed_tasks: user.completed_tasks
             }
         });
