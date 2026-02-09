@@ -258,12 +258,14 @@ const AdminKetQua: React.FC = () => {
   };
 
   const deleteKetQua = async (id: string) => {
-    if (confirm('Bạn có chắc muốn xóa kết quả này? Session sẽ bị xóa khỏi DB.')) {
+    if (confirm('Xóa kết quả này?\n\n• Nếu có đơn đã thanh toán: chỉ xóa kết quả (giữ đơn hàng)\n• Nếu không có đơn: xóa toàn bộ session')) {
       try {
-        await deleteSessionResult(id);
+        const result = await deleteSessionResult(id);
         // Refetch both daySlots and history to sync UI
         await Promise.all([fetchDaySlots(), fetchResultsHistory()]);
-        alert('Đã xóa kết quả thành công!');
+        // Show appropriate message based on soft/hard delete
+        const msg = (result as any)?.message || 'Đã xóa kết quả thành công!';
+        alert(msg);
       } catch (error) {
         console.error('Failed to delete result:', error);
         alert('Không thể xóa kết quả. Vui lòng thử lại!');

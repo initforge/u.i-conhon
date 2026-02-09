@@ -57,6 +57,13 @@ const MuaConVatPage: React.FC = () => {
         }
     }, [isSystemActive, logout, navigate]);
 
+    // LỖI 6 FIX: Time tick every 30s to auto-refresh session status
+    const [now, setNow] = useState(() => Date.now());
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 30_000);
+        return () => clearInterval(timer);
+    }, []);
+
     // Sử dụng SocialTaskContext để kiểm tra nhiệm vụ
     const { tasks, completeTask, allTasksCompleted } = useSocialTasks();
     const hasLikedShared = allTasksCompleted;
@@ -76,7 +83,8 @@ const MuaConVatPage: React.FC = () => {
         if (!thaiConfig) return null;
 
         return getSessionStatus(thaiId, thaiConfig.timeSlots, thaiConfig.isTetMode, thaiConfig.tetTimeSlot);
-    }, [selectedThai, thais]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedThai, thais, now]); // 'now' triggers re-evaluation every 30s
 
     // Check if session is open for adding to cart
     const isSessionOpen = currentSessionInfo?.isOpen ?? false;

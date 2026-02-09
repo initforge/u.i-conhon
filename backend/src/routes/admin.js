@@ -404,7 +404,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
            WHERE thai_id = $1
              AND session_date = CURRENT_DATE AND session_type = $2
            LIMIT 1
-         ) AND o.status = 'paid'
+         ) AND o.status IN ('paid', 'won', 'lost')
          GROUP BY oi.animal_order
        ) paid ON sa.animal_order = paid.animal_order
        WHERE s.thai_id = $1
@@ -691,40 +691,59 @@ router.delete('/sessions/:id/result', async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check for paid/won/lost orders first - refuse deletion if any exist
+        // Check if session has paid/won/lost orders
         const paidOrdersCheck = await client.query(
             `SELECT COUNT(*) as count FROM orders WHERE session_id = $1 AND status IN ('paid', 'won', 'lost')`,
             [id]
         );
-        if (parseInt(paidOrdersCheck.rows[0].count) > 0) {
-            client.release();
-            return res.status(400).json({
-                error: `Không thể xóa: có ${paidOrdersCheck.rows[0].count} đơn hàng đã thanh toán. Chỉ xóa kết quả (winning_animal) thay vì xóa toàn bộ session.`
-            });
-        }
+        const hasPaidOrders = parseInt(paidOrdersCheck.rows[0].count) > 0;
 
         await client.query('BEGIN');
 
-        // 1. Delete order_items for pending/expired orders only
-        await client.query(
-            `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired'))`,
-            [id]
-        );
+        if (hasPaidOrders) {
+            // SOFT DELETE: Session has paid orders → only clear result, keep everything else
+            // 1. Clear winning_animal and revert status to 'closed' (allows re-entering result)
+            await client.query(
+                `UPDATE sessions SET status = 'closed', winning_animal = NULL WHERE id = $1`,
+                [id]
+            );
 
-        // 2. Delete pending/expired orders (safe - not paid)
-        await client.query(
-            `DELETE FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired')`,
-            [id]
-        );
+            // 2. Revert 'won'/'lost' orders back to 'paid' (they were set by result submission)
+            await client.query(
+                `UPDATE orders SET status = 'paid' WHERE session_id = $1 AND status IN ('won', 'lost')`,
+                [id]
+            );
 
-        // 3. Delete session_animals
-        await client.query(`DELETE FROM session_animals WHERE session_id = $1`, [id]);
+            // 3. Clean up only pending/expired orders (safe)
+            await client.query(
+                `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired'))`,
+                [id]
+            );
+            await client.query(
+                `DELETE FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired')`,
+                [id]
+            );
 
-        // 4. Delete the session row completely
-        await client.query(`DELETE FROM sessions WHERE id = $1`, [id]);
+            await client.query('COMMIT');
+            console.log(`✅ Soft-deleted result for session ${id} (${paidOrdersCheck.rows[0].count} paid orders preserved)`);
+            res.json({ success: true, soft_delete: true, message: 'Đã xóa kết quả (giữ nguyên đơn hàng đã thanh toán). Có thể nhập lại kết quả.' });
+        } else {
+            // HARD DELETE: No paid orders → delete everything completely
+            await client.query(
+                `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE session_id = $1)`,
+                [id]
+            );
+            await client.query(
+                `DELETE FROM orders WHERE session_id = $1`,
+                [id]
+            );
+            await client.query(`DELETE FROM session_animals WHERE session_id = $1`, [id]);
+            await client.query(`DELETE FROM sessions WHERE id = $1`, [id]);
 
-        await client.query('COMMIT');
-        res.json({ success: true });
+            await client.query('COMMIT');
+            console.log(`✅ Hard-deleted session ${id} (no paid orders)`);
+            res.json({ success: true, soft_delete: false, message: 'Đã xóa toàn bộ session.' });
+        }
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Delete result error:', error);

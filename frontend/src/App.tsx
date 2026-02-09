@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
-import { CartProvider } from './contexts/CartContext'
 import { SocialTaskProvider } from './contexts/SocialTaskContext'
 import { SystemConfigProvider } from './contexts/SystemConfigContext'
 import { ThaiConfigProvider } from './contexts/ThaiConfigContext'
@@ -47,59 +46,57 @@ function App() {
     <ThaiConfigProvider>
       <SystemConfigProvider>
         <AuthProvider>
-          <CartProvider>
-            <SocialTaskProvider>
-              <Router>
-                <ScrollToTop />
-                <Routes>
-                  {/* Public routes with MainLayout */}
-                  <Route path="/" element={<MainLayout />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="huong-dan" element={<HuongDanPage />} />
-                    <Route path="dang-nhap" element={<LoginPage />} />
-                    <Route path="dang-ky" element={<RegisterPage />} />
-                  </Route>
+          <SocialTaskProvider>
+            <Router>
+              <ScrollToTop />
+              <Routes>
+                {/* Public routes with MainLayout */}
+                <Route path="/" element={<MainLayout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="huong-dan" element={<HuongDanPage />} />
+                  <Route path="dang-nhap" element={<LoginPage />} />
+                  <Route path="dang-ky" element={<RegisterPage />} />
+                </Route>
 
-                  {/* Public standalone pages */}
-                  <Route path="/chon-thai" element={<ChonThaiPage />} />
-                  <Route path="/admin/dang-nhap" element={<AdminLoginPage />} />
+                {/* Public standalone pages */}
+                <Route path="/chon-thai" element={<ChonThaiPage />} />
+                <Route path="/admin/dang-nhap" element={<AdminLoginPage />} />
 
-                  {/* User routes with UserLayout - requires login */}
-                  <Route path="/user" element={<UserLayout />}>
-                    <Route index element={<Navigate to="/user/mua-con-vat" replace />} />
-                    <Route path="mua-con-vat" element={<MuaConVatPage />} />
-                    <Route path="thanh-toan" element={<ThanhToanPage />} />
-                    <Route path="thanh-toan/success" element={<PaymentSuccessPage />} />
-                    <Route path="thanh-toan/cancel" element={<PaymentCancelPage />} />
-                    <Route path="thanh-toan/:orderId" element={<PaymentWaitingPage />} />
-                    <Route path="hoa-don/:orderId" element={<HoaDonPage />} />
-                    <Route path="ket-qua" element={<KetQuaPage />} />
-                    <Route path="cong-dong" element={<CongDongPage />} />
-                    <Route path="thong-tin-ca-nhan" element={<ThongTinCaNhanPage />} />
-                    <Route path="ho-tro" element={<HoTroPage />} />
-                    <Route path="lich-su" element={<LichSuPage />} />
-                  </Route>
+                {/* User routes with UserLayout - requires login */}
+                <Route path="/user" element={<UserLayout />}>
+                  <Route index element={<Navigate to="/user/mua-con-vat" replace />} />
+                  <Route path="mua-con-vat" element={<MuaConVatPage />} />
+                  <Route path="thanh-toan" element={<ThanhToanPage />} />
+                  <Route path="thanh-toan/success" element={<PaymentSuccessPage />} />
+                  <Route path="thanh-toan/cancel" element={<PaymentCancelPage />} />
+                  <Route path="thanh-toan/:orderId" element={<PaymentWaitingPage />} />
+                  <Route path="hoa-don/:orderId" element={<HoaDonPage />} />
+                  <Route path="ket-qua" element={<KetQuaPage />} />
+                  <Route path="cong-dong" element={<CongDongPage />} />
+                  <Route path="thong-tin-ca-nhan" element={<ThongTinCaNhanPage />} />
+                  <Route path="ho-tro" element={<HoTroPage />} />
+                  <Route path="lich-su" element={<LichSuPage />} />
+                </Route>
 
-                  {/* Admin routes with AdminLayout */}
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="don-hang" element={<AdminOrders />} />
-                    <Route path="con-vat" element={<AdminAnimals />} />
-                    <Route path="nguoi-choi" element={<AdminUsers />} />
-                    <Route path="bao-cao" element={<AdminBaoCao />} />
-                    <Route path="ket-qua" element={<AdminKetQua />} />
-                    <Route path="cms" element={<AdminCMS />} />
-                    <Route path="cau-thai" element={<AdminCauThai />} />
-                    <Route path="cai-dat" element={<AdminSettings />} />
-                  </Route>
+                {/* Admin routes with AdminLayout */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="don-hang" element={<AdminOrders />} />
+                  <Route path="con-vat" element={<AdminAnimals />} />
+                  <Route path="nguoi-choi" element={<AdminUsers />} />
+                  <Route path="bao-cao" element={<AdminBaoCao />} />
+                  <Route path="ket-qua" element={<AdminKetQua />} />
+                  <Route path="cms" element={<AdminCMS />} />
+                  <Route path="cau-thai" element={<AdminCauThai />} />
+                  <Route path="cai-dat" element={<AdminSettings />} />
+                </Route>
 
-                  {/* Catch all */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                {/* Catch all */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
 
-              </Router>
-            </SocialTaskProvider>
-          </CartProvider>
+            </Router>
+          </SocialTaskProvider>
         </AuthProvider>
       </SystemConfigProvider>
     </ThaiConfigProvider>
