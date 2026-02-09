@@ -195,6 +195,8 @@ const KetQuaPage: React.FC = () => {
         const cd = formatCountdown(slot.drawTime, now);
         if (cd) return <span className="text-xs font-mono text-orange-600 animate-pulse">⏳ {cd}</span>;
       }
+      // Holiday: slot exists (session resulted) but no animal and not pending
+      return <span className="text-xs text-red-500 font-medium">🚫 Nghỉ xổ</span>;
     }
     // No result entered for this slot
     if (row.sessionDate === todayStr) {
@@ -218,6 +220,8 @@ const KetQuaPage: React.FC = () => {
         const cd = formatCountdown(slot.drawTime, now);
         if (cd) return <span className="text-[10px] font-mono text-orange-500">⏳{cd}</span>;
       }
+      // Holiday: slot exists (session resulted) but no animal and not pending
+      return <span className="text-[10px] text-red-500 font-medium">🚫 Nghỉ xổ</span>;
     }
     // No result for this slot
     if (row.sessionDate === todayStr) {

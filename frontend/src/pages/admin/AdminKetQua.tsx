@@ -569,7 +569,7 @@ const AdminKetQua: React.FC = () => {
                     {groupByDate(yearKetQuas).map(([date, dateKetQuas]) => (
                       <div key={date} className="px-4 py-3">
                         <div className="text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>
-                          📆 {new Date(date).toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                          📆 {new Date(date + 'T00:00:00').toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </div>
                         {dateKetQuas.map((kq) => {
                           const thai = THAIS.find(t => t.id === kq.thaiId);

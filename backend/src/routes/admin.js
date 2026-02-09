@@ -692,16 +692,22 @@ router.delete('/sessions/:id/result', async (req, res) => {
 
         await client.query('BEGIN');
 
-        // Reset related orders back to 'paid' (so they can be re-assigned if session is re-created)
+        // 1. Delete order_items belonging to orders of this session
         await client.query(
-            `UPDATE orders SET status = 'paid' WHERE session_id = $1 AND status IN ('won', 'lost')`,
+            `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE session_id = $1)`,
             [id]
         );
 
-        // Delete session_animals
+        // 2. Detach orders from session (set session_id = NULL, reset status)
+        await client.query(
+            `UPDATE orders SET session_id = NULL, status = 'paid' WHERE session_id = $1`,
+            [id]
+        );
+
+        // 3. Delete session_animals
         await client.query(`DELETE FROM session_animals WHERE session_id = $1`, [id]);
 
-        // Delete the session row completely
+        // 4. Delete the session row completely (no FK left)
         await client.query(`DELETE FROM sessions WHERE id = $1`, [id]);
 
         await client.query('COMMIT');
