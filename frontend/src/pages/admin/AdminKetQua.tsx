@@ -3,7 +3,7 @@ import { THAIS, KetQua, getAnimalsByThai } from '../../types';
 import { useThaiConfig } from '../../contexts/ThaiConfigContext';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getAvailableYears } from '../../utils/yearUtils';
-import { ProfitLossData, getAdminSessions, AdminSession, getResultsHistory, deleteSessionResult, LotteryResult, submitLotteryResult, getAdminYearlyProfitLoss, getLunarDate, setLunarDate } from '../../services/api';
+import { ProfitLossData, getResultsHistory, deleteSessionResult, LotteryResult, submitLotteryResult, getAdminYearlyProfitLoss, setLunarDate, getAdminDaySlots, DaySlot } from '../../services/api';
 
 // Mapping bộ phận cá thể cho An Nhơn / Nhơn Phong (theo đồ hình nhơn)
 const bodyPartMapping: Record<number, { bodyPart: string; column: string }> = {
@@ -80,10 +80,12 @@ const AdminKetQua: React.FC = () => {
     imageUrl: '',
     isOff: false,
   });
-  const [todaySessions, setTodaySessions] = useState<AdminSession[]>([]);
-  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [savingResult, setSavingResult] = useState(false);
-  const [selectedKhungIndex, setSelectedKhungIndex] = useState(0);
+
+  // Day-slots state (new UX)
+  const [daySlots, setDaySlots] = useState<DaySlot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedSlotType, setSelectedSlotType] = useState<string | null>(null);
 
   // Get Thai configs from context (dynamic from database)
   const { thais, loading: thaiLoading } = useThaiConfig();
@@ -98,68 +100,6 @@ const AdminKetQua: React.FC = () => {
   const currentThaiConfig = useMemo(() => {
     return thais.find(t => t.id === `thai-${selectedThai}`) ?? thais[0];
   }, [selectedThai, thais]);
-
-  // Fixed draw times from SPECS (§1.2)
-  const DRAW_TIMES: Record<string, string[]> = {
-    'thai-an-nhon': ['11:00', '17:00', '21:00'],
-    'thai-nhon-phong': ['11:00', '17:00'],
-    'thai-hoai-nhon': ['13:00', '19:00'],
-  };
-
-  // Compute khung options from timeSlots + detect active khung based on current time
-  const { khungOptions, activeKhungIndex } = useMemo(() => {
-    if (!currentThaiConfig?.timeSlots) {
-      return { khungOptions: [], activeKhungIndex: -1 };
-    }
-
-    const now = new Date();
-    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-    let detectedActiveIndex = -1;
-    const thaiDrawTimes = DRAW_TIMES[currentThaiConfig.id] || [];
-
-    const slotLabels = ['Sáng', 'Chiều', 'Tối'];
-    const options = currentThaiConfig.timeSlots.map((slot: { startTime: string; endTime: string }, idx: number) => {
-      const isActive = currentTime >= slot.startTime && currentTime < slot.endTime;
-      if (isActive) detectedActiveIndex = idx;
-
-      const drawTime = thaiDrawTimes[idx] || slot.endTime;
-
-      return {
-        index: idx,
-        label: slotLabels[idx] || `Khung ${idx + 1}`,
-        time: `${slot.startTime} - ${slot.endTime}`, // Display actual slot range
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        drawTime: drawTime, // Fixed draw time from SPECS
-      };
-    });
-
-    // Add Tết slot if enabled
-    if (currentThaiConfig.id === 'thai-an-nhon' && currentThaiConfig.isTetMode && currentThaiConfig.tetTimeSlot) {
-      const eveningSlot = currentThaiConfig.tetTimeSlot;
-      const isEveningActive = currentTime >= eveningSlot.startTime && currentTime < eveningSlot.endTime;
-      if (isEveningActive) detectedActiveIndex = options.length;
-
-      const drawTime = thaiDrawTimes[2] || '21:00'; // Evening slot is always 21:00
-
-      options.push({
-        index: options.length,
-        label: 'Tối (Tết)',
-        time: `${eveningSlot.startTime} - ${eveningSlot.endTime}`,
-        startTime: eveningSlot.startTime,
-        endTime: eveningSlot.endTime,
-        drawTime: drawTime,
-      });
-    }
-
-    return { khungOptions: options, activeKhungIndex: detectedActiveIndex };
-  }, [currentThaiConfig]);
-
-  // Auto-select active khung when Thai changes
-  useEffect(() => {
-    setSelectedKhungIndex(activeKhungIndex >= 0 ? activeKhungIndex : 0);
-  }, [selectedThai, activeKhungIndex]);
 
   const availableYears = getAvailableYears(5);
 
@@ -220,48 +160,38 @@ const AdminKetQua: React.FC = () => {
     fetchResultsHistory();
   }, [fetchResultsHistory]);
 
-  // Fetch today's sessions for the selected thai
-  useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
-        const thaiId = thaiTabs.find(t => t.id === selectedThai)?.thaiId || 'thai-an-nhon';
-        const res = await getAdminSessions({ thai_id: thaiId, date: today });
-        setTodaySessions(res.sessions || []);
-        // Auto-select first open/scheduled session
-        const openSession = res.sessions?.find(s => s.status === 'open' || s.status === 'scheduled');
-        if (openSession) {
-          setSelectedSessionId(openSession.id);
-        }
-      } catch (error) {
-        console.error('Failed to fetch sessions:', error);
-        setTodaySessions([]);
+  // Fetch day slots when Thai or date changes
+  const fetchDaySlots = useCallback(async () => {
+    try {
+      setLoadingSlots(true);
+      const thaiId = thaiTabs.find(t => t.id === selectedThai)?.thaiId || 'thai-an-nhon';
+      const res = await getAdminDaySlots(thaiId, formData.date);
+      setDaySlots(res.slots || []);
+      // Auto-fill lunar label from API
+      if (res.lunar_label) {
+        setFormData(prev => ({ ...prev, lunarLabel: res.lunar_label }));
       }
-    };
-    fetchSessions();
-  }, [selectedThai]);
+    } catch (error) {
+      console.error('Failed to fetch day slots:', error);
+      setDaySlots([]);
+    } finally {
+      setLoadingSlots(false);
+    }
+  }, [selectedThai, formData.date]);
 
-  // Fetch lunar_label from global lunar_dates table (per date, not per session)
   useEffect(() => {
-    const fetchLunar = async () => {
-      try {
-        const res = await getLunarDate(formData.date);
-        if (res.lunar_label) {
-          setFormData(prev => ({ ...prev, lunarLabel: res.lunar_label }));
-        }
-      } catch (error) {
-        console.error('Failed to fetch lunar date:', error);
-      }
-    };
-    if (formData.date) fetchLunar();
-  }, [formData.date]);
+    if (formData.date) {
+      fetchDaySlots();
+      setSelectedSlotType(null); // Reset selected slot when date/thai changes
+    }
+  }, [fetchDaySlots]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Get the selected khung from khungOptions
-    const selectedKhung = khungOptions[selectedKhungIndex];
-    if (!selectedKhung) {
+    // Get the selected slot from daySlots
+    const selectedSlot = daySlots.find(s => s.session_type === selectedSlotType);
+    if (!selectedSlot) {
       alert('Vui lòng chọn khung giờ!');
       return;
     }
@@ -281,41 +211,38 @@ const AdminKetQua: React.FC = () => {
       // Get winning animal ORDER number (not ID string) for backend
       let winningAnimal: number | undefined;
       if (formData.winningAnimalIds.length > 0) {
-        // winningAnimalIds stores order as string, parse to number for backend
         winningAnimal = parseInt(formData.winningAnimalIds[0], 10);
       }
 
-      // Use new simplified API - backend handles session finding/creation
+      // Use simplified API - backend handles session finding/creation
       await submitLotteryResult({
         thai_id: thaiId,
         date: formData.date,
-        slot_label: selectedKhung.label,
+        slot_label: selectedSlot.label,
         winning_animal: formData.isOff ? undefined : winningAnimal,
         lunar_label: formData.lunarLabel || undefined,
         is_holiday: formData.isOff,
       });
 
-
       alert('Đã lưu kết quả thành công!');
 
-      // Refetch from API to get proper data format
-      await fetchResultsHistory();
+      // Refetch slots + history
+      await Promise.all([fetchDaySlots(), fetchResultsHistory()]);
+
+      // Reset form but keep date + lunar
+      setFormData(prev => ({
+        ...prev,
+        winningAnimalIds: [],
+        imageUrl: '',
+        isOff: false,
+      }));
+      setSelectedSlotType(null);
     } catch (error) {
       console.error('Failed to save result:', error);
       alert('Không thể lưu kết quả. Vui lòng thử lại!');
     } finally {
       setSavingResult(false);
     }
-
-    // Reset form — keep lunarLabel for same day (admin enters once, applies to all khung)
-    setFormData(prev => ({
-      thaiId: THAIS[0]?.id || '',
-      date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
-      lunarLabel: prev.lunarLabel,
-      winningAnimalIds: [],
-      imageUrl: '',
-      isOff: false,
-    }));
   };
 
   const startEditKetQua = (kq: typeof ketQuas[0]) => {
@@ -455,146 +382,170 @@ const AdminKetQua: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Tạo kết quả mới */}
-        <AdminCard title="Tạo kết quả mới" icon="✨">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+        <AdminCard title="Nhập kết quả" icon="✨">
+          {/* ① Date + Lunar Label */}
+          <div className="space-y-3 mb-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>Khung giờ</label>
-                <select
-                  value={selectedKhungIndex}
-                  onChange={(e) => setSelectedKhungIndex(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-lg focus:outline-none"
-                  style={{ border: '1px solid #e8e4df' }}
-                  required
-                >
-                  {khungOptions.map((khung) => (
-                    <option key={khung.index} value={khung.index}>
-                      {khung.label} ({khung.time})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>Ngày</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#6b5c4c' }}>📅 Ngày</label>
                 <input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-lg focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
                   style={{ border: '1px solid #e8e4df' }}
-                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#6b5c4c' }}>🌙 Âm lịch</label>
+                <input
+                  type="text"
+                  value={formData.lunarLabel}
+                  onChange={(e) => setFormData({ ...formData, lunarLabel: e.target.value })}
+                  onBlur={() => {
+                    if (formData.lunarLabel.trim() && formData.date) {
+                      setLunarDate(formData.date, formData.lunarLabel.trim()).catch(console.error);
+                    }
+                  }}
+                  placeholder="Mùng 3, 25 tháng Chạp..."
+                  className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+                  style={{ border: '1px solid #e8e4df', backgroundColor: '#fffbeb' }}
                 />
               </div>
             </div>
+          </div>
 
-            {/* Ngày âm lịch */}
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>
-                📅 Ngày âm lịch <span className="text-gray-400 font-normal">(hiển thị cho người chơi)</span>
-              </label>
-              <input
-                type="text"
-                value={formData.lunarLabel}
-                onChange={(e) => setFormData({ ...formData, lunarLabel: e.target.value })}
-                onBlur={() => {
-                  if (formData.lunarLabel.trim() && formData.date) {
-                    setLunarDate(formData.date, formData.lunarLabel.trim()).catch(console.error);
-                  }
-                }}
-                placeholder="VD: Mùng 3, 25 tháng Chạp, 30 Tết..."
-                className="w-full px-3 py-2.5 rounded-lg focus:outline-none"
-                style={{ border: '1px solid #e8e4df', backgroundColor: '#fffbeb' }}
-              />
-            </div>
+          {/* ② Slot Cards */}
+          <div className="mb-4">
+            <label className="block text-xs font-medium mb-2" style={{ color: '#6b5c4c' }}>
+              Khung giờ — {thaiTabs.find(t => t.id === selectedThai)?.name}
+            </label>
+            {loadingSlots ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {daySlots.map((slot) => {
+                  const isSelected = selectedSlotType === slot.session_type;
+                  const isResulted = slot.status === 'resulted';
+                  const isHoliday = isResulted && slot.winning_animal === null;
+                  const hasResult = isResulted && slot.winning_animal !== null;
+                  const baseThaiIdForSlot = (currentThaiConfig?.id || `thai-${selectedThai}`).replace(/-sang|-chieu|-toi|-trua$/, '');
+                  const animalName = hasResult ? getAnimalsByThai(baseThaiIdForSlot).find(a => a.order === slot.winning_animal)?.name : null;
+                  const slotIcons: Record<string, string> = { morning: '☀️', afternoon: '🌤️', evening: '🌙' };
 
-            {/* Checkbox Nghỉ */}
-            <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: formData.isOff ? '#fef2f2' : '#faf8f5', border: '1px solid #e8e4df' }}>
-              <input
-                type="checkbox"
-                id="isOff"
-                checked={formData.isOff}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  isOff: e.target.checked,
-                  winningAnimalIds: e.target.checked ? [] : formData.winningAnimalIds
+                  return (
+                    <button
+                      key={slot.session_type}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSlotType(isSelected ? null : slot.session_type);
+                        // Pre-fill if editing existing result
+                        if (!isSelected && hasResult) {
+                          setFormData(prev => ({ ...prev, winningAnimalIds: [slot.winning_animal!.toString()], isOff: false }));
+                        } else if (!isSelected && isHoliday) {
+                          setFormData(prev => ({ ...prev, winningAnimalIds: [], isOff: true }));
+                        } else if (!isSelected) {
+                          setFormData(prev => ({ ...prev, winningAnimalIds: [], isOff: false }));
+                        }
+                      }}
+                      className={`p-3 rounded-xl text-center transition-all border-2 ${isSelected
+                        ? 'border-amber-500 bg-amber-50 shadow-md'
+                        : hasResult
+                          ? 'border-green-200 bg-green-50'
+                          : isHoliday
+                            ? 'border-red-200 bg-red-50'
+                            : 'border-gray-200 bg-white hover:border-gray-300'
+                        }`}
+                    >
+                      <div className="text-lg mb-1">{slotIcons[slot.session_type] || '🕐'}</div>
+                      <div className="text-xs font-semibold" style={{ color: '#6b5c4c' }}>{slot.label}</div>
+                      <div className="text-[10px] text-gray-400">{slot.draw_time}</div>
+                      <div className="mt-1">
+                        {hasResult ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700">✅ {animalName}</span>
+                        ) : isHoliday ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-600">🚫 Nghỉ</span>
+                        ) : (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700">⏳ Chưa có</span>
+                        )}
+                      </div>
+                    </button>
+                  );
                 })}
-                className="w-5 h-5 rounded"
-                style={{ accentColor: '#dc2626' }}
-              />
-              <label htmlFor="isOff" className="text-sm font-medium cursor-pointer" style={{ color: formData.isOff ? '#dc2626' : '#6b5c4c' }}>
-                🚫 Ngày nghỉ - Không xổ
-              </label>
-              {formData.isOff && (
-                <span className="ml-auto text-xs px-2 py-1 rounded" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
-                  NGHỈ
-                </span>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
-            <div style={{ opacity: formData.isOff ? 0.5 : 1, pointerEvents: formData.isOff ? 'none' : 'auto' }}>
-              <label className="block text-sm font-medium mb-2" style={{ color: '#6b5c4c' }}>
-                Chọn con vật trúng ({formData.winningAnimalIds.length} đã chọn) {formData.isOff && '(Bỏ qua)'}
-              </label>
-              <div
-                className="max-h-48 overflow-y-auto rounded-lg p-3"
-                style={{ backgroundColor: '#faf8f5', border: '1px solid #e8e4df' }}
-              >
-                <div className="grid grid-cols-4 gap-2">
-                  {(() => {
-                    const baseThaiId = formData.thaiId.replace(/-sang|-chieu|-toi|-trua$/, '');
-                    const animals = getAnimalsByThai(baseThaiId);
-                    return animals.map((animal) => {
-                      const orderStr = animal.order.toString();
-                      const isSelected = formData.winningAnimalIds.includes(orderStr);
-                      const bodyInfo = bodyPartMapping[animal.order];
-                      return (
-                        <button
-                          key={orderStr}
-                          type="button"
-                          onClick={() => toggleAnimal(orderStr)}
-                          className="p-2 rounded-lg text-center transition-all"
-                          style={{
-                            backgroundColor: isSelected ? '#a5673f' : 'white',
-                            color: isSelected ? 'white' : '#6b5c4c',
-                            border: '1px solid #e8e4df'
-                          }}
-                          title={bodyInfo ? `${bodyInfo.column} - ${bodyInfo.bodyPart}` : ''}
-                        >
-                          <div className="text-sm font-medium">{animal.order}</div>
-                          <div className="text-xs truncate">{animal.name}</div>
-                        </button>
-                      );
-                    });
-                  })()}
+          {/* ③ Inline Result Form (only when a slot is selected) */}
+          {selectedSlotType && (
+            <form onSubmit={handleSubmit} className="space-y-3 p-3 rounded-xl" style={{ backgroundColor: '#faf8f5', border: '1px solid #e8e4df' }}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold" style={{ color: '#6b5c4c' }}>
+                  Nhập KQ — {daySlots.find(s => s.session_type === selectedSlotType)?.label} {daySlots.find(s => s.session_type === selectedSlotType)?.draw_time}
+                </span>
+                <button type="button" onClick={() => setSelectedSlotType(null)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+              </div>
+
+              {/* Checkbox Nghỉ */}
+              <div className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: formData.isOff ? '#fef2f2' : 'white', border: '1px solid #e8e4df' }}>
+                <input
+                  type="checkbox"
+                  id="isOff"
+                  checked={formData.isOff}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    isOff: e.target.checked,
+                    winningAnimalIds: e.target.checked ? [] : formData.winningAnimalIds
+                  })}
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: '#dc2626' }}
+                />
+                <label htmlFor="isOff" className="text-xs font-medium cursor-pointer" style={{ color: formData.isOff ? '#dc2626' : '#6b5c4c' }}>
+                  🚫 Nghỉ - Không xổ
+                </label>
+              </div>
+
+              {/* Animal grid */}
+              <div style={{ opacity: formData.isOff ? 0.3 : 1, pointerEvents: formData.isOff ? 'none' : 'auto' }}>
+                <div className="max-h-40 overflow-y-auto rounded-lg p-2" style={{ backgroundColor: 'white', border: '1px solid #e8e4df' }}>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {(() => {
+                      const baseThaiId = (currentThaiConfig?.id || `thai-${selectedThai}`).replace(/-sang|-chieu|-toi|-trua$/, '');
+                      const animals = getAnimalsByThai(baseThaiId);
+                      return animals.map((animal) => {
+                        const orderStr = animal.order.toString();
+                        const isAnimalSelected = formData.winningAnimalIds.includes(orderStr);
+                        const bodyInfo = bodyPartMapping[animal.order];
+                        return (
+                          <button
+                            key={orderStr}
+                            type="button"
+                            onClick={() => toggleAnimal(orderStr)}
+                            className="p-1.5 rounded-lg text-center transition-all"
+                            style={{
+                              backgroundColor: isAnimalSelected ? '#a5673f' : 'white',
+                              color: isAnimalSelected ? 'white' : '#6b5c4c',
+                              border: '1px solid #e8e4df'
+                            }}
+                            title={bodyInfo ? `${bodyInfo.column} - ${bodyInfo.bodyPart}` : ''}
+                          >
+                            <div className="text-xs font-medium">{animal.order}</div>
+                            <div className="text-[10px] truncate">{animal.name}</div>
+                          </button>
+                        );
+                      });
+                    })()}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-2">
-              <AdminButton variant="primary" type="submit" className="flex-1">
-                {editingKetQua ? '💾 Cập nhật' : (formData.isOff ? '🚫 Lưu ngày nghỉ' : '💾 Lưu kết quả')}
+              <AdminButton variant="primary" type="submit" className="w-full">
+                {formData.isOff ? '🚫 Lưu ngày nghỉ' : '💾 Lưu kết quả'}
               </AdminButton>
-              {editingKetQua && (
-                <AdminButton
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={() => {
-                    setEditingKetQua(null);
-                    setFormData({
-                      thaiId: THAIS[0]?.id || '',
-                      date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
-                      lunarLabel: '',
-                      winningAnimalIds: [],
-                      imageUrl: '',
-                      isOff: false,
-                    });
-                  }}
-                >
-                  ❌ Hủy
-                </AdminButton>
-              )}
-            </div>
-          </form>
+            </form>
+          )}
         </AdminCard>
 
         {/* Lịch sử kết quả theo hierarchy */}

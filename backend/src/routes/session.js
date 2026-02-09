@@ -196,7 +196,7 @@ router.get('/results', async (req, res) => {
         const { thai_id, date, year, limit = 10 } = req.query;
         const params = [];
         // Include all resulted sessions; pending ones get winning_animal masked
-        let whereClause = "WHERE status = 'resulted' AND winning_animal IS NOT NULL";
+        let whereClause = "WHERE status = 'resulted'";
 
         if (thai_id) {
             // Normalize thai_id: 'an-nhon' -> 'thai-an-nhon'

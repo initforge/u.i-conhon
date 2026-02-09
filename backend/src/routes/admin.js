@@ -649,7 +649,7 @@ router.get('/sessions/results', async (req, res) => {
     try {
         const { thai_id, year, limit = 100 } = req.query;
         const params = [];
-        let whereClause = "WHERE status = 'resulted' AND winning_animal IS NOT NULL";
+        let whereClause = "WHERE status = 'resulted'";
         let paramIndex = 1;
 
         if (thai_id) {
@@ -790,6 +790,76 @@ router.post('/sessions/:id/result', async (req, res) => {
         res.status(500).json({ error: 'Không thể cập nhật kết quả' });
     } finally {
         client.release();
+    }
+});
+
+/**
+ * GET /admin/day-slots - Get slot statuses for a specific thai + date
+ * Returns all time slots with their current session data (if any)
+ */
+router.get('/day-slots', async (req, res) => {
+    try {
+        const { thai_id, date } = req.query;
+        if (!thai_id || !date) {
+            return res.status(400).json({ error: 'Thiếu thai_id hoặc date' });
+        }
+
+        // Define slots per Thai (from SPECS §1.2)
+        const SLOT_DEFS = {
+            'thai-an-nhon': [
+                { session_type: 'morning', label: 'Sáng', draw_time: '11:00' },
+                { session_type: 'afternoon', label: 'Chiều', draw_time: '17:00' },
+                { session_type: 'evening', label: 'Tối', draw_time: '21:00' },
+            ],
+            'thai-nhon-phong': [
+                { session_type: 'morning', label: 'Sáng', draw_time: '11:00' },
+                { session_type: 'afternoon', label: 'Chiều', draw_time: '17:00' },
+            ],
+            'thai-hoai-nhon': [
+                { session_type: 'morning', label: 'Sáng', draw_time: '13:00' },
+                { session_type: 'afternoon', label: 'Chiều', draw_time: '19:00' },
+            ],
+        };
+
+        const slotDefs = SLOT_DEFS[thai_id] || [];
+
+        // Fetch existing sessions for this thai + date
+        const sessionsResult = await db.query(
+            `SELECT id, session_type, status, winning_animal, lunar_label
+             FROM sessions
+             WHERE thai_id = $1 AND session_date = $2
+             ORDER BY created_at`,
+            [thai_id, date]
+        );
+        const sessionsMap = {};
+        sessionsResult.rows.forEach(s => {
+            sessionsMap[s.session_type] = s;
+        });
+
+        // Fetch lunar_label from lunar_dates table
+        const lunarResult = await db.query(
+            'SELECT lunar_label FROM lunar_dates WHERE date = $1',
+            [date]
+        );
+        const lunar_label = lunarResult.rows[0]?.lunar_label || '';
+
+        // Build slot responses
+        const slots = slotDefs.map(def => {
+            const session = sessionsMap[def.session_type];
+            return {
+                session_type: def.session_type,
+                label: def.label,
+                draw_time: def.draw_time,
+                session_id: session?.id || null,
+                status: session?.status || null,
+                winning_animal: session?.winning_animal ?? null,
+            };
+        });
+
+        res.json({ slots, lunar_label });
+    } catch (error) {
+        console.error('Get day slots error:', error);
+        res.status(500).json({ error: 'Không thể lấy thông tin khung giờ' });
     }
 });
 

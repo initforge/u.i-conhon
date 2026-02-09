@@ -818,3 +818,23 @@ export async function deleteSessionResult(sessionId: string) {
         method: 'DELETE',
     });
 }
+
+// ============ DAY SLOTS (Admin) ============
+
+export interface DaySlot {
+    session_type: string;
+    label: string;
+    draw_time: string;
+    session_id: string | null;
+    status: string | null; // 'scheduled' | 'open' | 'closed' | 'resulted' | null
+    winning_animal: number | null;
+}
+
+export interface DaySlotsResponse {
+    slots: DaySlot[];
+    lunar_label: string;
+}
+
+export async function getAdminDaySlots(thaiId: string, date: string) {
+    return apiRequest<DaySlotsResponse>(`/admin/day-slots?thai_id=${thaiId}&date=${date}`);
+}
