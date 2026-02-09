@@ -147,26 +147,39 @@ const HomePage: React.FC = () => {
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const currentDrawTimes = thaiDrawTimes[selectedThai] || thaiDrawTimes['an-nhon'];
 
+  // Helper: resolve slot display text
+  const resolveSlot = (animal: number | null | undefined, pending: boolean | undefined): string => {
+    if (animal) return getAnimalName(animal);
+    // Slot exists (not undefined), not pending, but animal is null → holiday
+    if (animal === null && !pending) return '🚫 Nghỉ xổ';
+    return '';
+  };
+
   // Transform API results to display format - NO FALLBACK, empty if no data
   const transformedResults = sessionResults.length > 0
     ? (() => {
-      // Group results by session_date, also capture lunar_label
-      const grouped: { [date: string]: { morning?: number | null; afternoon?: number | null; evening?: number | null; lunarLabel?: string; sessionDate: string } } = {};
+      // Group results by session_date, track animal + pending per slot
+      const grouped: {
+        [date: string]: {
+          morning?: number | null; morningPending?: boolean;
+          afternoon?: number | null; afternoonPending?: boolean;
+          evening?: number | null; eveningPending?: boolean;
+          lunarLabel?: string; sessionDate: string
+        }
+      } = {};
       sessionResults.forEach(r => {
         if (!grouped[r.session_date]) grouped[r.session_date] = { sessionDate: r.session_date };
-        // Store lunar_label from any session of this date
         if (r.lunar_label) grouped[r.session_date].lunarLabel = r.lunar_label;
-        if (r.session_type === 'morning') grouped[r.session_date].morning = r.winning_animal;
-        if (r.session_type === 'afternoon') grouped[r.session_date].afternoon = r.winning_animal;
-        if (r.session_type === 'evening') grouped[r.session_date].evening = r.winning_animal;
+        if (r.session_type === 'morning') { grouped[r.session_date].morning = r.winning_animal; grouped[r.session_date].morningPending = r.pending; }
+        if (r.session_type === 'afternoon') { grouped[r.session_date].afternoon = r.winning_animal; grouped[r.session_date].afternoonPending = r.pending; }
+        if (r.session_type === 'evening') { grouped[r.session_date].evening = r.winning_animal; grouped[r.session_date].eveningPending = r.pending; }
       });
       return Object.entries(grouped).map(([date, results]) => ({
-        // Use lunar_label if available, otherwise fallback to formatted date
         day: results.lunarLabel || new Date(date + 'T00:00:00').toLocaleDateString('vi-VN'),
         sessionDate: date,
-        morning: results.morning ? getAnimalName(results.morning) : '',
-        afternoon: results.afternoon ? getAnimalName(results.afternoon) : '',
-        evening: results.evening ? getAnimalName(results.evening) : ''
+        morning: resolveSlot(results.morning, results.morningPending),
+        afternoon: resolveSlot(results.afternoon, results.afternoonPending),
+        evening: resolveSlot(results.evening, results.eveningPending)
       }));
     })()
     : []; // Empty array instead of fallback
