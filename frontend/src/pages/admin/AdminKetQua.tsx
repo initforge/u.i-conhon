@@ -286,7 +286,7 @@ const AdminKetQua: React.FC = () => {
   const groupByYear = () => {
     const grouped: Record<string, typeof filteredKetQuas> = {};
     filteredKetQuas.forEach(kq => {
-      const year = new Date(kq.date).getFullYear().toString();
+      const year = new Date(kq.date + 'T00:00:00').getFullYear().toString();
       if (!grouped[year]) grouped[year] = [];
       grouped[year].push(kq);
     });
@@ -300,7 +300,7 @@ const AdminKetQua: React.FC = () => {
       if (!grouped[dateStr]) grouped[dateStr] = [];
       grouped[dateStr].push(kq);
     });
-    return Object.entries(grouped).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
+    return Object.entries(grouped).sort((a, b) => new Date(b[0] + 'T00:00:00').getTime() - new Date(a[0] + 'T00:00:00').getTime());
   };
 
   const getAnimalWithBodyPart = (animalId: string) => {

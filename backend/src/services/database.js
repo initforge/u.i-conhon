@@ -4,7 +4,11 @@
  */
 
 require('dotenv').config();
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// Override DATE type parser (OID 1082) to return raw string 'YYYY-MM-DD'
+// instead of JS Date object which causes timezone shift in JSON serialization
+types.setTypeParser(1082, (val) => val);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,

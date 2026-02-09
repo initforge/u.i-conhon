@@ -41,7 +41,7 @@ const HomePage: React.FC = () => {
     const fetchResults = async () => {
       setLoadingResults(true);
       try {
-        const response = await getSessionResults({ thaiId: selectedThai, limit: 20 });
+        const response = await getSessionResults({ thaiId: selectedThai, year: selectedYear, limit: 20 });
         setSessionResults(response.results || []);
       } catch (error) {
         console.error('Failed to fetch results:', error);
@@ -162,7 +162,7 @@ const HomePage: React.FC = () => {
       });
       return Object.entries(grouped).map(([date, results]) => ({
         // Use lunar_label if available, otherwise fallback to formatted date
-        day: results.lunarLabel || new Date(date).toLocaleDateString('vi-VN'),
+        day: results.lunarLabel || new Date(date + 'T00:00:00').toLocaleDateString('vi-VN'),
         sessionDate: date,
         morning: results.morning ? getAnimalName(results.morning) : '',
         afternoon: results.afternoon ? getAnimalName(results.afternoon) : '',
