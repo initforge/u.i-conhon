@@ -683,28 +683,35 @@ router.get('/sessions/results', async (req, res) => {
 });
 
 /**
- * DELETE /admin/sessions/:id/result - Clear/reset session result
+ * DELETE /admin/sessions/:id/result - Delete session completely from DB
  */
 router.delete('/sessions/:id/result', async (req, res) => {
+    const client = await db.getClient();
     try {
         const { id } = req.params;
 
-        // Reset winning_animal and status
-        await db.query(
-            `UPDATE sessions SET winning_animal = NULL, status = 'closed' WHERE id = $1`,
-            [id]
-        );
+        await client.query('BEGIN');
 
-        // Also reset related orders back to 'paid'
-        await db.query(
+        // Reset related orders back to 'paid' (so they can be re-assigned if session is re-created)
+        await client.query(
             `UPDATE orders SET status = 'paid' WHERE session_id = $1 AND status IN ('won', 'lost')`,
             [id]
         );
 
+        // Delete session_animals
+        await client.query(`DELETE FROM session_animals WHERE session_id = $1`, [id]);
+
+        // Delete the session row completely
+        await client.query(`DELETE FROM sessions WHERE id = $1`, [id]);
+
+        await client.query('COMMIT');
         res.json({ success: true });
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Delete result error:', error);
         res.status(500).json({ error: 'Không thể xóa kết quả' });
+    } finally {
+        client.release();
     }
 });
 
@@ -738,9 +745,9 @@ router.post('/sessions/:id/result', async (req, res) => {
         }
 
         if (is_holiday) {
-            // Holiday - no lottery
+            // Holiday - no lottery, explicitly clear winning_animal
             await client.query(
-                `UPDATE sessions SET status = 'resulted', lunar_label = $1, draw_time = $2 WHERE id = $3`,
+                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, lunar_label = $1, draw_time = $2 WHERE id = $3`,
                 [lunar_label, drawTime, id]
             );
         } else {
@@ -935,7 +942,7 @@ router.post('/results', async (req, res) => {
         // Update the session with result
         if (is_holiday) {
             await client.query(
-                `UPDATE sessions SET status = 'resulted', lunar_label = $1, draw_time = $2 WHERE id = $3`,
+                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, lunar_label = $1, draw_time = $2 WHERE id = $3`,
                 [lunar_label, drawTime, sessionId]
             );
         } else {
