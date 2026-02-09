@@ -257,55 +257,6 @@ router.get('/stats/animal-orders', async (req, res) => {
     }
 });
 
-// ================================================
-// Lunar Dates (global per-day lunar label)
-// ================================================
-
-/**
- * GET /admin/lunar-date/:date - Get lunar label for a date
- */
-router.get('/lunar-date/:date', async (req, res) => {
-    try {
-        const result = await db.query(
-            'SELECT lunar_label FROM lunar_dates WHERE date = $1',
-            [req.params.date]
-        );
-        res.json({ lunar_label: result.rows[0]?.lunar_label || '' });
-    } catch (error) {
-        console.error('Get lunar date error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
-    }
-});
-
-/**
- * PUT /admin/lunar-date - Set lunar label for a date (all Thais, all khung)
- */
-router.put('/lunar-date', async (req, res) => {
-    try {
-        const { date, lunar_label } = req.body;
-        if (!date || !lunar_label) {
-            return res.status(400).json({ error: 'Cần ngày và nhãn âm lịch' });
-        }
-
-        await db.query(
-            `INSERT INTO lunar_dates (date, lunar_label, updated_at)
-             VALUES ($1, $2, NOW())
-             ON CONFLICT (date) DO UPDATE SET lunar_label = $2, updated_at = NOW()`,
-            [date, lunar_label]
-        );
-
-        // Also sync to all sessions on that date (backward compat)
-        await db.query(
-            `UPDATE sessions SET lunar_label = $1 WHERE session_date = $2`,
-            [lunar_label, date]
-        );
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Set lunar date error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
-    }
-});
 
 // ================================================
 // 6.2 Session Animals Management
@@ -761,7 +712,7 @@ router.post('/sessions/:id/result', async (req, res) => {
 
     try {
         const { id } = req.params;
-        const { winning_animal, lunar_label, is_holiday } = req.body;
+        const { winning_animal, is_holiday } = req.body;
 
         await client.query('BEGIN');
 
@@ -785,16 +736,16 @@ router.post('/sessions/:id/result', async (req, res) => {
         if (is_holiday) {
             // Holiday - no lottery, explicitly clear winning_animal
             await client.query(
-                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, lunar_label = $1, draw_time = $2 WHERE id = $3`,
-                [lunar_label, drawTime, id]
+                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, draw_time = $1 WHERE id = $2`,
+                [drawTime, id]
             );
         } else {
             // Set winning animal
             await client.query(
                 `UPDATE sessions 
-         SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
-         WHERE id = $4`,
-                [winning_animal, lunar_label, drawTime, id]
+         SET status = 'resulted', winning_animal = $1, draw_time = $2
+         WHERE id = $3`,
+                [winning_animal, drawTime, id]
             );
 
             // Update order statuses (won/lost)
@@ -817,13 +768,13 @@ router.post('/sessions/:id/result', async (req, res) => {
             );
         }
 
-        // Sync lunar_label to all sessions of same thai_id + date
-        if (lunar_label && sessionInfo.rows.length > 0) {
-            const { thai_id, session_date } = sessionInfo.rows[0];
+        // Auto-close other open sessions for this Thai
+        if (sessionInfo.rows.length > 0) {
+            const { thai_id } = sessionInfo.rows[0];
             await client.query(
-                `UPDATE sessions SET lunar_label = $1
-                 WHERE thai_id = $2 AND session_date = $3 AND id != $4`,
-                [lunar_label, thai_id, session_date, id]
+                `UPDATE sessions SET status = 'closed'
+                 WHERE thai_id = $1 AND status = 'open' AND id != $2`,
+                [thai_id, id]
             );
         }
 
@@ -870,7 +821,7 @@ router.get('/day-slots', async (req, res) => {
 
         // Fetch existing sessions for this thai + date
         const sessionsResult = await db.query(
-            `SELECT id, session_type, status, winning_animal, lunar_label
+            `SELECT id, session_type, status, winning_animal
              FROM sessions
              WHERE thai_id = $1 AND session_date = $2
              ORDER BY created_at`,
@@ -880,13 +831,6 @@ router.get('/day-slots', async (req, res) => {
         sessionsResult.rows.forEach(s => {
             sessionsMap[s.session_type] = s;
         });
-
-        // Fetch lunar_label from lunar_dates table
-        const lunarResult = await db.query(
-            'SELECT lunar_label FROM lunar_dates WHERE date = $1',
-            [date]
-        );
-        const lunar_label = lunarResult.rows[0]?.lunar_label || '';
 
         // Build slot responses
         const slots = slotDefs.map(def => {
@@ -901,7 +845,7 @@ router.get('/day-slots', async (req, res) => {
             };
         });
 
-        res.json({ slots, lunar_label });
+        res.json({ slots });
     } catch (error) {
         console.error('Get day slots error:', error);
         res.status(500).json({ error: 'Không thể lấy thông tin khung giờ' });
@@ -917,8 +861,8 @@ router.post('/results', async (req, res) => {
     const client = await db.getClient();
 
     try {
-        const { thai_id, date, slot_label, winning_animal, lunar_label, is_holiday } = req.body;
-        console.log('📝 POST /admin/results received:', { thai_id, date, slot_label, winning_animal, lunar_label, is_holiday });
+        const { thai_id, date, slot_label, winning_animal, is_holiday } = req.body;
+        console.log('📝 POST /admin/results received:', { thai_id, date, slot_label, winning_animal, is_holiday });
 
         // Validate required fields
         if (!thai_id || !date || !slot_label) {
@@ -980,15 +924,15 @@ router.post('/results', async (req, res) => {
         // Update the session with result
         if (is_holiday) {
             await client.query(
-                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, lunar_label = $1, draw_time = $2 WHERE id = $3`,
-                [lunar_label, drawTime, sessionId]
+                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, draw_time = $1 WHERE id = $2`,
+                [drawTime, sessionId]
             );
         } else {
             await client.query(
                 `UPDATE sessions 
-                 SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
-                 WHERE id = $4`,
-                [winning_animal, lunar_label, drawTime, sessionId]
+                 SET status = 'resulted', winning_animal = $1, draw_time = $2
+                 WHERE id = $3`,
+                [winning_animal, drawTime, sessionId]
             );
 
             // Update order statuses (won/lost)
@@ -1011,14 +955,12 @@ router.post('/results', async (req, res) => {
             );
         }
 
-        // Sync lunar_label to all sessions of same thai_id + date
-        if (lunar_label) {
-            await client.query(
-                `UPDATE sessions SET lunar_label = $1
-                 WHERE thai_id = $2 AND session_date = $3 AND id != $4`,
-                [lunar_label, thai_id, date, sessionId]
-            );
-        }
+        // Auto-close other open sessions for this Thai
+        await client.query(
+            `UPDATE sessions SET status = 'closed'
+             WHERE thai_id = $1 AND status = 'open' AND id != $2`,
+            [thai_id, sessionId]
+        );
 
         await client.query('COMMIT');
         res.json({ success: true, session_id: sessionId });
