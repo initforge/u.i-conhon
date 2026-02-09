@@ -188,7 +188,7 @@ router.get('/me', async (req, res) => {
         const result = await db.query(
             `SELECT o.id, o.total, o.status, o.created_at, o.paid_at,
                     o.payment_url, o.payment_expires,
-                    s.thai_id, s.session_type, s.session_date, s.lunar_label,
+                    s.thai_id, s.session_type, s.session_date,
                     COALESCE(
                       (SELECT json_agg(json_build_object(
                         'animal_order', oi.animal_order,
@@ -230,7 +230,7 @@ router.get('/:id', async (req, res) => {
         const { id } = req.params;
 
         const orderResult = await db.query(
-            `SELECT o.*, s.thai_id, s.session_type, s.session_date, s.lunar_label
+            `SELECT o.*, s.thai_id, s.session_type, s.session_date
        FROM orders o
        JOIN sessions s ON o.session_id = s.id
        WHERE o.id = $1 AND o.user_id = $2`,

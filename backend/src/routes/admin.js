@@ -293,7 +293,7 @@ router.get('/sessions', async (req, res) => {
         params.push(parseInt(limit));
         const result = await db.query(
             `SELECT id, thai_id, session_type, session_date, status, 
-                    winning_animal, lunar_label, created_at
+                    winning_animal, created_at
              FROM sessions 
              ${whereClause}
              ORDER BY session_date DESC, created_at DESC
@@ -542,7 +542,7 @@ router.get('/orders/:id', async (req, res) => {
             `SELECT o.*, 
               u.name as user_name, u.phone as user_phone, u.zalo,
               u.bank_code, u.bank_account, u.bank_holder,
-              s.thai_id, s.session_type, s.session_date, s.lunar_label
+              s.thai_id, s.session_type, s.session_date
        FROM orders o
        JOIN users u ON o.user_id = u.id
        JOIN sessions s ON o.session_id = s.id
@@ -618,7 +618,7 @@ router.get('/sessions/results', async (req, res) => {
         params.push(parseInt(limit));
         const result = await db.query(
             `SELECT id, thai_id, session_type, session_date, 
-                    winning_animal, lunar_label, status
+                    winning_animal, status
              FROM sessions 
              ${whereClause}
              ORDER BY session_date DESC, created_at DESC

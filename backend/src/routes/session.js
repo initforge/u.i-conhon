@@ -112,7 +112,7 @@ router.get('/current', async (req, res) => {
         }
 
         let result = await db.query(
-            `SELECT id, thai_id, session_type, session_date, lunar_label,
+            `SELECT id, thai_id, session_type, session_date,
               status, created_at
        FROM sessions 
        WHERE thai_id = $1 AND status IN ('open', 'scheduled')
@@ -161,7 +161,7 @@ router.get('/current', async (req, res) => {
 
             // Re-query to get the session (either just created or created by another request)
             result = await db.query(
-                `SELECT id, thai_id, session_type, session_date, lunar_label,
+                `SELECT id, thai_id, session_type, session_date,
                   status, created_at
            FROM sessions 
            WHERE thai_id = $1 AND status IN ('open', 'scheduled')
@@ -218,7 +218,7 @@ router.get('/results', async (req, res) => {
         params.push(parseInt(limit) || 10);
 
         const result = await db.query(
-            `SELECT id, thai_id, session_type, session_date, lunar_label,
+            `SELECT id, thai_id, session_type, session_date,
                CASE WHEN draw_time IS NULL OR draw_time <= (NOW() AT TIME ZONE 'Asia/Ho_Chi_Minh')
                     THEN winning_animal ELSE NULL END as winning_animal,
                CASE WHEN draw_time IS NOT NULL AND draw_time > (NOW() AT TIME ZONE 'Asia/Ho_Chi_Minh')
@@ -396,7 +396,7 @@ router.get('/:id', async (req, res) => {
         const { id } = req.params;
 
         const result = await db.query(
-            `SELECT id, thai_id, session_type, session_date, lunar_label,
+            `SELECT id, thai_id, session_type, session_date,
               status, winning_animal, cau_thai, created_at
        FROM sessions WHERE id = $1`,
             [id]
