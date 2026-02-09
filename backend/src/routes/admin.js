@@ -684,30 +684,43 @@ router.get('/sessions/results', async (req, res) => {
 
 /**
  * DELETE /admin/sessions/:id/result - Delete session completely from DB
+ * ⚠️ SAFE: Refuses to delete if there are paid/won/lost orders (prevents data loss)
  */
 router.delete('/sessions/:id/result', async (req, res) => {
     const client = await db.getClient();
     try {
         const { id } = req.params;
 
+        // Check for paid/won/lost orders first - refuse deletion if any exist
+        const paidOrdersCheck = await client.query(
+            `SELECT COUNT(*) as count FROM orders WHERE session_id = $1 AND status IN ('paid', 'won', 'lost')`,
+            [id]
+        );
+        if (parseInt(paidOrdersCheck.rows[0].count) > 0) {
+            client.release();
+            return res.status(400).json({
+                error: `Không thể xóa: có ${paidOrdersCheck.rows[0].count} đơn hàng đã thanh toán. Chỉ xóa kết quả (winning_animal) thay vì xóa toàn bộ session.`
+            });
+        }
+
         await client.query('BEGIN');
 
-        // 1. Delete order_items belonging to orders of this session
+        // 1. Delete order_items for pending/expired orders only
         await client.query(
-            `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE session_id = $1)`,
+            `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired'))`,
             [id]
         );
 
-        // 2. Detach orders from session (set session_id = NULL, reset status)
+        // 2. Delete pending/expired orders (safe - not paid)
         await client.query(
-            `UPDATE orders SET session_id = NULL, status = 'paid' WHERE session_id = $1`,
+            `DELETE FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired')`,
             [id]
         );
 
         // 3. Delete session_animals
         await client.query(`DELETE FROM session_animals WHERE session_id = $1`, [id]);
 
-        // 4. Delete the session row completely (no FK left)
+        // 4. Delete the session row completely
         await client.query(`DELETE FROM sessions WHERE id = $1`, [id]);
 
         await client.query('COMMIT');
