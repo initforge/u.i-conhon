@@ -96,7 +96,7 @@ router.get('/stats', async (req, res) => {
             sessionParams
         );
 
-        // Top 5 animals (most bought, filtered)
+        // Top 5 animals (most bought by amount, filtered)
         const topAnimalsResult = await db.query(
             `SELECT oi.animal_order, SUM(oi.quantity)::int as total_qty, SUM(oi.subtotal)::int as total_amount
              FROM order_items oi
@@ -104,11 +104,11 @@ router.get('/stats', async (req, res) => {
              JOIN sessions s ON o.session_id = s.id
              WHERE o.status IN ('paid', 'won', 'lost')
                ${sessionWhereClause}
-             GROUP BY oi.animal_order ORDER BY total_qty DESC LIMIT 5`,
+             GROUP BY oi.animal_order ORDER BY total_amount DESC LIMIT 5`,
             sessionParams
         );
 
-        // Bottom 5 animals (least bought, filtered)
+        // Bottom 5 animals (least bought by amount, filtered)
         const bottomAnimalsResult = await db.query(
             `SELECT oi.animal_order, SUM(oi.quantity)::int as total_qty, SUM(oi.subtotal)::int as total_amount
              FROM order_items oi
@@ -116,7 +116,7 @@ router.get('/stats', async (req, res) => {
              JOIN sessions s ON o.session_id = s.id
              WHERE o.status IN ('paid', 'won', 'lost')
                ${sessionWhereClause}
-             GROUP BY oi.animal_order ORDER BY total_qty ASC LIMIT 5`,
+             GROUP BY oi.animal_order ORDER BY total_amount ASC LIMIT 5`,
             sessionParams
         );
 

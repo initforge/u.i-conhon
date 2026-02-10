@@ -251,10 +251,13 @@ const AdminDashboard: React.FC = () => {
                         alt={animal.name}
                         className="w-10 h-10 rounded-lg object-cover"
                       />
-                      <span className="flex-1 font-medium text-gray-800">{animal.name}</span>
-                      <div className="text-right">
-                        <span className="font-bold text-green-600 block">{animal.count} lượt</span>
-                        <span className="text-xs text-gray-500">{animal.amount.toLocaleString('vi-VN')}đ</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-gray-800">{animal.name}</span>
+                        {animal.alias && <span className="text-xs text-gray-500 ml-1">"{animal.alias}"</span>}
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="font-bold text-green-600 block">{animal.amount.toLocaleString('vi-VN')}đ</span>
+                        <span className="text-xs text-gray-500">{animal.count} lượt</span>
                       </div>
                     </div>
                   ))}
@@ -287,10 +290,17 @@ const AdminDashboard: React.FC = () => {
                         alt={animal.name}
                         className="w-10 h-10 rounded-lg object-cover"
                       />
-                      <span className="flex-1 font-medium text-gray-800">{animal.name}</span>
-                      <div className="text-right">
-                        <span className="font-bold text-red-600 block">{animal.count} lượt</span>
-                        <span className="text-xs text-gray-500">{animal.amount.toLocaleString('vi-VN')}đ</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-gray-800">{animal.name}</span>
+                        {animal.alias && <span className="text-xs text-gray-500 ml-1">"{animal.alias}"</span>}
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="font-bold text-red-600 block">
+                          {animal.amount === 0 ? 'Chưa mua' : `${animal.amount.toLocaleString('vi-VN')}đ`}
+                        </span>
+                        {animal.count > 0 && (
+                          <span className="text-xs text-gray-500">{animal.count} lượt</span>
+                        )}
                       </div>
                     </div>
                   ))}

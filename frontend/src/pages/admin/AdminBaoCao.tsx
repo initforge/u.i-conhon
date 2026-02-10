@@ -255,20 +255,20 @@ const AdminBaoCao: React.FC = () => {
     const totalAmount = animals.reduce((sum, a) => sum + getPurchaseData(a.order).amount, 0);
     const purchasedAnimals = animals.filter(a => getPurchaseData(a.order).count > 0).length;
 
-    // Top 5 animals with purchase data
+    // Top 5 animals sorted by amount (tiền)
     const getTopAnimals = () => {
         return animals
             .map(a => ({ ...a, ...getPurchaseData(a.order) }))
-            .filter(a => a.count > 0)
-            .sort((a, b) => b.count - a.count)
+            .filter(a => a.amount > 0)
+            .sort((a, b) => b.amount - a.amount)
             .slice(0, 5);
     };
 
-    // Bottom 5 animals
+    // Bottom 5 animals sorted by amount (tiền)
     const getBottomAnimals = () => {
         return animals
             .map(a => ({ ...a, ...getPurchaseData(a.order) }))
-            .sort((a, b) => a.count - b.count)
+            .sort((a, b) => a.amount - b.amount)
             .slice(0, 5);
     };
 
@@ -461,8 +461,8 @@ const AdminBaoCao: React.FC = () => {
                                                 <span className="text-xs text-gray-500 ml-1">"{animal.alias}"</span>
                                             </div>
                                             <div className="text-right flex-shrink-0">
-                                                <span className="font-bold text-green-600 block">{animal.count} lượt</span>
-                                                <span className="text-xs text-gray-500">{animal.amount.toLocaleString('vi-VN')}đ</span>
+                                                <span className="font-bold text-green-600 block">{animal.amount.toLocaleString('vi-VN')}đ</span>
+                                                <span className="text-xs text-gray-500">{animal.count} lượt</span>
                                             </div>
                                         </div>
                                     ))}
@@ -502,10 +502,10 @@ const AdminBaoCao: React.FC = () => {
                                             </div>
                                             <div className="text-right flex-shrink-0">
                                                 <span className="font-bold text-red-600 block">
-                                                    {animal.count === 0 ? 'Chưa mua' : `${animal.count} lượt`}
+                                                    {animal.amount === 0 ? 'Chưa mua' : `${animal.amount.toLocaleString('vi-VN')}đ`}
                                                 </span>
                                                 {animal.count > 0 && (
-                                                    <span className="text-xs text-gray-500">{animal.amount.toLocaleString('vi-VN')}đ</span>
+                                                    <span className="text-xs text-gray-500">{animal.count} lượt</span>
                                                 )}
                                             </div>
                                         </div>
