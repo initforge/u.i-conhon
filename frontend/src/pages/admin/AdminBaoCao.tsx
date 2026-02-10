@@ -264,10 +264,11 @@ const AdminBaoCao: React.FC = () => {
             .slice(0, 5);
     };
 
-    // Bottom 5 animals sorted by amount (tiền)
+    // Bottom 5 animals sorted by amount (tiền) - only animals with purchases (match Dashboard)
     const getBottomAnimals = () => {
         return animals
             .map(a => ({ ...a, ...getPurchaseData(a.order) }))
+            .filter(a => a.amount > 0)
             .sort((a, b) => a.amount - b.amount)
             .slice(0, 5);
     };
