@@ -77,10 +77,43 @@ async function createPaymentLink({ orderId, amount, description }) {
 }
 
 /**
- * Verify webhook signature
+ * Verify webhook signature (PayOS official implementation)
+ * https://payos.vn/docs/tich-hop-webhook/kiem-tra-du-lieu-voi-signature/
  */
-function verifyWebhookSignature(body, signature) {
-    const computedSignature = createSignature(body);
+function sortObjDataByKey(object) {
+    return Object.keys(object)
+        .sort()
+        .reduce((obj, key) => {
+            obj[key] = object[key];
+            return obj;
+        }, {});
+}
+
+function convertObjToQueryStr(object) {
+    return Object.keys(object)
+        .filter((key) => object[key] !== undefined)
+        .map((key) => {
+            let value = object[key];
+            // Sort nested array of objects
+            if (value && Array.isArray(value)) {
+                value = JSON.stringify(value.map((val) => sortObjDataByKey(val)));
+            }
+            // Set empty string if null
+            if ([null, undefined, 'undefined', 'null'].includes(value)) {
+                value = '';
+            }
+            return `${key}=${value}`;
+        })
+        .join('&');
+}
+
+function verifyWebhookSignature(data, signature) {
+    const sortedData = sortObjDataByKey(data);
+    const dataQueryStr = convertObjToQueryStr(sortedData);
+    const computedSignature = crypto
+        .createHmac('sha256', PAYOS_CHECKSUM_KEY)
+        .update(dataQueryStr)
+        .digest('hex');
     return computedSignature === signature;
 }
 
