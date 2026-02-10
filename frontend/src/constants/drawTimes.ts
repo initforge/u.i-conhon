@@ -71,10 +71,20 @@ export function getSessionStatus(thaiId: string, timeSlots: { startTime: string;
         effectiveSlots.push(tetTimeSlot);
     }
 
-    // Check each time slot
+    // Check each time slot (supports cross-day: startTime > endTime, e.g. 17:30 → 10:30)
     for (let i = 0; i < effectiveSlots.length; i++) {
         const slot = effectiveSlots[i];
-        if (currentTime >= slot.startTime && currentTime < slot.endTime) {
+        const isCrossDay = slot.startTime > slot.endTime;
+
+        let isInSlot = false;
+        if (isCrossDay) {
+            // Cross-midnight: open if time >= startTime (evening side) OR time < endTime (morning side)
+            isInSlot = currentTime >= slot.startTime || currentTime < slot.endTime;
+        } else {
+            isInSlot = currentTime >= slot.startTime && currentTime < slot.endTime;
+        }
+
+        if (isInSlot) {
             return {
                 isOpen: true,
                 currentKhungIndex: i,
@@ -91,10 +101,22 @@ export function getSessionStatus(thaiId: string, timeSlots: { startTime: string;
     let nextKhungIndex = -1;
 
     for (let i = 0; i < effectiveSlots.length; i++) {
-        if (currentTime < effectiveSlots[i].startTime) {
-            nextOpenTime = effectiveSlots[i].startTime;
-            nextKhungIndex = i;
-            break;
+        const slot = effectiveSlots[i];
+        const isCrossDay = slot.startTime > slot.endTime;
+
+        if (isCrossDay) {
+            // For cross-day slots, if we're past endTime but before startTime, next open is startTime
+            if (currentTime >= slot.endTime && currentTime < slot.startTime) {
+                nextOpenTime = slot.startTime;
+                nextKhungIndex = i;
+                break;
+            }
+        } else {
+            if (currentTime < slot.startTime) {
+                nextOpenTime = slot.startTime;
+                nextKhungIndex = i;
+                break;
+            }
         }
     }
 
