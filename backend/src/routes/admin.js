@@ -1168,25 +1168,41 @@ router.patch('/users/:id', async (req, res) => {
  * DELETE /admin/users/:id - Delete user (SPECS 6.7)
  */
 router.delete('/users/:id', async (req, res) => {
+    const client = await db.connect();
     try {
         const { id } = req.params;
 
-        // Check if user has orders
-        const ordersCheck = await db.query(
-            'SELECT COUNT(*) as count FROM orders WHERE user_id = $1',
+        // Verify user exists and is a regular user (not admin)
+        const userCheck = await client.query(
+            'SELECT id, role FROM users WHERE id = $1',
             [id]
         );
-
-        if (parseInt(ordersCheck.rows[0].count) > 0) {
-            // Soft delete - just mark as deleted or deactivate
-            // For now, we still delete but could add is_deleted flag later
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Người dùng không tồn tại' });
+        }
+        if (userCheck.rows[0].role !== 'user') {
+            return res.status(403).json({ error: 'Không thể xóa tài khoản admin' });
         }
 
-        await db.query('DELETE FROM users WHERE id = $1 AND role = $2', [id, 'user']);
+        await client.query('BEGIN');
+
+        // Delete related records in dependent tables first (FK constraints)
+        await client.query('DELETE FROM post_likes WHERE user_id = $1', [id]);
+        await client.query('DELETE FROM community_comments WHERE user_id = $1', [id]);
+        await client.query('DELETE FROM community_posts WHERE user_id = $1', [id]);
+        await client.query('DELETE FROM orders WHERE user_id = $1', [id]);
+
+        // Delete the user
+        await client.query('DELETE FROM users WHERE id = $1 AND role = $2', [id, 'user']);
+
+        await client.query('COMMIT');
         res.json({ success: true });
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Delete user error:', error);
         res.status(500).json({ error: 'Không thể xóa người dùng' });
+    } finally {
+        client.release();
     }
 });
 
