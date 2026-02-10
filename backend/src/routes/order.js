@@ -33,7 +33,7 @@ router.post('/', requireMXHCompleted, async (req, res) => {
 
         // 1. Check session is still open
         const sessionResult = await client.query(
-            `SELECT id, status FROM sessions 
+            `SELECT id, status, thai_id FROM sessions 
        WHERE id = $1 FOR UPDATE`,
             [session_id]
         );
@@ -45,6 +45,30 @@ router.post('/', requireMXHCompleted, async (req, res) => {
         const session = sessionResult.rows[0];
         if (session.status !== 'open') {
             throw new Error('Phiên đã đóng. Vui lòng chờ phiên tiếp theo.');
+        }
+
+        // 1b. CRITICAL: Check master switch and Thai-specific switch
+        const thaiSwitchKey = {
+            'thai-an-nhon': 'thai_an_nhon_enabled',
+            'thai-nhon-phong': 'thai_nhon_phong_enabled',
+            'thai-hoai-nhon': 'thai_hoai_nhon_enabled'
+        }[session.thai_id];
+
+        const switchResult = await client.query(
+            `SELECT key, value FROM settings WHERE key IN ('master_switch', $1)`,
+            [thaiSwitchKey]
+        );
+
+        const switchMap = {};
+        switchResult.rows.forEach(row => { switchMap[row.key] = row.value; });
+
+        if (switchMap['master_switch'] === 'false') {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'Hệ thống đang tạm đóng' });
+        }
+        if (thaiSwitchKey && switchMap[thaiSwitchKey] === 'false') {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'Thai này hiện đang đóng. Không thể đặt hàng.' });
         }
 
         // 2. Check limits for each animal (SPECS 7.1 - atomic lock)

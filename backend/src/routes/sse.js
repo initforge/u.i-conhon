@@ -23,6 +23,9 @@ router.get('/switches', (req, res) => {
     res.write('event: connected\n');
     res.write(`data: ${JSON.stringify({ message: 'SSE connected', timestamp: Date.now() })}\n\n`);
 
+    // Flush headers immediately so client receives the connection
+    res.flushHeaders();
+
     // Register client
     addClient(res);
 

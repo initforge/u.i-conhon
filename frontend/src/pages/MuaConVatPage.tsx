@@ -165,6 +165,7 @@ const MuaConVatPage: React.FC = () => {
         if (amount < MIN_AMOUNT) return;
         if (!currentThaiOption) return; // Cần chọn Thai trước
         if (!isSessionOpen) return; // Session phải đang mở
+        if (!isThaiOpen(selectedThai!)) return; // Thai switch phải đang bật
 
         const thaiId = `thai-${selectedThai}`;
         const thaiName = currentThaiOption.name;
@@ -213,6 +214,12 @@ const MuaConVatPage: React.FC = () => {
     // ========== CHECKOUT ==========
     const handleCheckout = async () => {
         if (cart.length === 0 || isCheckingOut) return;
+
+        // Re-validate switches at checkout time (defense-in-depth)
+        if (!isSessionOpen || (selectedThai && !isThaiOpen(selectedThai))) {
+            alert('Thai này đã đóng. Không thể đặt hàng.');
+            return;
+        }
 
         setIsCheckingOut(true);
         setCheckoutError(null);
