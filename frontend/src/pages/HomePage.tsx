@@ -282,13 +282,6 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Cloud decorations */}
-          <div className="absolute top-0 left-0 opacity-60 pointer-events-none" style={{ width: '304px', height: '452px', zIndex: 10 }}>
-            <img src="/assets/decorations/cloud.png" alt="" className="w-full h-full object-contain" />
-          </div>
-          <div className="absolute bottom-0 right-0 opacity-60 pointer-events-none" style={{ width: '242px', height: '454px', zIndex: 10 }}>
-            <img src="/assets/decorations/cloud-5.png" alt="" className="w-full h-full object-contain" />
-          </div>
         </div>
       </section>
 
@@ -880,13 +873,6 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Cloud decoration - Responsive */}
-          <div className="absolute bottom-0 left-0 opacity-60 pointer-events-none hidden md:block" style={{ width: '303px', height: '591px', zIndex: 10 }}>
-            <img src="/assets/decorations/cloud-3.png" alt="" className="w-full h-full object-contain" />
-          </div>
-          <div className="absolute bottom-0 left-0 opacity-60 pointer-events-none md:hidden" style={{ width: '150px', height: '295px', zIndex: 10 }}>
-            <img src="/assets/decorations/cloud-3.png" alt="" className="w-full h-full object-contain" />
-          </div>
         </div>
       </section>
 
