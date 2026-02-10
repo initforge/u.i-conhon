@@ -95,14 +95,18 @@ router.post('/', requireMXHCompleted, async (req, res) => {
             }
 
             const subtotal = item.quantity * item.unit_price;
-            const newSold = animal.sold_amount + subtotal;
+            // CRITICAL: PostgreSQL bigint returns strings in node-pg
+            // Must cast to Number to avoid string concatenation
+            const soldAmount = Number(animal.sold_amount) || 0;
+            const limitAmount = Number(animal.limit_amount) || 0;
+            const newSold = soldAmount + subtotal;
 
-            if (newSold > animal.limit_amount) {
+            if (newSold > limitAmount) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({
                     error: `Con ${item.animal_order} đã hết hạn mức`,
                     animal_order: item.animal_order,
-                    remaining: animal.limit_amount - animal.sold_amount
+                    remaining: limitAmount - soldAmount
                 });
             }
 
