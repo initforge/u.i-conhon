@@ -346,29 +346,19 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
         }
 
         // Query for existing session of this type on sessionDate (ANY status - admin can access anytime)
+        // FIX: Use sa.sold_amount directly (same source as order.js limit check)
+        // This ensures admin panel shows the SAME remaining quota as what customers see
         let result = await db.query(
             `SELECT s.*, 
               json_agg(json_build_object(
                 'animal_order', sa.animal_order,
                 'limit_amount', sa.limit_amount,
-                'sold_amount', COALESCE(paid.paid_amount, 0),
+                'sold_amount', sa.sold_amount,
                 'is_banned', sa.is_banned,
                 'ban_reason', sa.ban_reason
               ) ORDER BY sa.animal_order) as animals
        FROM sessions s
        LEFT JOIN session_animals sa ON s.id = sa.session_id
-       LEFT JOIN (
-         SELECT oi.animal_order, SUM(oi.subtotal) as paid_amount
-         FROM order_items oi
-         JOIN orders o ON oi.order_id = o.id
-         WHERE o.session_id = (
-           SELECT id FROM sessions 
-           WHERE thai_id = $1
-             AND session_date = $3 AND session_type = $2
-           LIMIT 1
-         ) AND o.status IN ('paid', 'won', 'lost')
-         GROUP BY oi.animal_order
-       ) paid ON sa.animal_order = paid.animal_order
        WHERE s.thai_id = $1
          AND s.session_date = $3 AND s.session_type = $2
        GROUP BY s.id

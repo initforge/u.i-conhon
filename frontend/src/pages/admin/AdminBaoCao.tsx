@@ -428,77 +428,90 @@ const AdminBaoCao: React.FC = () => {
                     {/* Top 5 / Bottom 5 Animals Section */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Top 5 Most Purchased */}
-                        <div className="bg-white rounded-xl shadow-sm border border-green-200 overflow-hidden">
-                            <div className="px-4 py-3 bg-green-50 border-b border-green-200">
-                                <h3 className="font-bold text-green-800 flex items-center gap-2">
-                                    <span>🔥</span>
-                                    <span>Top 5 con được mua nhiều nhất</span>
-                                </h3>
-                            </div>
-                            <div className="p-4 space-y-2">
-                                {getTopAnimals().length === 0 ? (
-                                    <p className="text-gray-500 text-center py-4">Chưa có dữ liệu mua</p>
-                                ) : (
-                                    getTopAnimals().map((animal, index) => (
+                        <div className="bg-white rounded-xl shadow-md p-6">
+                            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                                <span>🔥</span>
+                                <span>Top 5 mua nhiều nhất</span>
+                            </h2>
+                            {getTopAnimals().length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <p>Chưa có dữ liệu</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {getTopAnimals().map((animal, index) => (
                                         <div
                                             key={animal.order}
-                                            className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-100"
+                                            className="flex items-center space-x-4 p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition"
+                                            onClick={() => setSelectedAnimal(animal)}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <span className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">
-                                                    {index + 1}
-                                                </span>
-                                                <div>
-                                                    <span className="font-bold text-green-800">#{animal.order} {animal.name}</span>
-                                                    <span className="text-xs text-gray-500 ml-2">"{animal.alias}"</span>
-                                                </div>
+                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500' :
+                                                index === 1 ? 'bg-gray-400' :
+                                                    index === 2 ? 'bg-orange-400' : 'bg-gray-300'
+                                                }`}>
+                                                {index + 1}
+                                            </span>
+                                            <img
+                                                src={`/assets/conhon/${String(animal.order).padStart(2, '0')}.jpg`}
+                                                alt={animal.name}
+                                                className="w-10 h-10 rounded-lg object-cover"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-medium text-gray-800">{animal.name}</span>
+                                                <span className="text-xs text-gray-500 ml-1">"{animal.alias}"</span>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="font-bold text-green-700">{animal.count} lượt</p>
-                                                <p className="text-xs text-green-600">{animal.amount.toLocaleString('vi-VN')}đ</p>
+                                            <div className="text-right flex-shrink-0">
+                                                <span className="font-bold text-green-600 block">{animal.count} lượt</span>
+                                                <span className="text-xs text-gray-500">{animal.amount.toLocaleString('vi-VN')}đ</span>
                                             </div>
                                         </div>
-                                    ))
-                                )}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Bottom 5 Least Purchased */}
-                        <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
-                            <div className="px-4 py-3 bg-red-50 border-b border-red-200">
-                                <h3 className="font-bold text-red-800 flex items-center gap-2">
-                                    <span>❄️</span>
-                                    <span>Top 5 con được mua ít nhất</span>
-                                </h3>
-                            </div>
-                            <div className="p-4 space-y-2">
-                                {getBottomAnimals().map((animal, index) => (
-                                    <div
-                                        key={animal.order}
-                                        className={`flex items-center justify-between p-3 rounded-lg ${animal.count === 0 ? 'bg-red-50 border border-red-100' : 'bg-orange-50 border border-orange-100'}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${animal.count === 0 ? 'bg-red-600 text-white' : 'bg-orange-500 text-white'}`}>
+                        <div className="bg-white rounded-xl shadow-md p-6">
+                            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                                <span>❄️</span>
+                                <span>Top 5 mua ít nhất</span>
+                            </h2>
+                            {getBottomAnimals().length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <p>Chưa có dữ liệu</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {getBottomAnimals().map((animal, index) => (
+                                        <div
+                                            key={animal.order}
+                                            className="flex items-center space-x-4 p-3 bg-red-50 rounded-lg cursor-pointer hover:bg-red-100 transition"
+                                            onClick={() => animal.count > 0 && setSelectedAnimal(animal)}
+                                        >
+                                            <span className="w-8 h-8 rounded-full flex items-center justify-center font-bold bg-red-200 text-red-700">
                                                 {index + 1}
                                             </span>
-                                            <div>
-                                                <span className={animal.count === 0 ? 'font-bold text-red-800' : 'font-bold text-orange-800'}>
-                                                    #{animal.order} {animal.name}
+                                            <img
+                                                src={`/assets/conhon/${String(animal.order).padStart(2, '0')}.jpg`}
+                                                alt={animal.name}
+                                                className="w-10 h-10 rounded-lg object-cover"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <span className="font-medium text-gray-800">{animal.name}</span>
+                                                <span className="text-xs text-gray-500 ml-1">"{animal.alias}"</span>
+                                            </div>
+                                            <div className="text-right flex-shrink-0">
+                                                <span className="font-bold text-red-600 block">
+                                                    {animal.count === 0 ? 'Chưa mua' : `${animal.count} lượt`}
                                                 </span>
-                                                <span className="text-xs text-gray-500 ml-2">"{animal.alias}"</span>
+                                                {animal.count > 0 && (
+                                                    <span className="text-xs text-gray-500">{animal.amount.toLocaleString('vi-VN')}đ</span>
+                                                )}
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className={animal.count === 0 ? 'font-bold text-red-700' : 'font-bold text-orange-700'}>
-                                                {animal.count === 0 ? 'Chưa mua' : `${animal.count} lượt`}
-                                            </p>
-                                            {animal.count > 0 && (
-                                                <p className="text-xs text-orange-600">{animal.amount.toLocaleString('vi-VN')}đ</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </>
