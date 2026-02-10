@@ -89,14 +89,14 @@ const MuaConVatPage: React.FC = () => {
     // Check if session is open for adding to cart
     const isSessionOpen = currentSessionInfo?.isOpen ?? false;
 
-    // Fetch session animals to check sold out status (with 15s polling)
+    // Fetch session animals to check sold out status (with 15s polling, only when session is open)
     useEffect(() => {
-        const fetchSessionAnimals = async () => {
-            if (!selectedThai) {
-                setSoldOutAnimals(new Set());
-                return;
-            }
+        if (!selectedThai || !isSessionOpen) {
+            setSoldOutAnimals(new Set());
+            return;
+        }
 
+        const fetchSessionAnimals = async () => {
             try {
                 const { session } = await getCurrentSession(selectedThai);
                 if (session?.id) {
@@ -121,7 +121,7 @@ const MuaConVatPage: React.FC = () => {
         // Poll every 15 seconds for near-realtime updates
         const interval = setInterval(fetchSessionAnimals, 15000);
         return () => clearInterval(interval);
-    }, [selectedThai]);
+    }, [selectedThai, isSessionOpen]);
 
 
     // Lọc danh sách con vật dựa theo Thai được chọn

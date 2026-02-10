@@ -37,15 +37,33 @@ const DEFAULT_TIME_SLOTS = {
 };
 
 /**
+ * Format a Date to 'YYYY-MM-DD' string (Vietnam timezone).
+ */
+function formatDateStr(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/**
  * Determine which session_type matches the current time for a Thai.
  * Reads timeSlots from DB (admin-configurable), falls back to defaults.
- * Returns the session_type string ('morning', 'afternoon', 'evening') or null.
+ * 
+ * Supports cross-midnight slots (e.g. startTime '17:30' → endTime '10:30').
+ * When a slot crosses midnight:
+ *   - After startTime (same evening) → sessionDate = TODAY
+ *   - Before endTime (next morning)  → sessionDate = YESTERDAY
+ * 
+ * @returns {{ sessionType: string, sessionDate: string }} or null
  */
 async function getCurrentSessionType(thaiId) {
     // Get current time in Vietnam timezone (UTC+7)
     const now = new Date();
     const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
     const currentTime = `${vnTime.getHours().toString().padStart(2, '0')}:${vnTime.getMinutes().toString().padStart(2, '0')}`;
+    const todayStr = formatDateStr(vnTime);
+
+    const yesterday = new Date(vnTime);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = formatDateStr(yesterday);
 
     // Try to read ThaiConfig from DB (synced with admin UI)
     let thaiConfig = null;
@@ -78,8 +96,23 @@ async function getCurrentSessionType(thaiId) {
     // Check which slot the current time falls into
     for (let i = 0; i < effectiveSlots.length; i++) {
         const slot = effectiveSlots[i];
-        if (currentTime >= slot.startTime && currentTime < slot.endTime) {
-            return SLOT_SESSION_TYPES[i]; // 'morning', 'afternoon', or 'evening'
+        const isCrossDay = slot.startTime > slot.endTime; // e.g. '17:30' > '10:30'
+
+        if (isCrossDay) {
+            // Cross-midnight slot: active from startTime tonight to endTime tomorrow morning
+            if (currentTime >= slot.startTime) {
+                // Evening side → session belongs to TODAY
+                return { sessionType: SLOT_SESSION_TYPES[i], sessionDate: todayStr };
+            }
+            if (currentTime < slot.endTime) {
+                // Morning side → session belongs to YESTERDAY (when it opened)
+                return { sessionType: SLOT_SESSION_TYPES[i], sessionDate: yesterdayStr };
+            }
+        } else {
+            // Same-day slot
+            if (currentTime >= slot.startTime && currentTime < slot.endTime) {
+                return { sessionType: SLOT_SESSION_TYPES[i], sessionDate: todayStr };
+            }
         }
     }
 
@@ -102,29 +135,31 @@ router.get('/current', async (req, res) => {
         thai_id = thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`;
 
         // Determine which session_type matches current time
-        const currentSessionType = await getCurrentSessionType(thai_id);
+        const sessionInfo = await getCurrentSessionType(thai_id);
 
-        if (!currentSessionType) {
+        if (!sessionInfo) {
             return res.status(404).json({
                 error: 'Không có phiên nào đang mở',
                 message: 'Hiện không trong khung giờ mua hàng'
             });
         }
 
+        const { sessionType, sessionDate } = sessionInfo;
+
         let result = await db.query(
             `SELECT id, thai_id, session_type, session_date,
               status, created_at
        FROM sessions 
        WHERE thai_id = $1 AND status IN ('open', 'scheduled')
-         AND session_date = CURRENT_DATE
+         AND session_date = $3
          AND session_type = $2
        LIMIT 1`,
-            [thai_id, currentSessionType]
+            [thai_id, sessionType, sessionDate]
         );
 
         // Auto-create session if none exists (lazy creation)
         if (result.rows.length === 0) {
-            console.log(`🔄 Auto-creating session: ${thai_id} / ${currentSessionType} / today`);
+            console.log(`🔄 Auto-creating session: ${thai_id} / ${sessionType} / ${sessionDate}`);
             const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
 
             const client = await db.getClient();
@@ -134,10 +169,10 @@ router.get('/current', async (req, res) => {
                 // Insert session (ON CONFLICT DO NOTHING for race condition safety)
                 const insertResult = await client.query(
                     `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
-                     VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, 'open', NOW())
+                     VALUES (gen_random_uuid(), $1, $2, $3, 'open', NOW())
                      ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
                      RETURNING id`,
-                    [thai_id, currentSessionType]
+                    [thai_id, sessionType, sessionDate]
                 );
 
                 if (insertResult.rows.length > 0) {
@@ -165,10 +200,10 @@ router.get('/current', async (req, res) => {
                   status, created_at
            FROM sessions 
            WHERE thai_id = $1 AND status IN ('open', 'scheduled')
-             AND session_date = CURRENT_DATE
+             AND session_date = $3
              AND session_type = $2
            LIMIT 1`,
-                [thai_id, currentSessionType]
+                [thai_id, sessionType, sessionDate]
             );
         }
 

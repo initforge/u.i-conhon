@@ -55,7 +55,7 @@ router.get('/stats', async (req, res) => {
             pIdx++;
         }
         if (date) {
-            sessionFilters.push(`o.created_at::date = $${pIdx}`);
+            sessionFilters.push(`s.session_date = $${pIdx}`);
             sessionParams.push(date);
             pIdx++;
         }
@@ -158,7 +158,7 @@ router.get('/stats/animals-all', async (req, res) => {
             pIdx++;
         }
         if (date) {
-            filters.push(`o.created_at::date = $${pIdx}`);
+            filters.push(`s.session_date = $${pIdx}`);
             params.push(date);
             pIdx++;
         }
@@ -218,7 +218,7 @@ router.get('/stats/animal-orders', async (req, res) => {
             pIdx++;
         }
         if (date) {
-            filters.push(`o.created_at::date = $${pIdx}`);
+            filters.push(`s.session_date = $${pIdx}`);
             params.push(date);
             pIdx++;
         }
@@ -321,20 +321,31 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
         // Map khung index to session_type
         const SLOT_SESSION_TYPES = ['morning', 'afternoon', 'evening'];
         let sessionType;
+        let sessionDate;
 
         if (khung !== undefined && khung !== null) {
             const khungIdx = parseInt(khung);
             sessionType = SLOT_SESSION_TYPES[khungIdx] || 'morning';
+            // Admin explicitly picks a slot → default to today
+            const now = new Date();
+            const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+            sessionDate = `${vnTime.getFullYear()}-${String(vnTime.getMonth() + 1).padStart(2, '0')}-${String(vnTime.getDate()).padStart(2, '0')}`;
         } else {
             // Fallback: auto-detect from current time
             const { getCurrentSessionType } = require('./session');
-            sessionType = await getCurrentSessionType(thai_id);
-            if (!sessionType) {
-                sessionType = 'morning'; // Default to morning if outside all windows
+            const sessionInfo = await getCurrentSessionType(thai_id);
+            if (!sessionInfo) {
+                sessionType = 'morning';
+                const now = new Date();
+                const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+                sessionDate = `${vnTime.getFullYear()}-${String(vnTime.getMonth() + 1).padStart(2, '0')}-${String(vnTime.getDate()).padStart(2, '0')}`;
+            } else {
+                sessionType = sessionInfo.sessionType;
+                sessionDate = sessionInfo.sessionDate;
             }
         }
 
-        // Query for existing session of this type today (ANY status - admin can access anytime)
+        // Query for existing session of this type on sessionDate (ANY status - admin can access anytime)
         let result = await db.query(
             `SELECT s.*, 
               json_agg(json_build_object(
@@ -353,21 +364,21 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
          WHERE o.session_id = (
            SELECT id FROM sessions 
            WHERE thai_id = $1
-             AND session_date = CURRENT_DATE AND session_type = $2
+             AND session_date = $3 AND session_type = $2
            LIMIT 1
          ) AND o.status IN ('paid', 'won', 'lost')
          GROUP BY oi.animal_order
        ) paid ON sa.animal_order = paid.animal_order
        WHERE s.thai_id = $1
-         AND s.session_date = CURRENT_DATE AND s.session_type = $2
+         AND s.session_date = $3 AND s.session_type = $2
        GROUP BY s.id
        LIMIT 1`,
-            [thai_id, sessionType]
+            [thai_id, sessionType, sessionDate]
         );
 
         // Auto-create session if none exists
         if (result.rows.length === 0) {
-            console.log(`🔄 Admin: Auto-creating session: ${thai_id} / ${sessionType} / today`);
+            console.log(`🔄 Admin: Auto-creating session: ${thai_id} / ${sessionType} / ${sessionDate}`);
             const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
 
             const client = await db.getClient();
@@ -375,10 +386,10 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                 await client.query('BEGIN');
                 const insertResult = await client.query(
                     `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
-                     VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, 'open', NOW())
+                     VALUES (gen_random_uuid(), $1, $2, $3, 'open', NOW())
                      ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
                      RETURNING id`,
-                    [thai_id, sessionType]
+                    [thai_id, sessionType, sessionDate]
                 );
 
                 if (insertResult.rows.length > 0) {
@@ -398,7 +409,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                 client.release();
             }
 
-            // Re-query (no status filter)
+            // Re-query
             result = await db.query(
                 `SELECT s.*, 
                   json_agg(json_build_object(
@@ -411,10 +422,10 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                FROM sessions s
                LEFT JOIN session_animals sa ON s.id = sa.session_id
                WHERE s.thai_id = $1
-                 AND s.session_date = CURRENT_DATE AND s.session_type = $2
+                 AND s.session_date = $3 AND s.session_type = $2
                GROUP BY s.id
                LIMIT 1`,
-                [thai_id, sessionType]
+                [thai_id, sessionType, sessionDate]
             );
         }
 
@@ -470,7 +481,7 @@ router.get('/orders', async (req, res) => {
         let paramIndex = 1;
 
         if (date) {
-            baseWhere += ` AND o.created_at::date = $${paramIndex}`;
+            baseWhere += ` AND s.session_date = $${paramIndex}`;
             params.push(date);
             paramIndex++;
         }
