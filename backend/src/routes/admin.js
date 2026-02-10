@@ -54,47 +54,28 @@ router.get('/stats', async (req, res) => {
             sessionParams.push(normalizeSessionType(session_type));
             pIdx++;
         }
-
-        // Determine effective "today" date using cross-day session logic
-        // e.g. at 00:30 on Feb 11, morning slot 17:30→10:30 → effective date = Feb 10
-        let effectiveDate = date;
-        if (!effectiveDate) {
-            const { getCurrentSessionType } = require('./session');
-            // Use specific thai_id if provided, otherwise try first available
-            const checkThaiId = thai_id
-                ? (thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`)
-                : 'thai-nhon-phong';
-            const sessionInfo = await getCurrentSessionType(checkThaiId);
-            if (sessionInfo) {
-                effectiveDate = sessionInfo.sessionDate;
-            } else {
-                // Fallback to PostgreSQL CURRENT_DATE
-                const now = new Date();
-                const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
-                effectiveDate = `${vnTime.getFullYear()}-${String(vnTime.getMonth() + 1).padStart(2, '0')}-${String(vnTime.getDate()).padStart(2, '0')}`;
-            }
+        if (date) {
+            sessionFilters.push(`s.session_date = $${pIdx}`);
+            sessionParams.push(date);
+            pIdx++;
         }
-
-        // Add session_date filter for "today" queries
-        sessionFilters.push(`s.session_date = $${pIdx}`);
-        sessionParams.push(effectiveDate);
-        pIdx++;
 
         const sessionWhereClause = sessionFilters.length > 0
             ? 'AND ' + sessionFilters.join(' AND ')
             : '';
 
-        // Revenue today (filtered by session_date, thai/session)
+        // Revenue today (filtered by thai/session if specified)
         const revenueResult = await db.query(
             `SELECT COALESCE(SUM(o.total), 0) as revenue
              FROM orders o
              JOIN sessions s ON o.session_id = s.id
-             WHERE o.status IN ('paid', 'won', 'lost')
+             WHERE o.paid_at::date = CURRENT_DATE
+               AND o.status IN ('paid', 'won', 'lost')
                ${sessionWhereClause}`,
             sessionParams
         );
 
-        // Total orders for this session date (filtered)
+        // Total orders all time (filtered)
         const totalOrdersResult = await db.query(
             `SELECT COUNT(*) as total
              FROM orders o
@@ -104,12 +85,13 @@ router.get('/stats', async (req, res) => {
             sessionParams
         );
 
-        // Orders for this session date (filtered) - only successful orders
+        // Orders today (filtered) - only successful orders
         const todayOrdersResult = await db.query(
             `SELECT COUNT(*) as total
              FROM orders o
              JOIN sessions s ON o.session_id = s.id
-             WHERE o.status IN ('paid', 'won', 'lost')
+             WHERE o.created_at::date = CURRENT_DATE
+               AND o.status IN ('paid', 'won', 'lost')
                ${sessionWhereClause}`,
             sessionParams
         );
