@@ -1042,7 +1042,7 @@ router.get('/users', async (req, res) => {
         const { search, page = 1, limit = 50 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
-        let baseWhere = "WHERE role = 'user'";
+        let baseWhere = "WHERE role = 'user' AND (is_deleted = false OR is_deleted IS NULL)";
         const params = [];
         let paramIndex = 1;
 
@@ -1076,7 +1076,7 @@ router.get('/users', async (req, res) => {
         // Aggregate stats for stat cards (global, not page-specific)
         const aggregateResult = await db.query(
             `SELECT
-                (SELECT COUNT(*) FROM users WHERE role = 'user')::int as total_users,
+                (SELECT COUNT(*) FROM users WHERE role = 'user' AND (is_deleted = false OR is_deleted IS NULL))::int as total_users,
                 (SELECT COUNT(DISTINCT user_id) FROM orders WHERE status IN ('paid', 'won', 'lost'))::int as users_with_orders,
                 (SELECT COUNT(*) FROM orders WHERE status IN ('paid', 'won', 'lost'))::int as total_orders`
         );
@@ -1168,13 +1168,12 @@ router.patch('/users/:id', async (req, res) => {
  * DELETE /admin/users/:id - Delete user (SPECS 6.7)
  */
 router.delete('/users/:id', async (req, res) => {
-    const client = await db.connect();
     try {
         const { id } = req.params;
 
         // Verify user exists and is a regular user (not admin)
-        const userCheck = await client.query(
-            'SELECT id, role FROM users WHERE id = $1',
+        const userCheck = await db.query(
+            'SELECT id, role, is_deleted FROM users WHERE id = $1',
             [id]
         );
         if (userCheck.rows.length === 0) {
@@ -1183,26 +1182,21 @@ router.delete('/users/:id', async (req, res) => {
         if (userCheck.rows[0].role !== 'user') {
             return res.status(403).json({ error: 'Không thể xóa tài khoản admin' });
         }
+        if (userCheck.rows[0].is_deleted) {
+            return res.status(400).json({ error: 'Người dùng đã bị xóa trước đó' });
+        }
 
-        await client.query('BEGIN');
+        // Soft delete: mark as deleted instead of removing from DB
+        // Preserves order history and stats
+        await db.query(
+            'UPDATE users SET is_deleted = true, deleted_at = NOW() WHERE id = $1',
+            [id]
+        );
 
-        // Delete related records in dependent tables first (FK constraints)
-        await client.query('DELETE FROM post_likes WHERE user_id = $1', [id]);
-        await client.query('DELETE FROM community_comments WHERE user_id = $1', [id]);
-        await client.query('DELETE FROM community_posts WHERE user_id = $1', [id]);
-        await client.query('DELETE FROM orders WHERE user_id = $1', [id]);
-
-        // Delete the user
-        await client.query('DELETE FROM users WHERE id = $1 AND role = $2', [id, 'user']);
-
-        await client.query('COMMIT');
         res.json({ success: true });
     } catch (error) {
-        await client.query('ROLLBACK');
         console.error('Delete user error:', error);
         res.status(500).json({ error: 'Không thể xóa người dùng' });
-    } finally {
-        client.release();
     }
 });
 

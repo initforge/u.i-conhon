@@ -33,9 +33,9 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
         }
 
-        // Check if phone exists
+        // Check if phone exists (only non-deleted users)
         const existing = await db.query(
-            'SELECT id FROM users WHERE phone = $1',
+            'SELECT id FROM users WHERE phone = $1 AND (is_deleted = false OR is_deleted IS NULL)',
             [phone]
         );
 
@@ -94,11 +94,11 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Vui lòng nhập SĐT và mật khẩu' });
         }
 
-        // Find user
+        // Find user (exclude soft-deleted)
         const result = await db.query(
             `SELECT id, phone, password_hash, name, role, completed_tasks, 
               bank_code, bank_account, bank_holder, zalo
-       FROM users WHERE phone = $1`,
+       FROM users WHERE phone = $1 AND (is_deleted = false OR is_deleted IS NULL)`,
             [phone]
         );
 

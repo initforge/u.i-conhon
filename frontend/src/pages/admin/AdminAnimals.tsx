@@ -77,7 +77,10 @@ const AdminAnimals: React.FC = () => {
     let detectedActiveIndex = -1;
 
     const options = currentThaiConfig.timeSlots.map((slot, idx) => {
-      const isActive = currentTime >= slot.startTime && currentTime < slot.endTime;
+      const isCrossDay = slot.startTime > slot.endTime; // e.g. 17:30 > 10:30
+      const isActive = isCrossDay
+        ? (currentTime >= slot.startTime || currentTime < slot.endTime)  // Cross-midnight
+        : (currentTime >= slot.startTime && currentTime < slot.endTime); // Same-day
       if (isActive) detectedActiveIndex = idx;
 
       return {
@@ -94,7 +97,10 @@ const AdminAnimals: React.FC = () => {
     // Đây là khung Tết đặc biệt, không phải session thường
     if (currentThaiConfig.id === 'thai-an-nhon' && currentThaiConfig.isTetMode && currentThaiConfig.tetTimeSlot) {
       const eveningSlot = currentThaiConfig.tetTimeSlot;
-      const isEveningActive = currentTime >= eveningSlot.startTime && currentTime < eveningSlot.endTime;
+      const isCrossDay = eveningSlot.startTime > eveningSlot.endTime;
+      const isEveningActive = isCrossDay
+        ? (currentTime >= eveningSlot.startTime || currentTime < eveningSlot.endTime)
+        : (currentTime >= eveningSlot.startTime && currentTime < eveningSlot.endTime);
       if (isEveningActive) detectedActiveIndex = options.length;
 
       options.push({

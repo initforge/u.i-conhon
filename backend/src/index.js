@@ -158,6 +158,17 @@ app.listen(PORT, () => {
     // Initialize Redis
     initRedis();
 
+    // Auto-migration: Add soft delete columns to users table
+    const db = require('./services/database');
+    db.query(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    `).then(() => {
+        console.log('✅ Database migration: is_deleted columns ready');
+    }).catch((migrationError) => {
+        console.error('Migration error (non-fatal):', migrationError.message);
+    });
+
     // ================================================
     // Expired Order Cleanup (runs every 60 seconds)
     // Finds pending orders past payment_expires, sets to 'expired',
