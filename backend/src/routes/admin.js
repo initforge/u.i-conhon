@@ -323,16 +323,27 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
         let sessionType;
         let sessionDate;
 
+        // Always use getCurrentSessionType for cross-day awareness
+        const { getCurrentSessionType } = require('./session');
+
         if (khung !== undefined && khung !== null) {
             const khungIdx = parseInt(khung);
             sessionType = SLOT_SESSION_TYPES[khungIdx] || 'morning';
-            // Admin explicitly picks a slot → default to today
-            const now = new Date();
-            const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
-            sessionDate = `${vnTime.getFullYear()}-${String(vnTime.getMonth() + 1).padStart(2, '0')}-${String(vnTime.getDate()).padStart(2, '0')}`;
+
+            // Use getCurrentSessionType to get correct date (handles cross-day slots)
+            // e.g. morning slot 17:30→10:30: at 00:24 on Feb 11, session belongs to Feb 10
+            const sessionInfo = await getCurrentSessionType(thai_id);
+            if (sessionInfo && sessionInfo.sessionType === sessionType) {
+                // Current time is in the requested slot → use its date (may be yesterday for cross-day)
+                sessionDate = sessionInfo.sessionDate;
+            } else {
+                // Admin picked a slot that is NOT the current active one → use today
+                const now = new Date();
+                const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+                sessionDate = `${vnTime.getFullYear()}-${String(vnTime.getMonth() + 1).padStart(2, '0')}-${String(vnTime.getDate()).padStart(2, '0')}`;
+            }
         } else {
             // Fallback: auto-detect from current time
-            const { getCurrentSessionType } = require('./session');
             const sessionInfo = await getCurrentSessionType(thai_id);
             if (!sessionInfo) {
                 sessionType = 'morning';
