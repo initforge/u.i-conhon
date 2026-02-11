@@ -89,10 +89,14 @@ const MuaConVatPage: React.FC = () => {
     // Check if session is open for adding to cart
     const isSessionOpen = currentSessionInfo?.isOpen ?? false;
 
-    // Fetch session animals to check sold out status (with 15s polling, only when session is open)
+    // Banned animals: animal_order -> ban_reason
+    const [bannedAnimals, setBannedAnimals] = useState<Map<number, string | null>>(new Map());
+
+    // Fetch session animals to check sold out + banned status (with 15s polling, only when session is open)
     useEffect(() => {
         if (!selectedThai || !isSessionOpen) {
             setSoldOutAnimals(new Set());
+            setBannedAnimals(new Map());
             return;
         }
 
@@ -102,17 +106,23 @@ const MuaConVatPage: React.FC = () => {
                 if (session?.id) {
                     const { animals } = await getSessionAnimals(session.id);
                     const soldOut = new Set<number>();
+                    const banned = new Map<number, string | null>();
                     animals.forEach(a => {
-                        if (a.remaining <= 0 || a.is_banned) {
+                        if (a.is_banned) {
+                            soldOut.add(a.animal_order);
+                            banned.set(a.animal_order, a.ban_reason || null);
+                        } else if (a.remaining <= 0) {
                             soldOut.add(a.animal_order);
                         }
                     });
                     setSoldOutAnimals(soldOut);
+                    setBannedAnimals(banned);
                 }
             } catch (error) {
                 // Session may not exist yet, that's ok
                 console.log('No active session for limit check');
                 setSoldOutAnimals(new Set());
+                setBannedAnimals(new Map());
             }
         };
 
@@ -166,6 +176,7 @@ const MuaConVatPage: React.FC = () => {
         if (!currentThaiOption) return; // Cần chọn Thai trước
         if (!isSessionOpen) return; // Session phải đang mở
         if (!isThaiOpen(selectedThai!)) return; // Thai switch phải đang bật
+        if (soldOutAnimals.has(animal.number)) return; // Hết hạng mức hoặc bị cấm
 
         const thaiId = `thai-${selectedThai}`;
         const thaiName = currentThaiOption.name;
@@ -514,11 +525,13 @@ const MuaConVatPage: React.FC = () => {
                                             {(!hasLikedShared || !isSessionOpen || soldOutAnimals.has(animal.number)) && (
                                                 <div className="absolute inset-0 bg-gray-900/50 z-10 flex items-center justify-center p-2">
                                                     <p className="text-white text-xs text-center font-medium">
-                                                        {soldOutAnimals.has(animal.number)
-                                                            ? 'Đã hết lượt mua'
-                                                            : !hasLikedShared
-                                                                ? 'Vui lòng Like/Share'
-                                                                : 'Đang đóng cửa'}
+                                                        {bannedAnimals.has(animal.number)
+                                                            ? `🚫 Đã bị cấm${bannedAnimals.get(animal.number) ? `: ${bannedAnimals.get(animal.number)}` : ''}`
+                                                            : soldOutAnimals.has(animal.number)
+                                                                ? 'Đã hết lượt mua'
+                                                                : !hasLikedShared
+                                                                    ? 'Vui lòng Like/Share'
+                                                                    : 'Đang đóng cửa'}
                                                     </p>
                                                 </div>
                                             )}
@@ -584,8 +597,8 @@ const MuaConVatPage: React.FC = () => {
                                                 {/* Add Button */}
                                                 <button
                                                     onClick={() => handleAddToCart(animal)}
-                                                    disabled={!hasLikedShared || !isSessionOpen || currentAmount < MIN_AMOUNT}
-                                                    className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors ${hasLikedShared && isSessionOpen && currentAmount >= MIN_AMOUNT
+                                                    disabled={!hasLikedShared || !isSessionOpen || soldOutAnimals.has(animal.number) || currentAmount < MIN_AMOUNT}
+                                                    className={`w-full py-2 rounded-lg text-xs font-semibold transition-colors ${hasLikedShared && isSessionOpen && !soldOutAnimals.has(animal.number) && currentAmount >= MIN_AMOUNT
                                                         ? 'bg-red-600 text-white hover:bg-red-700'
                                                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                                         }`}

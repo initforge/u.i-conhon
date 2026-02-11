@@ -96,6 +96,7 @@ async function getCurrentSessionType(thaiId) {
         const isInSlot = isCrossDay
             ? (currentTime >= slot.startTime || currentTime < slot.endTime)
             : (currentTime >= slot.startTime && currentTime < slot.endTime);
+        console.log(`🔍 getCurrentSessionType(${thaiId}) slot[${i}]: ${slot.startTime}-${slot.endTime} | now=${currentTime} | crossDay=${isCrossDay} | match=${isInSlot}`);
 
         if (isInSlot) {
             // For cross-day slots in the evening part, session belongs to NEXT day
@@ -111,6 +112,7 @@ async function getCurrentSessionType(thaiId) {
         }
     }
 
+    console.log(`⚠️ getCurrentSessionType(${thaiId}): No slot matched at ${currentTime} (${effectiveSlots.length} slots checked)`);
     return null; // Not in any buying window
 }
 

@@ -347,6 +347,13 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
             const { getCurrentSessionType } = require('./session');
             const sessionInfo = await getCurrentSessionType(thai_id);
             sessionType = sessionInfo?.sessionType || 'morning';
+            sessionDate = sessionInfo?.sessionDate;
+            if (!sessionDate) {
+                // No active slot → fallback to today's date (Vietnam TZ)
+                const now = new Date();
+                const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+                sessionDate = `${vnTime.getFullYear()}-${String(vnTime.getMonth() + 1).padStart(2, '0')}-${String(vnTime.getDate()).padStart(2, '0')}`;
+            }
         }
 
         // Query for existing session of this type on sessionDate (ANY status - admin can access anytime)
