@@ -154,49 +154,59 @@ router.get('/current', async (req, res) => {
             [thai_id, currentSessionType, sessionDate]
         );
 
-        // Auto-create session if none exists (lazy creation)
+        // Auto-create session if none exists, or reopen if closed/resulted
         if (result.rows.length === 0) {
-            console.log(`🔄 Auto-creating session: ${thai_id} / ${currentSessionType} / ${sessionDate}`);
+            console.log(`🔄 Auto-creating/reopening session: ${thai_id} / ${currentSessionType} / ${sessionDate}`);
             const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
 
             const client = await db.getClient();
             try {
                 await client.query('BEGIN');
 
-                // Insert session (ON CONFLICT DO NOTHING for race condition safety)
+                // Insert new session, OR reopen existing one if it was closed/resulted
+                // This handles the case where admin entered a result earlier today,
+                // but the time slot is still active for buying
                 const insertResult = await client.query(
                     `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
                      VALUES (gen_random_uuid(), $1, $2, $3, 'open', NOW())
-                     ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
+                     ON CONFLICT (thai_id, session_date, session_type) 
+                     DO UPDATE SET status = 'open'
                      RETURNING id`,
                     [thai_id, currentSessionType, sessionDate]
                 );
 
-                if (insertResult.rows.length > 0) {
-                    const newSessionId = insertResult.rows[0].id;
-                    // Auto-populate session_animals with default limits
+                const sessionId = insertResult.rows[0].id;
+
+                // Auto-populate session_animals only if they don't exist yet
+                const existingAnimals = await client.query(
+                    `SELECT COUNT(*) FROM session_animals WHERE session_id = $1`,
+                    [sessionId]
+                );
+                if (parseInt(existingAnimals.rows[0].count) === 0) {
                     await client.query(
                         `INSERT INTO session_animals (session_id, animal_order)
                          SELECT $1, generate_series(1, $2)`,
-                        [newSessionId, animalCount]
+                        [sessionId, animalCount]
                     );
-                    console.log(`✅ Session auto-created: ${newSessionId} (${animalCount} animals)`);
+                    console.log(`✅ Session created: ${sessionId} (${animalCount} animals)`);
+                } else {
+                    console.log(`♻️ Session reopened: ${sessionId}`);
                 }
 
                 await client.query('COMMIT');
             } catch (err) {
                 await client.query('ROLLBACK');
-                console.error('Auto-create session error:', err);
+                console.error('Auto-create/reopen session error:', err);
             } finally {
                 client.release();
             }
 
-            // Re-query to get the session (either just created or created by another request)
+            // Re-query to get the session
             result = await db.query(
                 `SELECT id, thai_id, session_type, session_date,
                   status, created_at
            FROM sessions 
-           WHERE thai_id = $1 AND status IN ('open', 'scheduled')
+           WHERE thai_id = $1 AND status = 'open'
              AND session_date = $3
              AND session_type = $2
            LIMIT 1`,
