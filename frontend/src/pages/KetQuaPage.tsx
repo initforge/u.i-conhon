@@ -37,7 +37,7 @@ interface AllThaiRow {
 const normalizeDate = (d: string) => d.split('T')[0];
 
 // --- Process results for single Thai view ---
-const processResultsSingle = (results: SessionResult[], todayStr: string): SingleThaiRow[] => {
+const processResultsSingle = (results: SessionResult[]): SingleThaiRow[] => {
   const byDate: Record<string, { lunarLabel?: string; results: Record<string, SlotData> }> = {};
 
   results.forEach(r => {
@@ -51,8 +51,6 @@ const processResultsSingle = (results: SessionResult[], todayStr: string): Singl
     };
   });
 
-  // Ensure today exists (for displaying today's row even with no data)
-  if (!byDate[todayStr]) byDate[todayStr] = { results: {} };
 
   return Object.entries(byDate)
     .map(([date, data]) => ({
@@ -64,7 +62,7 @@ const processResultsSingle = (results: SessionResult[], todayStr: string): Singl
 };
 
 // --- Process results for All Thai view ---
-const processResultsAll = (results: SessionResult[], todayStr: string): AllThaiRow[] => {
+const processResultsAll = (results: SessionResult[]): AllThaiRow[] => {
   const byDate: Record<string, { lunarLabel?: string; thaiResults: Record<string, Record<string, SlotData>> }> = {};
 
   results.forEach(r => {
@@ -80,8 +78,6 @@ const processResultsAll = (results: SessionResult[], todayStr: string): AllThaiR
     };
   });
 
-  // Ensure today exists
-  if (!byDate[todayStr]) byDate[todayStr] = { thaiResults: {} };
 
   return Object.entries(byDate)
     .map(([date, data]) => ({
@@ -132,11 +128,11 @@ const KetQuaPage: React.FC = () => {
       setLoading(true);
       if (selectedThai === 'all') {
         const data = await getSessionResults({ year: selectedYear, limit: 100 });
-        setAllResults(processResultsAll(data.results || [], todayStr));
+        setAllResults(processResultsAll(data.results || []));
         return data.results || [];
       } else {
         const data = await getSessionResults({ thaiId: selectedThai, year: selectedYear, limit: 50 });
-        setSingleResults(processResultsSingle(data.results || [], todayStr));
+        setSingleResults(processResultsSingle(data.results || []));
         return data.results || [];
       }
     } catch (err) {
@@ -145,7 +141,7 @@ const KetQuaPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedThai, selectedYear, todayStr]);
+  }, [selectedThai, selectedYear]);
 
   // Initial fetch + auto-refetch when pending draw_time passes
   useEffect(() => {

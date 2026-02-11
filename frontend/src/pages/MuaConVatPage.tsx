@@ -57,6 +57,13 @@ const MuaConVatPage: React.FC = () => {
         }
     }, [isSystemActive, logout, navigate]);
 
+    // LỖI 6 FIX: Time tick every 30s to auto-refresh session status
+    const [now, setNow] = useState(() => Date.now());
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 30_000);
+        return () => clearInterval(timer);
+    }, []);
+
     // Sử dụng SocialTaskContext để kiểm tra nhiệm vụ
     const { tasks, completeTask, allTasksCompleted } = useSocialTasks();
     const hasLikedShared = allTasksCompleted;
@@ -76,19 +83,20 @@ const MuaConVatPage: React.FC = () => {
         if (!thaiConfig) return null;
 
         return getSessionStatus(thaiId, thaiConfig.timeSlots, thaiConfig.isTetMode, thaiConfig.tetTimeSlot);
-    }, [selectedThai, thais]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedThai, thais, now]); // 'now' triggers re-evaluation every 30s
 
     // Check if session is open for adding to cart
     const isSessionOpen = currentSessionInfo?.isOpen ?? false;
 
-    // Fetch session animals to check sold out status (with 15s polling)
+    // Fetch session animals to check sold out status (with 15s polling, only when session is open)
     useEffect(() => {
-        const fetchSessionAnimals = async () => {
-            if (!selectedThai) {
-                setSoldOutAnimals(new Set());
-                return;
-            }
+        if (!selectedThai || !isSessionOpen) {
+            setSoldOutAnimals(new Set());
+            return;
+        }
 
+        const fetchSessionAnimals = async () => {
             try {
                 const { session } = await getCurrentSession(selectedThai);
                 if (session?.id) {
@@ -113,7 +121,7 @@ const MuaConVatPage: React.FC = () => {
         // Poll every 15 seconds for near-realtime updates
         const interval = setInterval(fetchSessionAnimals, 15000);
         return () => clearInterval(interval);
-    }, [selectedThai]);
+    }, [selectedThai, isSessionOpen]);
 
 
     // Lọc danh sách con vật dựa theo Thai được chọn
@@ -157,6 +165,7 @@ const MuaConVatPage: React.FC = () => {
         if (amount < MIN_AMOUNT) return;
         if (!currentThaiOption) return; // Cần chọn Thai trước
         if (!isSessionOpen) return; // Session phải đang mở
+        if (!isThaiOpen(selectedThai!)) return; // Thai switch phải đang bật
 
         const thaiId = `thai-${selectedThai}`;
         const thaiName = currentThaiOption.name;
@@ -205,6 +214,12 @@ const MuaConVatPage: React.FC = () => {
     // ========== CHECKOUT ==========
     const handleCheckout = async () => {
         if (cart.length === 0 || isCheckingOut) return;
+
+        // Re-validate switches at checkout time (defense-in-depth)
+        if (!isSessionOpen || (selectedThai && !isThaiOpen(selectedThai))) {
+            alert('Thai này đã đóng. Không thể đặt hàng.');
+            return;
+        }
 
         setIsCheckingOut(true);
         setCheckoutError(null);

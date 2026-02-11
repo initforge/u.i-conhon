@@ -22,47 +22,43 @@ router.get('/posts', async (req, res) => {
         let paramIndex = 1;
 
         if (thai_id) {
-            baseWhere += ` AND thai_id = $${paramIndex}`;
+            baseWhere += ` AND p.thai_id = $${paramIndex}`;
             params.push(thai_id);
             paramIndex++;
         }
 
         // Get total count
         const countResult = await db.query(
-            `SELECT COUNT(*) FROM community_posts ${baseWhere}`,
+            `SELECT COUNT(*) FROM community_posts p ${baseWhere}`,
             params
         );
         const total = parseInt(countResult.rows[0].count);
 
-        // Get paginated data
+        // Get paginated data with comments included (single query, no N+1)
         const dataParams = [...params, parseInt(limit), offset];
         const result = await db.query(
-            `SELECT id, thai_id, youtube_id, title, content, like_count, is_pinned, created_at
-             FROM community_posts
+            `SELECT p.id, p.thai_id, p.youtube_id, p.title, p.content, 
+                    p.like_count, p.is_pinned, p.created_at,
+                    COALESCE(
+                      (SELECT json_agg(sub.*)
+                       FROM (
+                         SELECT c.id, c.user_name, c.content, c.created_at
+                         FROM community_comments c 
+                         WHERE c.post_id = p.id
+                         ORDER BY c.created_at ASC
+                         LIMIT 50
+                       ) sub),
+                      '[]'::json
+                    ) as comments
+             FROM community_posts p
              ${baseWhere}
-             ORDER BY is_pinned DESC, created_at DESC
+             ORDER BY p.is_pinned DESC, p.created_at DESC
              LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
             dataParams
         );
 
-        // Enrich posts with comments
-        const posts = await Promise.all(result.rows.map(async (post) => {
-            const commentsResult = await db.query(
-                `SELECT id, user_name, content, created_at
-                 FROM community_comments 
-                 WHERE post_id = $1
-                 ORDER BY created_at ASC
-                 LIMIT 50`,
-                [post.id]
-            );
-            return {
-                ...post,
-                comments: commentsResult.rows
-            };
-        }));
-
         res.json({
-            posts,
+            posts: result.rows,
             total,
             page: parseInt(page),
             limit: parseInt(limit),

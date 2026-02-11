@@ -5,11 +5,13 @@
 
 const jwt = require('jsonwebtoken');
 const db = require('../services/database');
+const { cache } = require('../services/redis');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 /**
  * Verify JWT token and attach user to request
+ * Uses Redis cache (60s TTL) to reduce DB load at scale
  */
 const authenticate = async (req, res, next) => {
     try {
@@ -21,17 +23,26 @@ const authenticate = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        // Get user from database
-        const result = await db.query(
-            'SELECT id, phone, name, role, completed_tasks FROM users WHERE id = $1',
-            [decoded.userId]
-        );
+        const cacheKey = `auth_user:${decoded.userId}`;
 
-        if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'User không tồn tại' });
+        // Try cache first
+        let user = await cache.get(cacheKey);
+        if (!user) {
+            // Cache miss → query DB
+            const result = await db.query(
+                'SELECT id, phone, name, role, completed_tasks FROM users WHERE id = $1',
+                [decoded.userId]
+            );
+
+            if (result.rows.length === 0) {
+                return res.status(401).json({ error: 'User không tồn tại' });
+            }
+
+            user = result.rows[0];
+            await cache.set(cacheKey, user, 60);
         }
 
-        req.user = result.rows[0];
+        req.user = user;
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
@@ -39,6 +50,13 @@ const authenticate = async (req, res, next) => {
         }
         return res.status(401).json({ error: 'Token không hợp lệ' });
     }
+};
+
+/**
+ * Invalidate auth cache for a user — call after ANY user data change
+ */
+const invalidateUserCache = async (userId) => {
+    await cache.del(`auth_user:${userId}`);
 };
 
 /**
@@ -72,6 +90,7 @@ const requireMXHCompleted = (req, res, next) => {
 
 module.exports = {
     authenticate,
+    invalidateUserCache,
     requireAdmin,
     requireMXHCompleted
 };

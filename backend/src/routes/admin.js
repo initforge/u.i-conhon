@@ -5,7 +5,7 @@
 
 const express = require('express');
 const db = require('../services/database');
-const { authenticate, requireAdmin } = require('../middleware/auth');
+const { authenticate, requireAdmin, invalidateUserCache } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -55,7 +55,7 @@ router.get('/stats', async (req, res) => {
             pIdx++;
         }
         if (date) {
-            sessionFilters.push(`o.created_at::date = $${pIdx}`);
+            sessionFilters.push(`s.session_date = $${pIdx}`);
             sessionParams.push(date);
             pIdx++;
         }
@@ -96,7 +96,7 @@ router.get('/stats', async (req, res) => {
             sessionParams
         );
 
-        // Top 5 animals (most bought, filtered)
+        // Top 5 animals (most bought by amount, filtered)
         const topAnimalsResult = await db.query(
             `SELECT oi.animal_order, SUM(oi.quantity)::int as total_qty, SUM(oi.subtotal)::int as total_amount
              FROM order_items oi
@@ -104,11 +104,11 @@ router.get('/stats', async (req, res) => {
              JOIN sessions s ON o.session_id = s.id
              WHERE o.status IN ('paid', 'won', 'lost')
                ${sessionWhereClause}
-             GROUP BY oi.animal_order ORDER BY total_qty DESC LIMIT 5`,
+             GROUP BY oi.animal_order ORDER BY total_amount DESC LIMIT 5`,
             sessionParams
         );
 
-        // Bottom 5 animals (least bought, filtered)
+        // Bottom 5 animals (least bought by amount, filtered)
         const bottomAnimalsResult = await db.query(
             `SELECT oi.animal_order, SUM(oi.quantity)::int as total_qty, SUM(oi.subtotal)::int as total_amount
              FROM order_items oi
@@ -116,7 +116,7 @@ router.get('/stats', async (req, res) => {
              JOIN sessions s ON o.session_id = s.id
              WHERE o.status IN ('paid', 'won', 'lost')
                ${sessionWhereClause}
-             GROUP BY oi.animal_order ORDER BY total_qty ASC LIMIT 5`,
+             GROUP BY oi.animal_order ORDER BY total_amount ASC LIMIT 5`,
             sessionParams
         );
 
@@ -158,7 +158,7 @@ router.get('/stats/animals-all', async (req, res) => {
             pIdx++;
         }
         if (date) {
-            filters.push(`o.created_at::date = $${pIdx}`);
+            filters.push(`s.session_date = $${pIdx}`);
             params.push(date);
             pIdx++;
         }
@@ -218,7 +218,7 @@ router.get('/stats/animal-orders', async (req, res) => {
             pIdx++;
         }
         if (date) {
-            filters.push(`o.created_at::date = $${pIdx}`);
+            filters.push(`s.session_date = $${pIdx}`);
             params.push(date);
             pIdx++;
         }
@@ -257,55 +257,6 @@ router.get('/stats/animal-orders', async (req, res) => {
     }
 });
 
-// ================================================
-// Lunar Dates (global per-day lunar label)
-// ================================================
-
-/**
- * GET /admin/lunar-date/:date - Get lunar label for a date
- */
-router.get('/lunar-date/:date', async (req, res) => {
-    try {
-        const result = await db.query(
-            'SELECT lunar_label FROM lunar_dates WHERE date = $1',
-            [req.params.date]
-        );
-        res.json({ lunar_label: result.rows[0]?.lunar_label || '' });
-    } catch (error) {
-        console.error('Get lunar date error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
-    }
-});
-
-/**
- * PUT /admin/lunar-date - Set lunar label for a date (all Thais, all khung)
- */
-router.put('/lunar-date', async (req, res) => {
-    try {
-        const { date, lunar_label } = req.body;
-        if (!date || !lunar_label) {
-            return res.status(400).json({ error: 'Cần ngày và nhãn âm lịch' });
-        }
-
-        await db.query(
-            `INSERT INTO lunar_dates (date, lunar_label, updated_at)
-             VALUES ($1, $2, NOW())
-             ON CONFLICT (date) DO UPDATE SET lunar_label = $2, updated_at = NOW()`,
-            [date, lunar_label]
-        );
-
-        // Also sync to all sessions on that date (backward compat)
-        await db.query(
-            `UPDATE sessions SET lunar_label = $1 WHERE session_date = $2`,
-            [lunar_label, date]
-        );
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Set lunar date error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
-    }
-});
 
 // ================================================
 // 6.2 Session Animals Management
@@ -342,7 +293,7 @@ router.get('/sessions', async (req, res) => {
         params.push(parseInt(limit));
         const result = await db.query(
             `SELECT id, thai_id, session_type, session_date, status, 
-                    winning_animal, lunar_label, created_at
+                    winning_animal, created_at
              FROM sessions 
              ${whereClause}
              ORDER BY session_date DESC, created_at DESC
@@ -370,10 +321,27 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
         // Map khung index to session_type
         const SLOT_SESSION_TYPES = ['morning', 'afternoon', 'evening'];
         let sessionType;
+        let sessionDate;
+
+        // Always use getCurrentSessionType for cross-day awareness
+        const { getCurrentSessionType } = require('./session');
 
         if (khung !== undefined && khung !== null) {
             const khungIdx = parseInt(khung);
             sessionType = SLOT_SESSION_TYPES[khungIdx] || 'morning';
+
+            // Use getCurrentSessionType to get correct date (handles cross-day slots)
+            // e.g. morning slot 17:30→10:30: at 00:24 on Feb 11, session belongs to Feb 10
+            const sessionInfo = await getCurrentSessionType(thai_id);
+            if (sessionInfo && sessionInfo.sessionType === sessionType) {
+                // Current time is in the requested slot → use its date (may be yesterday for cross-day)
+                sessionDate = sessionInfo.sessionDate;
+            } else {
+                // Admin picked a slot that is NOT the current active one → use today
+                const now = new Date();
+                const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+                sessionDate = `${vnTime.getFullYear()}-${String(vnTime.getMonth() + 1).padStart(2, '0')}-${String(vnTime.getDate()).padStart(2, '0')}`;
+            }
         } else {
             // Fallback: auto-detect from current time
             const { getCurrentSessionType } = require('./session');
@@ -381,40 +349,30 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
             sessionType = sessionInfo?.sessionType || 'morning';
         }
 
-        // Query for existing session of this type today (ANY status - admin can access anytime)
+        // Query for existing session of this type on sessionDate (ANY status - admin can access anytime)
+        // FIX: Use sa.sold_amount directly (same source as order.js limit check)
+        // This ensures admin panel shows the SAME remaining quota as what customers see
         let result = await db.query(
             `SELECT s.*, 
               json_agg(json_build_object(
                 'animal_order', sa.animal_order,
                 'limit_amount', sa.limit_amount,
-                'sold_amount', COALESCE(paid.paid_amount, 0),
+                'sold_amount', sa.sold_amount,
                 'is_banned', sa.is_banned,
                 'ban_reason', sa.ban_reason
               ) ORDER BY sa.animal_order) as animals
        FROM sessions s
        LEFT JOIN session_animals sa ON s.id = sa.session_id
-       LEFT JOIN (
-         SELECT oi.animal_order, SUM(oi.subtotal) as paid_amount
-         FROM order_items oi
-         JOIN orders o ON oi.order_id = o.id
-         WHERE o.session_id = (
-           SELECT id FROM sessions 
-           WHERE thai_id = $1
-             AND session_date = CURRENT_DATE AND session_type = $2
-           LIMIT 1
-         ) AND o.status = 'paid'
-         GROUP BY oi.animal_order
-       ) paid ON sa.animal_order = paid.animal_order
        WHERE s.thai_id = $1
-         AND s.session_date = CURRENT_DATE AND s.session_type = $2
+         AND s.session_date = $3 AND s.session_type = $2
        GROUP BY s.id
        LIMIT 1`,
-            [thai_id, sessionType]
+            [thai_id, sessionType, sessionDate]
         );
 
         // Auto-create session if none exists
         if (result.rows.length === 0) {
-            console.log(`🔄 Admin: Auto-creating session: ${thai_id} / ${sessionType} / today`);
+            console.log(`🔄 Admin: Auto-creating session: ${thai_id} / ${sessionType} / ${sessionDate}`);
             const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
 
             const client = await db.getClient();
@@ -422,10 +380,10 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                 await client.query('BEGIN');
                 const insertResult = await client.query(
                     `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
-                     VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, 'open', NOW())
+                     VALUES (gen_random_uuid(), $1, $2, $3, 'open', NOW())
                      ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
                      RETURNING id`,
-                    [thai_id, sessionType]
+                    [thai_id, sessionType, sessionDate]
                 );
 
                 if (insertResult.rows.length > 0) {
@@ -445,7 +403,7 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                 client.release();
             }
 
-            // Re-query (no status filter)
+            // Re-query
             result = await db.query(
                 `SELECT s.*, 
                   json_agg(json_build_object(
@@ -458,10 +416,10 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
                FROM sessions s
                LEFT JOIN session_animals sa ON s.id = sa.session_id
                WHERE s.thai_id = $1
-                 AND s.session_date = CURRENT_DATE AND s.session_type = $2
+                 AND s.session_date = $3 AND s.session_type = $2
                GROUP BY s.id
                LIMIT 1`,
-                [thai_id, sessionType]
+                [thai_id, sessionType, sessionDate]
             );
         }
 
@@ -517,7 +475,7 @@ router.get('/orders', async (req, res) => {
         let paramIndex = 1;
 
         if (date) {
-            baseWhere += ` AND o.created_at::date = $${paramIndex}`;
+            baseWhere += ` AND s.session_date = $${paramIndex}`;
             params.push(date);
             paramIndex++;
         }
@@ -589,7 +547,7 @@ router.get('/orders/:id', async (req, res) => {
             `SELECT o.*, 
               u.name as user_name, u.phone as user_phone, u.zalo,
               u.bank_code, u.bank_account, u.bank_holder,
-              s.thai_id, s.session_type, s.session_date, s.lunar_label
+              s.thai_id, s.session_type, s.session_date
        FROM orders o
        JOIN users u ON o.user_id = u.id
        JOIN sessions s ON o.session_id = s.id
@@ -665,7 +623,7 @@ router.get('/sessions/results', async (req, res) => {
         params.push(parseInt(limit));
         const result = await db.query(
             `SELECT id, thai_id, session_type, session_date, 
-                    winning_animal, lunar_label, status
+                    winning_animal, status
              FROM sessions 
              ${whereClause}
              ORDER BY session_date DESC, created_at DESC
@@ -733,7 +691,7 @@ router.post('/sessions/:id/result', async (req, res) => {
 
     try {
         const { id } = req.params;
-        const { winning_animal, lunar_label, is_holiday } = req.body;
+        const { winning_animal, is_holiday } = req.body;
 
         await client.query('BEGIN');
 
@@ -757,16 +715,16 @@ router.post('/sessions/:id/result', async (req, res) => {
         if (is_holiday) {
             // Holiday - no lottery, explicitly clear winning_animal
             await client.query(
-                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, lunar_label = $1, draw_time = $2 WHERE id = $3`,
-                [lunar_label, drawTime, id]
+                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, draw_time = $1 WHERE id = $2`,
+                [drawTime, id]
             );
         } else {
             // Set winning animal
             await client.query(
                 `UPDATE sessions 
-         SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
-         WHERE id = $4`,
-                [winning_animal, lunar_label, drawTime, id]
+         SET status = 'resulted', winning_animal = $1, draw_time = $2
+         WHERE id = $3`,
+                [winning_animal, drawTime, id]
             );
 
             // RESET: Revert any existing won/lost back to 'paid' before re-calculating
@@ -795,13 +753,13 @@ router.post('/sessions/:id/result', async (req, res) => {
             );
         }
 
-        // Sync lunar_label to all sessions of same thai_id + date
-        if (lunar_label && sessionInfo.rows.length > 0) {
-            const { thai_id, session_date } = sessionInfo.rows[0];
+        // Auto-close other open sessions for this Thai
+        if (sessionInfo.rows.length > 0) {
+            const { thai_id } = sessionInfo.rows[0];
             await client.query(
-                `UPDATE sessions SET lunar_label = $1
-                 WHERE thai_id = $2 AND session_date = $3 AND id != $4`,
-                [lunar_label, thai_id, session_date, id]
+                `UPDATE sessions SET status = 'closed'
+                 WHERE thai_id = $1 AND status = 'open' AND id != $2`,
+                [thai_id, id]
             );
         }
 
@@ -848,7 +806,7 @@ router.get('/day-slots', async (req, res) => {
 
         // Fetch existing sessions for this thai + date
         const sessionsResult = await db.query(
-            `SELECT id, session_type, status, winning_animal, lunar_label
+            `SELECT id, session_type, status, winning_animal
              FROM sessions
              WHERE thai_id = $1 AND session_date = $2
              ORDER BY created_at`,
@@ -858,13 +816,6 @@ router.get('/day-slots', async (req, res) => {
         sessionsResult.rows.forEach(s => {
             sessionsMap[s.session_type] = s;
         });
-
-        // Fetch lunar_label from lunar_dates table
-        const lunarResult = await db.query(
-            'SELECT lunar_label FROM lunar_dates WHERE date = $1',
-            [date]
-        );
-        const lunar_label = lunarResult.rows[0]?.lunar_label || '';
 
         // Build slot responses
         const slots = slotDefs.map(def => {
@@ -879,7 +830,7 @@ router.get('/day-slots', async (req, res) => {
             };
         });
 
-        res.json({ slots, lunar_label });
+        res.json({ slots });
     } catch (error) {
         console.error('Get day slots error:', error);
         res.status(500).json({ error: 'Không thể lấy thông tin khung giờ' });
@@ -895,8 +846,8 @@ router.post('/results', async (req, res) => {
     const client = await db.getClient();
 
     try {
-        const { thai_id, date, slot_label, winning_animal, lunar_label, is_holiday } = req.body;
-        console.log('📝 POST /admin/results received:', { thai_id, date, slot_label, winning_animal, lunar_label, is_holiday });
+        const { thai_id, date, slot_label, winning_animal, is_holiday } = req.body;
+        console.log('📝 POST /admin/results received:', { thai_id, date, slot_label, winning_animal, is_holiday });
 
         // Validate required fields
         if (!thai_id || !date || !slot_label) {
@@ -958,15 +909,15 @@ router.post('/results', async (req, res) => {
         // Update the session with result
         if (is_holiday) {
             await client.query(
-                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, lunar_label = $1, draw_time = $2 WHERE id = $3`,
-                [lunar_label, drawTime, sessionId]
+                `UPDATE sessions SET status = 'resulted', winning_animal = NULL, draw_time = $1 WHERE id = $2`,
+                [drawTime, sessionId]
             );
         } else {
             await client.query(
                 `UPDATE sessions 
-                 SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
-                 WHERE id = $4`,
-                [winning_animal, lunar_label, drawTime, sessionId]
+                 SET status = 'resulted', winning_animal = $1, draw_time = $2
+                 WHERE id = $3`,
+                [winning_animal, drawTime, sessionId]
             );
 
             // RESET: Revert any existing won/lost back to 'paid' before re-calculating
@@ -995,14 +946,12 @@ router.post('/results', async (req, res) => {
             );
         }
 
-        // Sync lunar_label to all sessions of same thai_id + date
-        if (lunar_label) {
-            await client.query(
-                `UPDATE sessions SET lunar_label = $1
-                 WHERE thai_id = $2 AND session_date = $3 AND id != $4`,
-                [lunar_label, thai_id, date, sessionId]
-            );
-        }
+        // Auto-close other open sessions for this Thai
+        await client.query(
+            `UPDATE sessions SET status = 'closed'
+             WHERE thai_id = $1 AND status = 'open' AND id != $2`,
+            [thai_id, sessionId]
+        );
 
         await client.query('COMMIT');
         res.json({ success: true, session_id: sessionId });
@@ -1073,7 +1022,7 @@ router.get('/users', async (req, res) => {
         const { search, page = 1, limit = 50 } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
-        let baseWhere = "WHERE role = 'user'";
+        let baseWhere = "WHERE role = 'user' AND (is_deleted = false OR is_deleted IS NULL)";
         const params = [];
         let paramIndex = 1;
 
@@ -1107,7 +1056,7 @@ router.get('/users', async (req, res) => {
         // Aggregate stats for stat cards (global, not page-specific)
         const aggregateResult = await db.query(
             `SELECT
-                (SELECT COUNT(*) FROM users WHERE role = 'user')::int as total_users,
+                (SELECT COUNT(*) FROM users WHERE role = 'user' AND (is_deleted = false OR is_deleted IS NULL))::int as total_users,
                 (SELECT COUNT(DISTINCT user_id) FROM orders WHERE status IN ('paid', 'won', 'lost'))::int as users_with_orders,
                 (SELECT COUNT(*) FROM orders WHERE status IN ('paid', 'won', 'lost'))::int as total_orders`
         );
@@ -1188,6 +1137,7 @@ router.patch('/users/:id', async (req, res) => {
             params
         );
 
+        await invalidateUserCache(id);
         res.json({ success: true });
     } catch (error) {
         console.error('Update user error:', error);
@@ -1202,18 +1152,29 @@ router.delete('/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check if user has orders
-        const ordersCheck = await db.query(
-            'SELECT COUNT(*) as count FROM orders WHERE user_id = $1',
+        // Verify user exists and is a regular user (not admin)
+        const userCheck = await db.query(
+            'SELECT id, role, is_deleted FROM users WHERE id = $1',
+            [id]
+        );
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Người dùng không tồn tại' });
+        }
+        if (userCheck.rows[0].role !== 'user') {
+            return res.status(403).json({ error: 'Không thể xóa tài khoản admin' });
+        }
+        if (userCheck.rows[0].is_deleted) {
+            return res.status(400).json({ error: 'Người dùng đã bị xóa trước đó' });
+        }
+
+        // Soft delete: mark as deleted instead of removing from DB
+        // Preserves order history and stats
+        await db.query(
+            'UPDATE users SET is_deleted = true, deleted_at = NOW() WHERE id = $1',
             [id]
         );
 
-        if (parseInt(ordersCheck.rows[0].count) > 0) {
-            // Soft delete - just mark as deleted or deactivate
-            // For now, we still delete but could add is_deleted flag later
-        }
-
-        await db.query('DELETE FROM users WHERE id = $1 AND role = $2', [id, 'user']);
+        await invalidateUserCache(id);
         res.json({ success: true });
     } catch (error) {
         console.error('Delete user error:', error);
@@ -1307,6 +1268,7 @@ router.patch('/community/comments/:id/ban', async (req, res) => {
             'UPDATE users SET is_comment_banned = NOT is_comment_banned WHERE id = $1 RETURNING is_comment_banned, name, phone',
             [userId]
         );
+        await invalidateUserCache(userId);
 
         // If user is now banned, delete all their comments
         let deletedCount = 0;
@@ -1401,6 +1363,9 @@ router.patch('/community/comments/bulk-ban', async (req, res) => {
             [userIds]
         );
 
+        // Invalidate cache for all affected users
+        await Promise.all(userIds.map(id => invalidateUserCache(id)));
+
         res.json({
             success: true,
             bannedUsers: userIds.length,
@@ -1434,7 +1399,8 @@ router.get('/community/banned-users', async (req, res) => {
 router.patch('/community/users/:phone/unban', async (req, res) => {
     const { phone } = req.params;
     try {
-        await db.query('UPDATE users SET is_comment_banned = false WHERE phone = $1', [phone]);
+        const result = await db.query('UPDATE users SET is_comment_banned = false WHERE phone = $1 RETURNING id', [phone]);
+        if (result.rows[0]) await invalidateUserCache(result.rows[0].id);
         res.json({ success: true });
     } catch (error) {
         console.error('Error unbanning user:', error);

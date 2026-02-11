@@ -497,17 +497,8 @@ export interface AdminSession {
     closes_at: string;
 }
 
-// Lunar dates (global per-day)
-export async function getLunarDate(date: string) {
-    return apiRequest<{ lunar_label: string }>(`/admin/lunar-date/${date}`);
-}
 
-export async function setLunarDate(date: string, lunar_label: string) {
-    return apiRequest<{ success: boolean }>('/admin/lunar-date', {
-        method: 'PUT',
-        body: JSON.stringify({ date, lunar_label }),
-    });
-}
+
 
 export async function getAdminSessions(options?: { thai_id?: string; date?: string; status?: string }) {
     const params = new URLSearchParams();
@@ -519,7 +510,6 @@ export async function getAdminSessions(options?: { thai_id?: string; date?: stri
 
 export async function setSessionResult(sessionId: string, data: {
     winning_animal?: number;
-    lunar_label?: string;
     is_holiday?: boolean;
 }) {
     return apiRequest<{ success: boolean }>(`/admin/sessions/${sessionId}/result`, {
@@ -534,7 +524,6 @@ export async function submitLotteryResult(data: {
     date: string;
     slot_label: string;
     winning_animal?: number;
-    lunar_label?: string;
     is_holiday?: boolean;
 }) {
     return apiRequest<{ success: boolean; session_id: string }>(`/admin/results`, {
@@ -832,7 +821,6 @@ export interface DaySlot {
 
 export interface DaySlotsResponse {
     slots: DaySlot[];
-    lunar_label: string;
 }
 
 export async function getAdminDaySlots(thaiId: string, date: string) {

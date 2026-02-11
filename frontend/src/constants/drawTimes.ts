@@ -61,7 +61,9 @@ export function getEndTimeValidationError(thaiId: string, slotIndex: number, end
  */
 export function getSessionStatus(thaiId: string, timeSlots: { startTime: string; endTime: string }[], isTetMode: boolean = false, tetTimeSlot?: { startTime: string; endTime: string }) {
     const now = new Date();
-    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    // LỖI 3 FIX: Always use Vietnam timezone, not client's local timezone
+    const vnTime = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false, hour: '2-digit', minute: '2-digit' });
+    const currentTime = vnTime; // Format: "HH:MM"
 
     // Build effective slots: first 2 + optional Tet slot
     const effectiveSlots = timeSlots.slice(0, 2);

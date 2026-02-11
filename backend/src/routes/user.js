@@ -5,7 +5,7 @@
 
 const express = require('express');
 const db = require('../services/database');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, invalidateUserCache } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -31,6 +31,7 @@ router.patch('/me', async (req, res) => {
             [name, zalo, bank_code, bank_account, bank_holder, req.user.id]
         );
 
+        await invalidateUserCache(req.user.id);
         res.json({ user: result.rows[0] });
     } catch (error) {
         console.error('Update profile error:', error);
@@ -79,6 +80,8 @@ router.post('/complete-task', async (req, res) => {
             'SELECT completed_tasks FROM users WHERE id = $1',
             [req.user.id]
         );
+
+        await invalidateUserCache(req.user.id);
 
         res.json({
             completed_tasks: updated.rows[0].completed_tasks,

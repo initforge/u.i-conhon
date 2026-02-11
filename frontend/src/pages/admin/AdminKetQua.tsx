@@ -3,7 +3,7 @@ import { THAIS, KetQua, getAnimalsByThai } from '../../types';
 import { useThaiConfig } from '../../contexts/ThaiConfigContext';
 import AdminPageWrapper, { AdminCard, AdminButton } from '../../components/AdminPageWrapper';
 import { getAvailableYears } from '../../utils/yearUtils';
-import { ProfitLossData, getResultsHistory, deleteSessionResult, LotteryResult, submitLotteryResult, getAdminYearlyProfitLoss, setLunarDate, getAdminDaySlots, DaySlot } from '../../services/api';
+import { ProfitLossData, getResultsHistory, deleteSessionResult, LotteryResult, submitLotteryResult, getAdminYearlyProfitLoss, getAdminDaySlots, DaySlot } from '../../services/api';
 
 // Mapping bộ phận cá thể cho An Nhơn / Nhơn Phong (theo đồ hình nhơn)
 const bodyPartMapping: Record<number, { bodyPart: string; column: string }> = {
@@ -75,7 +75,6 @@ const AdminKetQua: React.FC = () => {
   const [formData, setFormData] = useState({
     thaiId: THAIS[0]?.id || '',
     date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
-    lunarLabel: '',
     winningAnimalIds: [] as string[],
     imageUrl: '',
     isOff: false,
@@ -167,10 +166,6 @@ const AdminKetQua: React.FC = () => {
       const thaiId = thaiTabs.find(t => t.id === selectedThai)?.thaiId || 'thai-an-nhon';
       const res = await getAdminDaySlots(thaiId, formData.date);
       setDaySlots(res.slots || []);
-      // Auto-fill lunar label from API
-      if (res.lunar_label) {
-        setFormData(prev => ({ ...prev, lunarLabel: res.lunar_label }));
-      }
     } catch (error) {
       console.error('Failed to fetch day slots:', error);
       setDaySlots([]);
@@ -220,7 +215,6 @@ const AdminKetQua: React.FC = () => {
         date: formData.date,
         slot_label: selectedSlot.label,
         winning_animal: formData.isOff ? undefined : winningAnimal,
-        lunar_label: formData.lunarLabel || undefined,
         is_holiday: formData.isOff,
       });
 
@@ -250,7 +244,6 @@ const AdminKetQua: React.FC = () => {
     setFormData({
       thaiId: kq.thaiId,
       date: kq.date,
-      lunarLabel: (kq as { lunarLabel?: string }).lunarLabel || '',
       winningAnimalIds: kq.winningAnimalIds,
       imageUrl: kq.imageUrl || '',
       isOff: kq.isOff || false,
@@ -258,12 +251,14 @@ const AdminKetQua: React.FC = () => {
   };
 
   const deleteKetQua = async (id: string) => {
-    if (confirm('Bạn có chắc muốn xóa kết quả này? Session sẽ bị xóa khỏi DB.')) {
+    if (confirm('Xóa kết quả này?\n\n• Nếu có đơn đã thanh toán: chỉ xóa kết quả (giữ đơn hàng)\n• Nếu không có đơn: xóa toàn bộ session')) {
       try {
-        await deleteSessionResult(id);
+        const result = await deleteSessionResult(id);
         // Refetch both daySlots and history to sync UI
         await Promise.all([fetchDaySlots(), fetchResultsHistory()]);
-        alert('Đã xóa kết quả thành công!');
+        // Show appropriate message based on soft/hard delete
+        const msg = (result as any)?.message || 'Đã xóa kết quả thành công!';
+        alert(msg);
       } catch (error) {
         console.error('Failed to delete result:', error);
         alert('Không thể xóa kết quả. Vui lòng thử lại!');
@@ -395,22 +390,6 @@ const AdminKetQua: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
                   style={{ border: '1px solid #e8e4df' }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: '#6b5c4c' }}>🌙 Âm lịch</label>
-                <input
-                  type="text"
-                  value={formData.lunarLabel}
-                  onChange={(e) => setFormData({ ...formData, lunarLabel: e.target.value })}
-                  onBlur={() => {
-                    if (formData.lunarLabel.trim() && formData.date) {
-                      setLunarDate(formData.date, formData.lunarLabel.trim()).catch(console.error);
-                    }
-                  }}
-                  placeholder="Mùng 3, 25 tháng Chạp..."
-                  className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
-                  style={{ border: '1px solid #e8e4df', backgroundColor: '#fffbeb' }}
                 />
               </div>
             </div>

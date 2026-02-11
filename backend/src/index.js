@@ -158,12 +158,22 @@ app.listen(PORT, () => {
     // Initialize Redis
     initRedis();
 
+    // Auto-migration: Add soft delete columns to users table
+    const db = require('./services/database');
+    db.query(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    `).then(() => {
+        console.log('✅ Database migration: is_deleted columns ready');
+    }).catch((migrationError) => {
+        console.error('Migration error (non-fatal):', migrationError.message);
+    });
+
     // ================================================
     // Expired Order Cleanup (runs every 60 seconds)
     // Finds pending orders past payment_expires, sets to 'expired',
     // rolls back sold_amount for each order item.
     // ================================================
-    const { rollbackOrderLimits } = require('./routes/webhook');
     const { cache } = require('./services/redis');
     const { cancelPaymentLink } = require('./services/payos');
 
@@ -180,24 +190,62 @@ app.listen(PORT, () => {
             console.log(`🧹 Cleaning up ${expiredOrders.rows.length} expired orders`);
 
             for (const order of expiredOrders.rows) {
-                // Cancel PayOS link first (prevents late payment)
-                if (order.payment_code) {
-                    await cancelPaymentLink(order.payment_code);
-                }
+                const client = await db.getClient();
+                try {
+                    await client.query('BEGIN');
 
-                await db.query(
-                    `UPDATE orders SET status = 'expired' WHERE id = $1`,
-                    [order.id]
-                );
-                await rollbackOrderLimits(order.id);
+                    // Lock order row — if webhook already processed it, skip
+                    const locked = await client.query(
+                        `SELECT id, status, session_id FROM orders WHERE id = $1 FOR UPDATE`,
+                        [order.id]
+                    );
+                    if (locked.rows.length === 0 || locked.rows[0].status !== 'pending') {
+                        await client.query('ROLLBACK');
+                        continue; // Webhook hoặc user cancel đã xử lý rồi
+                    }
 
-                // Invalidate cache for the session
-                if (order.session_id) {
-                    await cache.del(`session_animals:${order.session_id}`);
+                    // Cancel PayOS link (external, non-fatal)
+                    if (order.payment_code) {
+                        try { await cancelPaymentLink(order.payment_code); } catch (e) {
+                            console.warn('Cancel PayOS expired link failed:', e.message);
+                        }
+                    }
+
+                    await client.query(
+                        `UPDATE orders SET status = 'expired' WHERE id = $1`,
+                        [order.id]
+                    );
+
+                    // Rollback sold_amount within same transaction
+                    const itemsResult = await client.query(
+                        `SELECT animal_order, subtotal FROM order_items WHERE order_id = $1`,
+                        [order.id]
+                    );
+                    const sessionId = locked.rows[0].session_id;
+                    for (const item of itemsResult.rows) {
+                        await client.query(
+                            `UPDATE session_animals 
+                             SET sold_amount = GREATEST(sold_amount - $1, 0)
+                             WHERE session_id = $2 AND animal_order = $3`,
+                            [item.subtotal, sessionId, item.animal_order]
+                        );
+                    }
+
+                    await client.query('COMMIT');
+
+                    // Invalidate cache after commit
+                    if (sessionId) {
+                        await cache.del(`session_animals:${sessionId}`);
+                    }
+                } catch (err) {
+                    await client.query('ROLLBACK');
+                    console.error('Expire order error:', order.id, err.message);
+                } finally {
+                    client.release();
                 }
             }
 
-            console.log(`✅ Expired ${expiredOrders.rows.length} orders, PayOS cancelled, sold_amount rolled back`);
+            console.log(`✅ Expired ${expiredOrders.rows.length} orders processed`);
         } catch (error) {
             console.error('Expired order cleanup error:', error);
         }

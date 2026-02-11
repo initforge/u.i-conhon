@@ -33,7 +33,7 @@ router.post('/', requireMXHCompleted, async (req, res) => {
 
         // 1. Check session is still open
         const sessionResult = await client.query(
-            `SELECT id, status FROM sessions 
+            `SELECT id, status, thai_id FROM sessions 
        WHERE id = $1 FOR UPDATE`,
             [session_id]
         );
@@ -45,6 +45,30 @@ router.post('/', requireMXHCompleted, async (req, res) => {
         const session = sessionResult.rows[0];
         if (session.status !== 'open') {
             throw new Error('Phiên đã đóng. Vui lòng chờ phiên tiếp theo.');
+        }
+
+        // 1b. CRITICAL: Check master switch and Thai-specific switch
+        const thaiSwitchKey = {
+            'thai-an-nhon': 'thai_an_nhon_enabled',
+            'thai-nhon-phong': 'thai_nhon_phong_enabled',
+            'thai-hoai-nhon': 'thai_hoai_nhon_enabled'
+        }[session.thai_id];
+
+        const switchResult = await client.query(
+            `SELECT key, value FROM settings WHERE key IN ('master_switch', $1)`,
+            [thaiSwitchKey]
+        );
+
+        const switchMap = {};
+        switchResult.rows.forEach(row => { switchMap[row.key] = row.value; });
+
+        if (switchMap['master_switch'] === 'false') {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'Hệ thống đang tạm đóng' });
+        }
+        if (thaiSwitchKey && switchMap[thaiSwitchKey] === 'false') {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'Thai này hiện đang đóng. Không thể đặt hàng.' });
         }
 
         // 2. Check limits for each animal (SPECS 7.1 - atomic lock)
@@ -71,14 +95,18 @@ router.post('/', requireMXHCompleted, async (req, res) => {
             }
 
             const subtotal = item.quantity * item.unit_price;
-            const newSold = animal.sold_amount + subtotal;
+            // CRITICAL: PostgreSQL bigint returns strings in node-pg
+            // Must cast to Number to avoid string concatenation
+            const soldAmount = Number(animal.sold_amount) || 0;
+            const limitAmount = Number(animal.limit_amount) || 0;
+            const newSold = soldAmount + subtotal;
 
-            if (newSold > animal.limit_amount) {
+            if (newSold > limitAmount) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({
                     error: `Con ${item.animal_order} đã hết hạn mức`,
                     animal_order: item.animal_order,
-                    remaining: animal.limit_amount - animal.sold_amount
+                    remaining: limitAmount - soldAmount
                 });
             }
 
@@ -188,7 +216,7 @@ router.get('/me', async (req, res) => {
         const result = await db.query(
             `SELECT o.id, o.total, o.status, o.created_at, o.paid_at,
                     o.payment_url, o.payment_expires,
-                    s.thai_id, s.session_type, s.session_date, s.lunar_label,
+                    s.thai_id, s.session_type, s.session_date,
                     COALESCE(
                       (SELECT json_agg(json_build_object(
                         'animal_order', oi.animal_order,
@@ -230,7 +258,7 @@ router.get('/:id', async (req, res) => {
         const { id } = req.params;
 
         const orderResult = await db.query(
-            `SELECT o.*, s.thai_id, s.session_type, s.session_date, s.lunar_label
+            `SELECT o.*, s.thai_id, s.session_type, s.session_date
        FROM orders o
        JOIN sessions s ON o.session_id = s.id
        WHERE o.id = $1 AND o.user_id = $2`,
@@ -262,49 +290,68 @@ router.get('/:id', async (req, res) => {
  * Marks order as expired, cancels PayOS link, rolls back sold_amount
  */
 router.post('/:id/cancel', async (req, res) => {
+    const client = await db.getClient();
     try {
         const { id } = req.params;
 
-        // Get order (must be owned by user and pending)
-        const orderResult = await db.query(
-            `SELECT id, status, payment_code, session_id FROM orders WHERE id = $1 AND user_id = $2`,
+        await client.query('BEGIN');
+
+        // Lock order row to prevent race with cron/webhook
+        const orderResult = await client.query(
+            `SELECT id, status, payment_code, session_id FROM orders WHERE id = $1 AND user_id = $2 FOR UPDATE`,
             [id, req.user.id]
         );
 
         if (orderResult.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Đơn hàng không tồn tại' });
         }
 
         const order = orderResult.rows[0];
         if (order.status !== 'pending') {
+            await client.query('ROLLBACK');
             return res.status(400).json({ error: 'Chỉ có thể hủy đơn đang chờ thanh toán' });
         }
 
-        // Cancel PayOS link
+        // Cancel PayOS link (external call, OK outside transaction)
         if (order.payment_code) {
-            await payosService.cancelPaymentLink(order.payment_code);
+            try { await payosService.cancelPaymentLink(order.payment_code); } catch (e) {
+                console.warn('Cancel PayOS link failed (non-fatal):', e.message);
+            }
         }
 
         // Mark as expired
-        await db.query(
+        await client.query(
             `UPDATE orders SET status = 'expired' WHERE id = $1`,
             [order.id]
         );
 
-        // Rollback sold_amount
-        const { rollbackOrderLimits } = require('./webhook');
-        await rollbackOrderLimits(order.id);
-
-        // Invalidate cache
-        const { cache } = require('../services/redis');
-        if (order.session_id) {
-            await cache.del(`session_animals:${order.session_id}`);
+        // Rollback sold_amount within same transaction
+        const itemsResult = await client.query(
+            `SELECT animal_order, subtotal FROM order_items WHERE order_id = $1`,
+            [order.id]
+        );
+        for (const item of itemsResult.rows) {
+            await client.query(
+                `UPDATE session_animals 
+                 SET sold_amount = GREATEST(sold_amount - $1, 0)
+                 WHERE session_id = $2 AND animal_order = $3`,
+                [item.subtotal, order.session_id, item.animal_order]
+            );
         }
+
+        await client.query('COMMIT');
+
+        // Invalidate cache (after commit)
+        await cache.del(`session_animals:${order.session_id}`);
 
         res.json({ success: true, message: 'Đơn hàng đã được hủy' });
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Cancel order error:', error);
         res.status(500).json({ error: 'Không thể hủy đơn hàng' });
+    } finally {
+        client.release();
     }
 });
 
@@ -351,6 +398,7 @@ router.get('/:id/status/stream', async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
     res.flushHeaders();
 
     // Send initial status
