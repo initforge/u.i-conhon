@@ -5,7 +5,7 @@
 
 const express = require('express');
 const db = require('../services/database');
-const { authenticate, requireAdmin } = require('../middleware/auth');
+const { authenticate, requireAdmin, invalidateUserCache } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -1158,6 +1158,7 @@ router.patch('/users/:id', async (req, res) => {
             params
         );
 
+        await invalidateUserCache(id);
         res.json({ success: true });
     } catch (error) {
         console.error('Update user error:', error);
@@ -1194,6 +1195,7 @@ router.delete('/users/:id', async (req, res) => {
             [id]
         );
 
+        await invalidateUserCache(id);
         res.json({ success: true });
     } catch (error) {
         console.error('Delete user error:', error);
@@ -1287,6 +1289,7 @@ router.patch('/community/comments/:id/ban', async (req, res) => {
             'UPDATE users SET is_comment_banned = NOT is_comment_banned WHERE id = $1 RETURNING is_comment_banned, name, phone',
             [userId]
         );
+        await invalidateUserCache(userId);
 
         // If user is now banned, delete all their comments
         let deletedCount = 0;
@@ -1381,6 +1384,9 @@ router.patch('/community/comments/bulk-ban', async (req, res) => {
             [userIds]
         );
 
+        // Invalidate cache for all affected users
+        await Promise.all(userIds.map(id => invalidateUserCache(id)));
+
         res.json({
             success: true,
             bannedUsers: userIds.length,
@@ -1414,7 +1420,8 @@ router.get('/community/banned-users', async (req, res) => {
 router.patch('/community/users/:phone/unban', async (req, res) => {
     const { phone } = req.params;
     try {
-        await db.query('UPDATE users SET is_comment_banned = false WHERE phone = $1', [phone]);
+        const result = await db.query('UPDATE users SET is_comment_banned = false WHERE phone = $1 RETURNING id', [phone]);
+        if (result.rows[0]) await invalidateUserCache(result.rows[0].id);
         res.json({ success: true });
     } catch (error) {
         console.error('Error unbanning user:', error);

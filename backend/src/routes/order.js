@@ -290,49 +290,68 @@ router.get('/:id', async (req, res) => {
  * Marks order as expired, cancels PayOS link, rolls back sold_amount
  */
 router.post('/:id/cancel', async (req, res) => {
+    const client = await db.getClient();
     try {
         const { id } = req.params;
 
-        // Get order (must be owned by user and pending)
-        const orderResult = await db.query(
-            `SELECT id, status, payment_code, session_id FROM orders WHERE id = $1 AND user_id = $2`,
+        await client.query('BEGIN');
+
+        // Lock order row to prevent race with cron/webhook
+        const orderResult = await client.query(
+            `SELECT id, status, payment_code, session_id FROM orders WHERE id = $1 AND user_id = $2 FOR UPDATE`,
             [id, req.user.id]
         );
 
         if (orderResult.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Đơn hàng không tồn tại' });
         }
 
         const order = orderResult.rows[0];
         if (order.status !== 'pending') {
+            await client.query('ROLLBACK');
             return res.status(400).json({ error: 'Chỉ có thể hủy đơn đang chờ thanh toán' });
         }
 
-        // Cancel PayOS link
+        // Cancel PayOS link (external call, OK outside transaction)
         if (order.payment_code) {
-            await payosService.cancelPaymentLink(order.payment_code);
+            try { await payosService.cancelPaymentLink(order.payment_code); } catch (e) {
+                console.warn('Cancel PayOS link failed (non-fatal):', e.message);
+            }
         }
 
         // Mark as expired
-        await db.query(
+        await client.query(
             `UPDATE orders SET status = 'expired' WHERE id = $1`,
             [order.id]
         );
 
-        // Rollback sold_amount
-        const { rollbackOrderLimits } = require('./webhook');
-        await rollbackOrderLimits(order.id);
-
-        // Invalidate cache
-        const { cache } = require('../services/redis');
-        if (order.session_id) {
-            await cache.del(`session_animals:${order.session_id}`);
+        // Rollback sold_amount within same transaction
+        const itemsResult = await client.query(
+            `SELECT animal_order, subtotal FROM order_items WHERE order_id = $1`,
+            [order.id]
+        );
+        for (const item of itemsResult.rows) {
+            await client.query(
+                `UPDATE session_animals 
+                 SET sold_amount = GREATEST(sold_amount - $1, 0)
+                 WHERE session_id = $2 AND animal_order = $3`,
+                [item.subtotal, order.session_id, item.animal_order]
+            );
         }
+
+        await client.query('COMMIT');
+
+        // Invalidate cache (after commit)
+        await cache.del(`session_animals:${order.session_id}`);
 
         res.json({ success: true, message: 'Đơn hàng đã được hủy' });
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Cancel order error:', error);
         res.status(500).json({ error: 'Không thể hủy đơn hàng' });
+    } finally {
+        client.release();
     }
 });
 
