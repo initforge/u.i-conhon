@@ -521,12 +521,12 @@ const MuaConVatPage: React.FC = () => {
                                             className={`relative bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg ${!hasLikedShared ? 'opacity-60' : ''
                                                 }`}
                                         >
-                                            {/* Overlay if not liked/shared OR session is closed OR sold out */}
-                                            {(!hasLikedShared || !isSessionOpen || soldOutAnimals.has(animal.number)) && (
-                                                <div className="absolute inset-0 bg-gray-900/50 z-10 flex items-center justify-center p-2">
-                                                    <p className="text-white text-xs text-center font-medium">
+                                            {/* Overlay if not liked/shared OR session is closed OR sold out OR banned */}
+                                            {(!hasLikedShared || !isSessionOpen || soldOutAnimals.has(animal.number) || bannedAnimals.has(animal.number)) && (
+                                                <div className="absolute inset-0 bg-black/60 z-10 flex items-center justify-center p-2">
+                                                    <p className={`text-white text-center ${bannedAnimals.has(animal.number) ? 'text-sm font-bold' : 'text-xs font-medium'}`} style={bannedAnimals.has(animal.number) ? { textShadow: '0 2px 6px rgba(0,0,0,0.9)' } : undefined}>
                                                         {bannedAnimals.has(animal.number)
-                                                            ? `🚫 ${bannedAnimals.get(animal.number) || 'Đã bị cấm'}`
+                                                            ? bannedAnimals.get(animal.number) || ''
                                                             : soldOutAnimals.has(animal.number)
                                                                 ? 'Đã hết lượt mua'
                                                                 : !hasLikedShared

@@ -163,29 +163,24 @@ const AdminAnimals: React.FC = () => {
   // Current session ID cho mỗi Thai
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
-  // Apply Thai limits to all animals when loaded from API
-  useEffect(() => {
-    if (limitsLoaded) {
-      // Apply limits to An Nhon
-      setAnimalsAnNhon(prev => prev.map(a => ({ ...a, purchaseLimit: thaiLimits['an-nhon'] })));
-      // Apply limits to Nhon Phong
-      setAnimalsNhonPhong(prev => prev.map(a => ({ ...a, purchaseLimit: thaiLimits['nhon-phong'] })));
-      // Apply limits to Hoai Nhon
-      setAnimalsHoaiNhon(prev => prev.map(a => ({ ...a, purchaseLimit: thaiLimits['hoai-nhon'] })));
-    }
-  }, [limitsLoaded, thaiLimits]);
+  // NOTE: Global Thai limits are applied as defaults inside fetchSessionAnimals below.
+  // Per-animal limits from DB always win over global limits.
 
-  // Fetch session_animals thực từ API khi Thai/Khung thay đổi
+  // Fetch session_animals thực từ API khi Thai/Khung thay đổi hoặc khi limits đã load xong
   useEffect(() => {
+    if (!limitsLoaded) return; // Wait for global limits to load first
+
     const fetchSessionAnimals = async () => {
       try {
         const thaiId = `thai-${selectedThai}`;
+        const globalLimit = thaiLimits[selectedThai as keyof typeof thaiLimits] || 100000;
         const response = await getAdminCurrentSession(thaiId, selectedKhungIndex);
         const session = response.session;
         setCurrentSessionId(session.id);
 
         if (session.animals && Array.isArray(session.animals)) {
-          // Merge sold_amount, is_banned, ban_reason từ DB vào animals state
+          // Merge sold_amount, is_banned, ban_reason, limit_amount từ DB vào animals state
+          // DB limit_amount wins over global Thai limit
           const mergeData = (prev: any[]) => prev.map(a => {
             const dbAnimal = session.animals.find((sa: any) => sa.animal_order === a.order);
             if (dbAnimal) {
@@ -194,10 +189,12 @@ const AdminAnimals: React.FC = () => {
                 purchased: dbAnimal.sold_amount || 0,
                 isBanned: dbAnimal.is_banned || false,
                 banReason: dbAnimal.ban_reason || undefined,
-                purchaseLimit: dbAnimal.limit_amount || a.purchaseLimit,
+                // DB limit wins; fall back to global Thai limit if DB has no limit
+                purchaseLimit: dbAnimal.limit_amount || globalLimit,
               };
             }
-            return a;
+            // No DB record: use global Thai limit as default
+            return { ...a, purchaseLimit: globalLimit };
           });
 
           switch (selectedThai) {
@@ -209,10 +206,18 @@ const AdminAnimals: React.FC = () => {
       } catch (error) {
         console.error('Failed to fetch session animals:', error);
         setCurrentSessionId(null);
+        // Even on error, apply global limits so UI isn't stuck on hardcoded values
+        const globalLimit = thaiLimits[selectedThai as keyof typeof thaiLimits] || 100000;
+        const applyGlobal = (prev: any[]) => prev.map(a => ({ ...a, purchaseLimit: globalLimit }));
+        switch (selectedThai) {
+          case 'an-nhon': setAnimalsAnNhon(applyGlobal); break;
+          case 'nhon-phong': setAnimalsNhonPhong(applyGlobal); break;
+          case 'hoai-nhon': setAnimalsHoaiNhon(applyGlobal); break;
+        }
       }
     };
     fetchSessionAnimals();
-  }, [selectedThai, selectedKhungIndex]);
+  }, [selectedThai, selectedKhungIndex, limitsLoaded, thaiLimits]);
 
   const thaiOptions = [
     { id: 'an-nhon', name: 'Thai An Nhơn', color: 'green', animals: 40 },
