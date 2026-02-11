@@ -69,10 +69,14 @@ export function getSessionStatus(thaiId: string, timeSlots: { startTime: string;
         effectiveSlots.push(tetTimeSlot);
     }
 
-    // Check each time slot
+    // Check each time slot (supports cross-day slots where startTime > endTime)
     for (let i = 0; i < effectiveSlots.length; i++) {
         const slot = effectiveSlots[i];
-        if (currentTime >= slot.startTime && currentTime < slot.endTime) {
+        const isCrossDay = slot.startTime > slot.endTime;
+        const isInSlot = isCrossDay
+            ? (currentTime >= slot.startTime || currentTime < slot.endTime)
+            : (currentTime >= slot.startTime && currentTime < slot.endTime);
+        if (isInSlot) {
             return {
                 isOpen: true,
                 currentKhungIndex: i,
@@ -85,21 +89,26 @@ export function getSessionStatus(thaiId: string, timeSlots: { startTime: string;
     }
 
     // Not in any session - find next open time
+    // Sort slots by startTime to handle cross-day slots (e.g. morning starts at 17:30)
+    const sortedSlots = effectiveSlots
+        .map((slot, i) => ({ ...slot, originalIndex: i }))
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
     let nextOpenTime: string | null = null;
     let nextKhungIndex = -1;
 
-    for (let i = 0; i < effectiveSlots.length; i++) {
-        if (currentTime < effectiveSlots[i].startTime) {
-            nextOpenTime = effectiveSlots[i].startTime;
-            nextKhungIndex = i;
+    for (const slot of sortedSlots) {
+        if (currentTime < slot.startTime) {
+            nextOpenTime = slot.startTime;
+            nextKhungIndex = slot.originalIndex;
             break;
         }
     }
 
-    // If no more sessions today, next is tomorrow's first session
-    if (!nextOpenTime && effectiveSlots.length > 0) {
-        nextOpenTime = effectiveSlots[0].startTime;
-        nextKhungIndex = 0;
+    // If no more sessions today, next is tomorrow's earliest session
+    if (!nextOpenTime && sortedSlots.length > 0) {
+        nextOpenTime = sortedSlots[0].startTime;
+        nextKhungIndex = sortedSlots[0].originalIndex;
     }
 
     return {

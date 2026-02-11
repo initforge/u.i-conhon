@@ -377,10 +377,8 @@ router.get('/sessions/current/:thai_id', async (req, res) => {
         } else {
             // Fallback: auto-detect from current time
             const { getCurrentSessionType } = require('./session');
-            sessionType = await getCurrentSessionType(thai_id);
-            if (!sessionType) {
-                sessionType = 'morning'; // Default to morning if outside all windows
-            }
+            const sessionInfo = await getCurrentSessionType(thai_id);
+            sessionType = sessionInfo?.sessionType || 'morning';
         }
 
         // Query for existing session of this type today (ANY status - admin can access anytime)
@@ -691,40 +689,33 @@ router.delete('/sessions/:id/result', async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check for paid/won/lost orders first - refuse deletion if any exist
-        const paidOrdersCheck = await client.query(
-            `SELECT COUNT(*) as count FROM orders WHERE session_id = $1 AND status IN ('paid', 'won', 'lost')`,
-            [id]
-        );
-        if (parseInt(paidOrdersCheck.rows[0].count) > 0) {
-            client.release();
-            return res.status(400).json({
-                error: `Không thể xóa: có ${paidOrdersCheck.rows[0].count} đơn hàng đã thanh toán. Chỉ xóa kết quả (winning_animal) thay vì xóa toàn bộ session.`
-            });
-        }
-
         await client.query('BEGIN');
 
-        // 1. Delete order_items for pending/expired orders only
+        // 1. Reset won/lost orders back to 'paid' (undo result, keep orders)
+        const resetResult = await client.query(
+            `UPDATE orders SET status = 'paid' WHERE session_id = $1 AND status IN ('won', 'lost') RETURNING id`,
+            [id]
+        );
+        console.log(`🔄 Reset ${resetResult.rowCount} orders (won/lost → paid) for session ${id}`);
+
+        // 2. Clear result only — keep session and reopen it
+        await client.query(
+            `UPDATE sessions SET status = 'open', winning_animal = NULL, draw_time = NULL WHERE id = $1`,
+            [id]
+        );
+
+        // 3. Clean up pending/expired orders (safe — not paid)
         await client.query(
             `DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired'))`,
             [id]
         );
-
-        // 2. Delete pending/expired orders (safe - not paid)
         await client.query(
             `DELETE FROM orders WHERE session_id = $1 AND status IN ('pending', 'expired')`,
             [id]
         );
 
-        // 3. Delete session_animals
-        await client.query(`DELETE FROM session_animals WHERE session_id = $1`, [id]);
-
-        // 4. Delete the session row completely
-        await client.query(`DELETE FROM sessions WHERE id = $1`, [id]);
-
         await client.query('COMMIT');
-        res.json({ success: true });
+        res.json({ success: true, resetCount: resetResult.rowCount });
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Delete result error:', error);
@@ -776,6 +767,12 @@ router.post('/sessions/:id/result', async (req, res) => {
          SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
          WHERE id = $4`,
                 [winning_animal, lunar_label, drawTime, id]
+            );
+
+            // RESET: Revert any existing won/lost back to 'paid' before re-calculating
+            await client.query(
+                `UPDATE orders SET status = 'paid' WHERE session_id = $1 AND status IN ('won', 'lost')`,
+                [id]
             );
 
             // Update order statuses (won/lost)
@@ -970,6 +967,12 @@ router.post('/results', async (req, res) => {
                  SET status = 'resulted', winning_animal = $1, lunar_label = $2, draw_time = $3
                  WHERE id = $4`,
                 [winning_animal, lunar_label, drawTime, sessionId]
+            );
+
+            // RESET: Revert any existing won/lost back to 'paid' before re-calculating
+            await client.query(
+                `UPDATE orders SET status = 'paid' WHERE session_id = $1 AND status IN ('won', 'lost')`,
+                [sessionId]
             );
 
             // Update order statuses (won/lost)

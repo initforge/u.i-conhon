@@ -39,7 +39,9 @@ const DEFAULT_TIME_SLOTS = {
 /**
  * Determine which session_type matches the current time for a Thai.
  * Reads timeSlots from DB (admin-configurable), falls back to defaults.
- * Returns the session_type string ('morning', 'afternoon', 'evening') or null.
+ * Supports cross-day slots (startTime > endTime, e.g. 17:30 -> 10:30).
+ * Returns { sessionType, sessionDate } or null.
+ * sessionDate accounts for cross-day: evening part => next day's session.
  */
 async function getCurrentSessionType(thaiId) {
     // Get current time in Vietnam timezone (UTC+7)
@@ -75,11 +77,25 @@ async function getCurrentSessionType(thaiId) {
         effectiveSlots.push(tetTimeSlot);
     }
 
-    // Check which slot the current time falls into
+    // Check which slot the current time falls into (supports cross-day)
     for (let i = 0; i < effectiveSlots.length; i++) {
         const slot = effectiveSlots[i];
-        if (currentTime >= slot.startTime && currentTime < slot.endTime) {
-            return SLOT_SESSION_TYPES[i]; // 'morning', 'afternoon', or 'evening'
+        const isCrossDay = slot.startTime > slot.endTime;
+        const isInSlot = isCrossDay
+            ? (currentTime >= slot.startTime || currentTime < slot.endTime)
+            : (currentTime >= slot.startTime && currentTime < slot.endTime);
+
+        if (isInSlot) {
+            // For cross-day slots in the evening part, session belongs to NEXT day
+            const isEveningPart = isCrossDay && currentTime >= slot.startTime;
+            const sessionDateObj = new Date(vnTime);
+            if (isEveningPart) sessionDateObj.setDate(sessionDateObj.getDate() + 1);
+            const sessionDate = `${sessionDateObj.getFullYear()}-${String(sessionDateObj.getMonth() + 1).padStart(2, '0')}-${String(sessionDateObj.getDate()).padStart(2, '0')}`;
+
+            return {
+                sessionType: SLOT_SESSION_TYPES[i],
+                sessionDate
+            };
         }
     }
 
@@ -102,29 +118,31 @@ router.get('/current', async (req, res) => {
         thai_id = thai_id.startsWith('thai-') ? thai_id : `thai-${thai_id}`;
 
         // Determine which session_type matches current time
-        const currentSessionType = await getCurrentSessionType(thai_id);
+        const sessionInfo = await getCurrentSessionType(thai_id);
 
-        if (!currentSessionType) {
+        if (!sessionInfo) {
             return res.status(404).json({
                 error: 'Không có phiên nào đang mở',
                 message: 'Hiện không trong khung giờ mua hàng'
             });
         }
 
+        const { sessionType: currentSessionType, sessionDate } = sessionInfo;
+
         let result = await db.query(
             `SELECT id, thai_id, session_type, session_date, lunar_label,
               status, created_at
        FROM sessions 
        WHERE thai_id = $1 AND status IN ('open', 'scheduled')
-         AND session_date = CURRENT_DATE
+         AND session_date = $3
          AND session_type = $2
        LIMIT 1`,
-            [thai_id, currentSessionType]
+            [thai_id, currentSessionType, sessionDate]
         );
 
         // Auto-create session if none exists (lazy creation)
         if (result.rows.length === 0) {
-            console.log(`🔄 Auto-creating session: ${thai_id} / ${currentSessionType} / today`);
+            console.log(`🔄 Auto-creating session: ${thai_id} / ${currentSessionType} / ${sessionDate}`);
             const animalCount = thai_id === 'thai-hoai-nhon' ? 36 : 40;
 
             const client = await db.getClient();
@@ -134,10 +152,10 @@ router.get('/current', async (req, res) => {
                 // Insert session (ON CONFLICT DO NOTHING for race condition safety)
                 const insertResult = await client.query(
                     `INSERT INTO sessions (id, thai_id, session_type, session_date, status, created_at)
-                     VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, 'open', NOW())
+                     VALUES (gen_random_uuid(), $1, $2, $3, 'open', NOW())
                      ON CONFLICT (thai_id, session_date, session_type) DO NOTHING
                      RETURNING id`,
-                    [thai_id, currentSessionType]
+                    [thai_id, currentSessionType, sessionDate]
                 );
 
                 if (insertResult.rows.length > 0) {
@@ -165,10 +183,10 @@ router.get('/current', async (req, res) => {
                   status, created_at
            FROM sessions 
            WHERE thai_id = $1 AND status IN ('open', 'scheduled')
-             AND session_date = CURRENT_DATE
+             AND session_date = $3
              AND session_type = $2
            LIMIT 1`,
-                [thai_id, currentSessionType]
+                [thai_id, currentSessionType, sessionDate]
             );
         }
 
