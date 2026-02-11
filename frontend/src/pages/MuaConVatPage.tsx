@@ -526,7 +526,7 @@ const MuaConVatPage: React.FC = () => {
                                                 <div className="absolute inset-0 bg-gray-900/50 z-10 flex items-center justify-center p-2">
                                                     <p className="text-white text-xs text-center font-medium">
                                                         {bannedAnimals.has(animal.number)
-                                                            ? `🚫 Đã bị cấm${bannedAnimals.get(animal.number) ? `: ${bannedAnimals.get(animal.number)}` : ''}`
+                                                            ? `🚫 ${bannedAnimals.get(animal.number) || 'Đã bị cấm'}`
                                                             : soldOutAnimals.has(animal.number)
                                                                 ? 'Đã hết lượt mua'
                                                                 : !hasLikedShared
