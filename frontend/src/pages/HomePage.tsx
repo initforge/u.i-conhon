@@ -254,11 +254,7 @@ const HomePage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-8">
               {/* Left: Text */}
               <div className="text-center">
-                <div className="mb-6">
-                  <p className="font-bold mb-2" style={{ fontSize: '1.5rem', lineHeight: '1.2', color: '#b2012f' }}>
-                    Phần thưởng hấp dẫn
-                  </p>
-                </div>
+
                 <Link
                   to="/dang-nhap"
                   className="btn-primary text-lg px-8 py-4 inline-flex items-center space-x-2"
@@ -848,11 +844,7 @@ const HomePage: React.FC = () => {
                     </>
                   );
                 })()}
-                <div className="mb-4">
-                  <p className="font-bold mb-1" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
-                    <strong>Phần thưởng hấp dẫn</strong>
-                  </p>
-                </div>
+
                 <Link
                   to="/dang-nhap"
                   className="btn-primary"
