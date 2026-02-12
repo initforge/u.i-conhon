@@ -74,7 +74,7 @@ const HuongDanPage: React.FC = () => {
                       Hộp gỗ chứa đáp án được treo trên cây nêu cao hơn 5m, tạo không khí hồi hộp và thú vị.
                     </p>
                     <p>
-                      Trò chơi kết hợp trí tuệ và giải trí, với phần thưởng hấp dẫn, mang lại niềm vui và ý nghĩa trong những ngày đầu xuân,
+                      Trò chơi kết hợp trí tuệ và giải trí, mang lại niềm vui và ý nghĩa trong những ngày đầu xuân,
                       đồng thời giữ gìn bản sắc văn hóa truyền thống.
                     </p>
                   </div>
