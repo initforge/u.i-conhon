@@ -917,7 +917,7 @@ const AdminKetQua: React.FC = () => {
                       {/* Yearly Profit/Loss Summary */}
                       <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200">
                         <h4 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
-                          <span>💰</span> Báo cáo Thắng/Thua CẢ NĂM {selectedYear}
+                          <span>💰</span> Báo cáo tài chính CẢ NĂM {selectedYear}
                         </h4>
                         {loadingYearlyPL ? (
                           <div className="flex items-center justify-center py-6">
@@ -929,30 +929,25 @@ const AdminKetQua: React.FC = () => {
                               <thead>
                                 <tr className="border-b border-amber-200">
                                   <th className="text-left py-2 px-3">Buổi</th>
-                                  <th className="text-right py-2 px-3">Doanh thu</th>
-                                  <th className="text-right py-2 px-3">Trả thưởng</th>
-                                  <th className="text-right py-2 px-3">Lãi/Lỗ</th>
+                                  <th className="text-right py-2 px-3">Thu bán phiếu/tịch</th>
+                                  <th className="text-right py-2 px-3">Chi thưởng (offline)</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {(['sang', 'trua', 'chieu', 'toi'] as const).map(slot => {
                                   const data = yearlyProfitLoss[slot];
                                   if (!data) return null;
-                                  const net = data.revenue - data.payout;
                                   const slotLabels: Record<string, string> = { sang: 'Sáng', trua: 'Trưa', chieu: 'Chiều', toi: 'Tối' };
                                   return (
                                     <tr key={slot} className="border-b border-amber-100">
                                       <td className="py-2 px-3 font-medium">{slotLabels[slot]}</td>
                                       <td className="py-2 px-3 text-right">{data.revenue.toLocaleString()}đ</td>
                                       <td className="py-2 px-3 text-right text-red-600">{data.payout.toLocaleString()}đ</td>
-                                      <td className={`py-2 px-3 text-right font-bold ${net > 0 ? 'text-green-600' : net < 0 ? 'text-red-600' : 'text-gray-500'}`}>
-                                        {net > 0 ? '+' : ''}{net.toLocaleString()}đ
-                                      </td>
                                     </tr>
                                   );
                                 })}
                                 {!yearlyProfitLoss.sang && !yearlyProfitLoss.trua && !yearlyProfitLoss.chieu && !yearlyProfitLoss.toi && (
-                                  <tr><td colSpan={4} className="py-6 text-center text-gray-500">Chưa có dữ liệu tài chính cho năm {selectedYear}</td></tr>
+                                  <tr><td colSpan={3} className="py-6 text-center text-gray-500">Chưa có dữ liệu tài chính cho năm {selectedYear}</td></tr>
                                 )}
                               </tbody>
                               {(yearlyProfitLoss.sang || yearlyProfitLoss.trua || yearlyProfitLoss.chieu || yearlyProfitLoss.toi) && (
@@ -960,15 +955,11 @@ const AdminKetQua: React.FC = () => {
                                   {(() => {
                                     const totalRev = (yearlyProfitLoss.sang?.revenue || 0) + (yearlyProfitLoss.trua?.revenue || 0) + (yearlyProfitLoss.chieu?.revenue || 0) + (yearlyProfitLoss.toi?.revenue || 0);
                                     const totalPay = (yearlyProfitLoss.sang?.payout || 0) + (yearlyProfitLoss.trua?.payout || 0) + (yearlyProfitLoss.chieu?.payout || 0) + (yearlyProfitLoss.toi?.payout || 0);
-                                    const totalNet = totalRev - totalPay;
                                     return (
                                       <tr className="bg-amber-100 font-bold">
                                         <td className="py-2 px-3">TỔNG NĂM {selectedYear}</td>
                                         <td className="py-2 px-3 text-right">{totalRev.toLocaleString()}đ</td>
                                         <td className="py-2 px-3 text-right text-red-600">{totalPay.toLocaleString()}đ</td>
-                                        <td className={`py-2 px-3 text-right ${totalNet > 0 ? 'text-green-700' : totalNet < 0 ? 'text-red-700' : 'text-gray-600'}`}>
-                                          {totalNet > 0 ? '+' : ''}{totalNet.toLocaleString()}đ
-                                        </td>
                                       </tr>
                                     );
                                   })()}
@@ -979,7 +970,7 @@ const AdminKetQua: React.FC = () => {
                         )}
                         {selectedThai !== 'hoai-nhon' && (
                           <p className="mt-3 text-xs text-amber-600 bg-amber-100 rounded px-3 py-2">
-                            ℹ️ <strong>Lưu ý:</strong> Trả thưởng đã bao gồm con xổ + con thế thân (trừ Hoài Nhơn chỉ tính con xổ). Hệ số: 1:30, riêng Trùn 1:70.
+                            ℹ️ <strong>Lưu ý:</strong> Chi thưởng đã bao gồm con xổ + con thế thân (trừ Hoài Nhơn chỉ tính con xổ).
                           </p>
                         )}
                       </div>

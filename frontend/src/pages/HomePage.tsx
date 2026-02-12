@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { GAME_CONFIG } from '../constants/gameConfig';
+
 import { getCurrentYear, getAvailableYears } from '../utils/yearUtils';
 import { getSessionResults, getCauThai, SessionResult, CauThaiItem } from '../services/api';
 
@@ -256,17 +256,14 @@ const HomePage: React.FC = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <p className="font-bold mb-2" style={{ fontSize: '1.5rem', lineHeight: '1.2', color: '#b2012f' }}>
-                    Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}
-                  </p>
-                  <p className="text-sm font-semibold" style={{ color: '#b91c1c' }}>
-                    Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70
+                    Phần thưởng hấp dẫn
                   </p>
                 </div>
                 <Link
                   to="/dang-nhap"
                   className="btn-primary text-lg px-8 py-4 inline-flex items-center space-x-2"
                 >
-                  <span>{GAME_CONFIG.PLAY_BUTTON_TEXT}</span>
+                  <span>THAM GIA NGAY</span>
                   <img src="/assets/icons/ico_arrow_right.svg" alt="" className="w-5 h-5" />
                 </Link>
               </div>
@@ -853,16 +850,9 @@ const HomePage: React.FC = () => {
                 })()}
                 <div className="mb-4">
                   <p className="font-bold mb-1" style={{ fontSize: '1.3rem', lineHeight: 1, color: '#b2012f', fontFamily: "'Nunito', sans-serif" }}>
-                    <strong>Tỉ lệ thưởng {GAME_CONFIG.PRIZE_RATIO_TEXT}</strong>
-                  </p>
-                  <p className="text-xs font-semibold" style={{ color: '#b91c1c', fontFamily: "'Nunito', sans-serif" }}>
-                    Riêng thai Hoài Nhơn: Chí Cao (Con Trùn) chung 70
+                    <strong>Phần thưởng hấp dẫn</strong>
                   </p>
                 </div>
-                <p className="mb-4" style={{ color: 'rgb(35, 35, 35)', fontFamily: "'Nunito', sans-serif" }}>
-                  Ví dụ: mua <strong>{GAME_CONFIG.EXAMPLE_BET.toLocaleString('vi-VN')}đ</strong> trúng{' '}
-                  <span className="font-bold" style={{ color: '#B20801', fontFamily: "'Nunito', sans-serif" }}>{GAME_CONFIG.getExamplePrize().toLocaleString('vi-VN')}đ</span>
-                </p>
                 <Link
                   to="/dang-nhap"
                   className="btn-primary"

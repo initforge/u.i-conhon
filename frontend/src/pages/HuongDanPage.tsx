@@ -74,7 +74,7 @@ const HuongDanPage: React.FC = () => {
                       Hộp gỗ chứa đáp án được treo trên cây nêu cao hơn 5m, tạo không khí hồi hộp và thú vị.
                     </p>
                     <p>
-                      Trò chơi kết hợp trí tuệ và giải trí, với phần thưởng hấp dẫn tỷ lệ 1 đổi 30, mang lại niềm vui và ý nghĩa trong những ngày đầu xuân,
+                      Trò chơi kết hợp trí tuệ và giải trí, với phần thưởng hấp dẫn, mang lại niềm vui và ý nghĩa trong những ngày đầu xuân,
                       đồng thời giữ gìn bản sắc văn hóa truyền thống.
                     </p>
                   </div>
@@ -330,9 +330,9 @@ const HuongDanPage: React.FC = () => {
                               3
                             </div>
                             <div>
-                              <p className="font-semibold mb-1">Đặt cược:</p>
+                              <p className="font-semibold mb-1">Mua tịch:</p>
                               <p>
-                                Người chơi lựa chọn đáp án và đặt cược. Mức cược tùy thuộc vào từng người chơi, có thể từ vài nghìn đồng đến hàng triệu đồng.
+                                Người chơi lựa chọn đáp án và mua tịch. Số tiền tùy thuộc vào từng người chơi, có thể từ vài nghìn đồng đến hàng triệu đồng.
                               </p>
                             </div>
                           </div>
@@ -344,7 +344,7 @@ const HuongDanPage: React.FC = () => {
                               <p className="font-semibold mb-1">Công bố kết quả:</p>
                               <p>
                                 Cuối mỗi lượt chơi (vào buổi sáng và buổi chiều), Ban tổ chức mở hộp gỗ, công bố đáp án.
-                                Người chơi trả lời đúng sẽ nhận được phần thưởng theo tỷ lệ 1 đồng đổi 30 đồng.
+                                Người chơi trả lời đúng sẽ nhận được phần thưởng theo quy định.
                               </p>
                             </div>
                           </div>

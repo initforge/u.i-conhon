@@ -30,13 +30,12 @@ const ChonThaiPage: React.FC = () => {
         {
             id: 'hoai-nhon',
             name: 'Thai Hoài Nhơn',
-            description: 'Xổ lúc 13h và 19h. Chí Cao chung 70',
+            description: 'Xổ lúc 13h và 19h',
             color: 'from-blue-500 to-blue-700',
             icon: '🔵',
             bgColor: 'bg-blue-50',
             borderColor: 'border-blue-500',
             times: ['13h', '19h'],
-            special: 'Chí Cao (Con Trùn) chung 70',
         },
     ];
 
@@ -59,7 +58,7 @@ const ChonThaiPage: React.FC = () => {
                         ← Quay lại
                     </Link>
                     <h1 className="text-4xl font-bold text-gray-800 mb-4">Chọn Thai Để Mua</h1>
-                    <p className="text-gray-600 text-lg">Mỗi Thai có lịch xổ và tỉ lệ thưởng riêng</p>
+                    <p className="text-gray-600 text-lg">Mỗi Thai có lịch xổ riêng</p>
                 </div>
 
                 {/* Thai Cards */}
@@ -92,12 +91,6 @@ const ChonThaiPage: React.FC = () => {
                                 {thai.description}
                             </p>
 
-                            {/* Special note */}
-                            {thai.special && (
-                                <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-2 mb-4 text-center">
-                                    <span className="text-xs font-medium text-yellow-800">{thai.special}</span>
-                                </div>
-                            )}
 
                             {/* Button */}
                             <button
@@ -113,8 +106,7 @@ const ChonThaiPage: React.FC = () => {
                 <div className="mt-12 text-center bg-white rounded-xl p-6 shadow-md">
                     <h3 className="font-bold text-gray-800 mb-4">📌 Lưu ý quan trọng</h3>
                     <ul className="text-gray-600 text-sm space-y-2 text-left max-w-md mx-auto">
-                        <li>• Tỉ lệ thưởng chung: <strong>1 chung 30</strong></li>
-                        <li>• Riêng Thai Hoài Nhơn: Chí Cao (Con Trùn) <strong>chung 70</strong></li>
+                        <li>• Trúng thưởng sẽ được thông báo ngay sau khi xổ</li>
                         <li>• Thời gian đóng tịch:
                             <ul className="ml-4 mt-1 space-y-1">
                                 <li>- Thai An Nhơn: Sáng 10h30 - Chiều 16h30</li>

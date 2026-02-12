@@ -576,7 +576,7 @@ const AdminBaoCao: React.FC = () => {
                                                     <p className="font-bold text-red-600 text-sm">{o.subtotal.toLocaleString('vi-VN')}đ</p>
                                                     <p className="text-xs text-gray-500">{o.quantity} lượt × {o.unit_price.toLocaleString('vi-VN')}đ</p>
                                                     <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${o.status === 'won' ? 'bg-green-100 text-green-700' : o.status === 'lost' ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                        {o.status === 'won' ? '🏆 Thắng' : o.status === 'lost' ? 'Thua' : o.status === 'paid' ? 'Đã TT' : o.status}
+                                                        {o.status === 'won' ? '🏆 Trúng' : o.status === 'lost' ? 'Không trúng' : o.status === 'paid' ? 'Đã TT' : o.status}
                                                     </span>
                                                 </div>
                                             </div>

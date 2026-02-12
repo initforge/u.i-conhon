@@ -24,7 +24,7 @@ const Footer: React.FC = () => {
                 { img: '/assets/gallery/1_hoi_tu.png', title: 'Hội tụ ngày Tết', desc: 'Người dân quây quần dịp lễ hội' },
                 { img: '/assets/gallery/2_cau_thai.png', title: 'Đọc Câu Thai', desc: 'Nghệ nhân giải thích câu thai' },
                 { img: '/assets/gallery/3_cay_neu.png', title: 'Cây Nêu Cổ Nhơn', desc: 'Hộp bí mật treo trên cây nêu' },
-                { img: '/assets/gallery/4_mua_tich.png', title: 'Mua Tịch', desc: 'Người chơi đặt cược tại quầy' },
+                { img: '/assets/gallery/4_mua_tich.png', title: 'Mua Tịch', desc: 'Người chơi mua tịch tại quầy' },
                 { img: '/assets/gallery/5_con_vat.png', title: '36 Con Đề', desc: 'Bảng danh vật truyền thống' },
                 { img: '/assets/gallery/6_xo_thuong.png', title: 'Giây Phút Xổ Thưởng', desc: 'Niềm vui chiến thắng' },
               ].map((item, idx) => (

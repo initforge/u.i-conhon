@@ -2,19 +2,6 @@
 import { getCurrentYear, getLunarYearTitle } from '../utils/yearUtils';
 
 export const GAME_CONFIG = {
-  // Prize ratios
-  PRIZE_RATIO: 30, // 1 ăn 30
-
-  // Prize ratio text
-  PRIZE_RATIO_TEXT: '1 chung 30',
-
-  // Example calculation
-  EXAMPLE_BET: 10000, // 10.000đ
-  getExamplePrize: () => GAME_CONFIG.EXAMPLE_BET * GAME_CONFIG.PRIZE_RATIO, // 300.000đ
-
-  // Button text
-  PLAY_BUTTON_TEXT: 'MUA 1 TRÚNG 30 - CHƠI NGAY',
-
   // Game period
   GAME_START: 'khoảng 25 tháng chạp',
   GAME_END: 'mùng 9 tháng giêng',
@@ -31,4 +18,3 @@ export const GAME_CONFIG = {
   THAI_NHON_PHONG_TET_EXTRA: '21:00',
   THAI_HOAI_NHON_TIMES: ['13h', '19h'] as const,
 };
-

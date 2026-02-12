@@ -73,9 +73,9 @@ const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, items, onClo
                             : 'warning'
                     }
                   >
-                    {order.status === 'won' ? 'Thắng'
+                    {order.status === 'won' ? 'Trúng'
                       : order.status === 'paid' ? 'Đã thanh toán'
-                        : order.status === 'lost' ? 'Thua'
+                        : order.status === 'lost' ? 'Không trúng'
                           : 'Chờ thanh toán'}
                   </StatusBadge>
                 </div>
